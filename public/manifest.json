@@ -1,0 +1,40 @@
+{
+  "name": "역사여행 - 사극 테마 여행 플래너",
+  "short_name": "역사여행",
+  "description": "사극 속 이야기를 따라 떠나는 역사 테마 여행 플래너",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#F4EEDF",
+  "theme_color": "#B23A2E",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/screenshot-mobile.png",
+      "sizes": "390x844",
+      "type": "image/png",
+      "form_factor": "narrow"
+    },
+    {
+      "src": "/screenshot-desktop.png",
+      "sizes": "1920x1080",
+      "type": "image/png",
+      "form_factor": "wide"
+    }
+  ],
+  "categories": ["travel", "education", "lifestyle"],
+  "lang": "ko-KR"
+}
