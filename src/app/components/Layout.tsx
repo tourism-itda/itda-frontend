@@ -1,9 +1,14 @@
+import { useEffect } from "react";
 import { Outlet, useLocation } from "react-router";
 import { MobileNav } from "./MobileNav";
 import { DesktopNav } from "./DesktopNav";
 
 export default function Layout() {
   const location = useLocation();
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [location.pathname]);
 
   return (
     <div className="min-h-screen bg-background">

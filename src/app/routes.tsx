@@ -1,5 +1,5 @@
 import { createBrowserRouter } from "react-router";
-import Splash from "./pages/Splash";
+import Splash from "./pages/splash";
 import Signup from "./pages/Signup";
 import Login from "./pages/Login";
 import Home from "./pages/Home";
