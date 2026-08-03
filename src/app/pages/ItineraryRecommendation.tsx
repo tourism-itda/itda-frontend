@@ -12,10 +12,12 @@ import {
   Save,
   X,
   Bookmark,
+  Loader2,
 } from "lucide-react";
 import { Button } from "../components/ui/button";
 import { MapView } from "../components/MapView";
 import { isBookmarked, toggleBookmark } from "../lib/bookmarks";
+import { usePlaceLookup } from "../lib/usePlaceLookup";
 
 interface Place {
   id: string;
@@ -515,10 +517,17 @@ const categoryVariantsLocal: Record<string, string> = {
 function PlaceSlotCard({ slot, isSelected, onSelect, onConfirm, onSwap }: PlaceSlotCardProps) {
   const { place, confirmed } = slot;
   const [saved, setSaved] = useState(false);
+  // place는 큐레이션된 후보(이름/카테고리/좌표)이고, 실제 설명·이미지·운영시간은 이름으로
+  // 관광정보 API를 조회해 보강한다. 입장료·좌표는 API가 일관되게 제공하지 않아 큐레이션 값을 유지한다.
+  const { status: lookupStatus, data: lookup } = usePlaceLookup(place.name);
 
   useEffect(() => {
     setSaved(isBookmarked(place.id));
   }, [place.id]);
+
+  const description = lookup?.description ?? place.description;
+  const image = lookup?.image ?? place.image;
+  const hours = lookup?.hours ?? place.hours;
 
   return (
     <div
@@ -552,7 +561,7 @@ function PlaceSlotCard({ slot, isSelected, onSelect, onConfirm, onSwap }: PlaceS
 
         {/* 이미지 */}
         <img
-          src={place.image}
+          src={image}
           alt={place.name}
           className="w-20 h-20 rounded-lg object-cover shrink-0"
         />
@@ -567,14 +576,18 @@ function PlaceSlotCard({ slot, isSelected, onSelect, onConfirm, onSwap }: PlaceS
             {place.category}
           </span>
           <h3 className="font-medium mb-1 leading-tight">{place.name}</h3>
-          <p className="text-xs text-muted-foreground line-clamp-2 mb-2">{place.description}</p>
+          <p className="text-xs text-muted-foreground line-clamp-2 mb-2">{description}</p>
           <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs text-muted-foreground">
             <span className="flex items-center gap-1">
-              <Clock className="w-3 h-3" />{place.hours}
+              <Clock className="w-3 h-3" />{hours}
+              {lookupStatus === "loading" && <Loader2 className="w-3 h-3 animate-spin" />}
             </span>
             <span className="flex items-center gap-1">
               <DollarSign className="w-3 h-3" />{place.fee}
             </span>
+            {(lookupStatus === "error" || lookupStatus === "not-found") && (
+              <span className="text-muted-foreground/60">안내 정보 기준</span>
+            )}
           </div>
         </div>
       </div>
@@ -617,8 +630,8 @@ function PlaceSlotCard({ slot, isSelected, onSelect, onConfirm, onSwap }: PlaceS
                 id: place.id,
                 name: place.name,
                 category: place.category,
-                image: place.image,
-                hours: place.hours,
+                image,
+                hours,
               })
             )
           }

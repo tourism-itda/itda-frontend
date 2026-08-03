@@ -14,6 +14,7 @@ import {
   Navigation,
   Bookmark,
   Trash2,
+  Loader2,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "../components/ui/button";
@@ -21,6 +22,7 @@ import { Input } from "../components/ui/input";
 import { isBookmarked, toggleBookmark } from "../lib/bookmarks";
 import { getUserPosts, removeUserPost } from "../lib/communityPosts";
 import { ConfirmDeleteModal } from "../components/ConfirmDeleteModal";
+import { usePlaceLookup } from "../lib/usePlaceLookup";
 
 interface RouteStop {
   order: number;
@@ -1015,6 +1017,9 @@ export default function CommunityDetail() {
   const [stopSaved, setStopSaved] = useState(false);
 
   const stopBookmarkId = selectedStop ? `${route.id}-stop-${selectedStop.order}` : null;
+  // selectedStop은 큐레이션된 루트 데이터(이름/카테고리/순서)이고, 실제 주소·운영시간·이미지·
+  // 설명은 이름으로 관광정보 API를 조회해 보강한다. 조회 실패 시 큐레이션 데이터로 대체된다.
+  const { status: stopLookupStatus, data: stopDetail } = usePlaceLookup(selectedStop?.name);
 
   useEffect(() => {
     setStopSaved(stopBookmarkId ? isBookmarked(stopBookmarkId) : false);
@@ -1323,9 +1328,9 @@ export default function CommunityDetail() {
                       id: stopBookmarkId,
                       name: selectedStop.name,
                       category: selectedStop.category,
-                      image: selectedStop.image,
-                      address: selectedStop.address,
-                      hours: selectedStop.hours,
+                      image: stopDetail?.image ?? selectedStop.image,
+                      address: stopDetail?.address ?? selectedStop.address,
+                      hours: stopDetail?.hours ?? selectedStop.hours,
                     })
                   );
                 }}
@@ -1371,23 +1376,35 @@ export default function CommunityDetail() {
               <div>
                 <p className="text-xs text-muted-foreground mb-0.5">{selectedStop.category} · {selectedStop.duration}</p>
                 <h3 className="text-lg font-semibold">{selectedStop.name}</h3>
-                <p className="text-sm text-muted-foreground mt-1">{selectedStop.description}</p>
+                <p className="text-sm text-muted-foreground mt-1">{stopDetail?.description ?? selectedStop.description}</p>
               </div>
+
+              {stopLookupStatus === "loading" && (
+                <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                  실시간 정보를 불러오는 중...
+                </div>
+              )}
+              {(stopLookupStatus === "error" || stopLookupStatus === "not-found") && (
+                <p className="text-xs text-muted-foreground">
+                  실시간 정보를 불러오지 못해 안내된 정보로 표시하고 있어요.
+                </p>
+              )}
 
               <div className="divide-y divide-border">
                 <div className="flex items-start gap-3 py-3">
                   <MapPin className="w-4 h-4 text-muted-foreground shrink-0 mt-0.5" />
-                  <p className="text-sm">{selectedStop.address}</p>
+                  <p className="text-sm">{stopDetail?.address ?? selectedStop.address}</p>
                 </div>
                 <div className="flex items-center gap-3 py-3">
                   <Clock className="w-4 h-4 text-muted-foreground shrink-0" />
-                  <p className="text-sm">{selectedStop.hours}</p>
+                  <p className="text-sm">{stopDetail?.hours ?? selectedStop.hours}</p>
                 </div>
               </div>
 
               {/* 지도 앱 열기 */}
               <a
-                href={`https://maps.google.com/?q=${encodeURIComponent(selectedStop.address)}`}
+                href={`https://maps.google.com/?q=${encodeURIComponent(stopDetail?.address ?? selectedStop.address)}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center justify-center gap-2 w-full h-11 rounded-2xl bg-foreground text-background text-sm font-medium hover:bg-foreground/90 transition-colors"
