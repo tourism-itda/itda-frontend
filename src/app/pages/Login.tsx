@@ -5,7 +5,7 @@ import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
 import { Checkbox } from "../components/ui/checkbox";
-import { Map } from "lucide-react";
+import { BrandMark } from "../components/BrandMark";
 import { login } from "../lib/auth";
 import { ApiError } from "../lib/api";
 
@@ -29,13 +29,13 @@ export default function Login() {
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <div className="w-full max-w-sm">
-        <div className="bg-card rounded-2xl border border-border p-8 shadow-sm">
+        <div className="bg-card rounded-2xl border border-border/60 p-8 shadow-[var(--shadow-lg)]">
 
           {/* 로고: 아이콘 + 앱명 한 줄 / 부제목 별도 줄 */}
           <div className="flex flex-col items-center mb-9">
             <div className="flex items-center gap-2.5 mb-2">
-              <Map className="w-7 h-7 text-primary" strokeWidth={1.5} />
-              <span className="text-2xl" style={{ fontFamily: "var(--font-display)" }}>역사여행</span>
+              <BrandMark className="w-10 h-10 text-lg" />
+              <span className="text-2xl font-bold tracking-tight">역사여행</span>
             </div>
             <p className="text-muted-foreground text-sm">사극 속 이야기를 따라 떠나는 여행</p>
           </div>

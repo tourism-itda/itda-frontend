@@ -76,7 +76,7 @@ export default function Home() {
 
         {/* 왕조별 탐색 */}
         <section>
-          <h2 className="mb-5">왕조별 탐색</h2>
+          <h2 className="mb-5">시대별 탐색</h2>
           <div className="overflow-x-auto -mx-5 px-5 pb-3">
             <div className="flex gap-3 lg:grid lg:grid-cols-3 lg:gap-5">
               {dynastyItems.map((item) => (

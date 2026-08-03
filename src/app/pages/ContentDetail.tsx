@@ -345,61 +345,28 @@ export default function ContentDetail() {
           </div>
         </div>
 
-        {/* 역사 스토리텔링 — 보물지도 스타일 */}
+        {/* 역사 스토리텔링 */}
         <div className="mb-10">
           <h2 className="text-lg mb-4">역사 이야기</h2>
-          <div
-            className="rounded-2xl overflow-hidden"
-            style={{
-              background: "linear-gradient(135deg, #f5e6c0 0%, #ede0b0 40%, #e8d89a 100%)",
-              boxShadow: "inset 0 0 40px rgba(139,100,20,0.12), 0 2px 8px rgba(0,0,0,0.08)",
-            }}
-          >
-            {/* 지도 격자 배경 */}
-            <div
-              className="relative p-6"
-              style={{
-                backgroundImage:
-                  "radial-gradient(circle, rgba(139,100,20,0.18) 1px, transparent 1px)",
-                backgroundSize: "22px 22px",
-              }}
-            >
-              {/* 모서리 장식 */}
-              <span className="absolute top-3 left-3 text-[#8B6414]/40 text-lg select-none">✦</span>
-              <span className="absolute top-3 right-3 text-[#8B6414]/40 text-lg select-none">✦</span>
-              <span className="absolute bottom-3 left-3 text-[#8B6414]/40 text-lg select-none">✦</span>
-              <span className="absolute bottom-3 right-3 text-[#8B6414]/40 text-lg select-none">✦</span>
+          <div className="rounded-2xl bg-card border border-border/60 shadow-[var(--shadow-md)] p-6 sm:p-8">
+            <p className="text-muted-foreground text-xs text-center tracking-widest uppercase mb-7 font-semibold">
+              {content.historyStory.intro}
+            </p>
 
-              {/* intro */}
-              <p className="text-[#5a3e10]/70 text-xs text-center tracking-widest uppercase mb-6 font-medium">
-                {content.historyStory.intro}
-              </p>
-
-              <div className="space-y-6">
-                {content.historyStory.sections.map((section, i) => (
-                  <div key={i} className="relative">
-                    {/* 구분선 */}
-                    {i > 0 && (
-                      <div className="flex items-center gap-2 mb-6">
-                        <div className="flex-1 h-px bg-[#8B6414]/20" />
-                        <span className="text-[#8B6414]/30 text-xs">◆</span>
-                        <div className="flex-1 h-px bg-[#8B6414]/20" />
-                      </div>
-                    )}
-                    {/* 소제목 */}
-                    <p
-                      className="text-[#5a3e10] font-semibold text-sm mb-2"
-                      style={{ fontFamily: '"Do Hyeon", sans-serif', letterSpacing: "0.02em" }}
-                    >
+            <div className="space-y-7">
+              {content.historyStory.sections.map((section, i) => (
+                <div key={i}>
+                  {i > 0 && <div className="h-px bg-border mb-7" />}
+                  <div className="pl-4 border-l-2 border-primary">
+                    <p className="text-primary font-bold text-sm mb-2 tracking-tight">
                       {section.keyword}
                     </p>
-                    {/* 본문 */}
-                    <p className="text-[#3d2a08]/80 text-sm leading-[1.9]">
+                    <p className="text-foreground/80 text-sm leading-[1.9]">
                       {section.text}
                     </p>
                   </div>
-                ))}
-              </div>
+                </div>
+              ))}
             </div>
           </div>
         </div>

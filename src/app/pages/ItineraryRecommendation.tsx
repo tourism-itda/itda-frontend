@@ -225,9 +225,9 @@ function pickAlternative(slotIndex: number, excludeId: string): Place {
 
 const categoryVariants: Record<string, string> = {
   primary: "bg-primary/10 text-primary border-primary/20",
-  secondary: "bg-secondary/10 text-secondary border-secondary/20",
+  secondary: "bg-muted text-foreground border-border",
   accent: "bg-accent/10 text-accent border-accent/20",
-  support: "bg-[#5C7A5E]/10 text-[#5C7A5E] border-[#5C7A5E]/20",
+  support: "bg-muted text-foreground border-border",
 };
 
 const itinerarySubtitles: Record<string, string> = {
@@ -509,9 +509,9 @@ interface PlaceSlotCardProps {
 
 const categoryVariantsLocal: Record<string, string> = {
   primary: "bg-primary/10 text-primary",
-  secondary: "bg-secondary/10 text-secondary",
+  secondary: "bg-muted text-foreground",
   accent: "bg-accent/10 text-accent",
-  support: "bg-[#5C7A5E]/10 text-[#5C7A5E]",
+  support: "bg-muted text-foreground",
 };
 
 function PlaceSlotCard({ slot, isSelected, onSelect, onConfirm, onSwap }: PlaceSlotCardProps) {
