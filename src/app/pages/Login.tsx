@@ -6,6 +6,8 @@ import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
 import { Checkbox } from "../components/ui/checkbox";
 import { Map } from "lucide-react";
+import { login } from "../lib/auth";
+import { ApiError } from "../lib/api";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -13,9 +15,15 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (username && password) navigate("/app");
+    if (!username || !password) return;
+    try {
+      await login(username, password);
+      navigate("/app");
+    } catch (err) {
+      toast(err instanceof ApiError ? err.message : "로그인에 실패했습니다.");
+    }
   };
 
   return (

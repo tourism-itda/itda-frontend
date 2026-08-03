@@ -6,6 +6,8 @@ import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
 import { Checkbox } from "../components/ui/checkbox";
 import { ArrowLeft } from "lucide-react";
+import { signup } from "../lib/auth";
+import { ApiError } from "../lib/api";
 
 export default function Signup() {
   const navigate = useNavigate();
@@ -48,7 +50,7 @@ export default function Signup() {
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const newErrors: Record<string, string> = {};
 
@@ -68,8 +70,20 @@ export default function Signup() {
       return;
     }
 
-    // 회원가입 성공 - 로그인 화면으로
-    navigate("/login");
+    try {
+      await signup({
+        loginId: formData.username,
+        password: formData.password,
+        name: formData.name,
+        nickname: formData.nickname,
+        email: formData.email,
+        birthDate: formData.birthdate,
+        agreedToTerms,
+      });
+      navigate("/login");
+    } catch (err) {
+      toast(err instanceof ApiError ? err.message : "회원가입에 실패했습니다.");
+    }
   };
 
   return (
