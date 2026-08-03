@@ -31,6 +31,17 @@ export default defineConfig({
     },
   },
 
+  server: {
+    // itda-backend에는 CORS 설정이 없으므로, 개발 중에는 /api 요청을 백엔드(8080)로 프록시해
+    // 브라우저에서 same-origin으로 보이게 한다.
+    proxy: {
+      '/api': {
+        target: 'http://localhost:8080',
+        changeOrigin: true,
+      },
+    },
+  },
+
   // File types to support raw imports. Never add .css, .tsx, or .ts files to this.
   assetsInclude: ['**/*.svg', '**/*.csv'],
 })

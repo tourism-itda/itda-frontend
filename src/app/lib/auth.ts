@@ -41,12 +41,13 @@ export async function login(loginId: string, password: string): Promise<AuthResp
 }
 
 export async function signup(data: SignupRequest): Promise<AuthResponse> {
-  const auth = await apiFetch<AuthResponse>("/api/auth/signup", {
+  // 백엔드의 /api/auth/signup은 UserResponse만 반환하고 토큰을 발급하지 않으므로,
+  // 가입 직후 로그인을 호출해 AuthResponse(토큰 포함)를 받아온다.
+  await apiFetch<UserResponse>("/api/auth/signup", {
     method: "POST",
     body: JSON.stringify(data),
   });
-  persistAuth(auth);
-  return auth;
+  return login(data.loginId, data.password);
 }
 
 export function logout(): void {
