@@ -65,58 +65,59 @@ export default function Planner() {
         </div>
       </div>
 
-      <div className="max-w-3xl mx-auto px-5 py-7">
+      <div className="max-w-7xl mx-auto px-5 py-7">
         {savedItineraries.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-24 text-center">
             <p className="text-muted-foreground mb-6">저장된 일정이 없습니다</p>
             <Button variant="outline" onClick={() => navigate("/app")}>탐색하기</Button>
           </div>
         ) : (
-          <div className="border-t border-border">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
             {savedItineraries.map((item) => (
               <div
                 key={item.id}
-                className="group flex gap-4 py-5 border-b border-border cursor-pointer"
+                className="group cursor-pointer"
                 onClick={() => navigate(`/app/itinerary/${item.id}`)}
               >
-                {/* 썸네일 */}
-                <div className="w-24 h-24 rounded-sm border border-border overflow-hidden shrink-0">
+                {/* 썸네일 + 오버레이 텍스트 */}
+                <div className="aspect-[4/3] rounded-sm border border-border overflow-hidden relative mb-3">
                   <img
                     src={item.thumbnail}
                     alt={item.title}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                   />
-                </div>
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
 
-                {/* 텍스트 */}
-                <div className="flex-1 min-w-0 py-1">
-                  <p className="text-xs text-muted-foreground mb-1.5">{item.contentTitle}</p>
-                  <p className="font-heading leading-snug mb-2.5 line-clamp-2">{item.title}</p>
-                  <p className="text-xs text-muted-foreground">
-                    {item.date} · {item.region} · {item.placeCount}곳
-                  </p>
-                </div>
-
-                {/* 공유 + 삭제 */}
-                <div className="flex flex-col items-center gap-1 self-center shrink-0">
-                  <div
-                    role="button"
-                    className="p-2 rounded-full hover:bg-muted transition-colors"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      toast("커뮤니티에 공유되었습니다!");
-                    }}
-                  >
-                    <Share2 className="w-4 h-4 text-muted-foreground" />
+                  {/* 공유 + 삭제 — 호버 시 노출 */}
+                  <div className="absolute top-2.5 right-2.5 flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        toast("커뮤니티에 공유되었습니다!");
+                      }}
+                      className="w-7 h-7 rounded-full bg-navy/60 backdrop-blur-sm flex items-center justify-center text-ivory hover:bg-navy/80 transition-colors"
+                    >
+                      <Share2 className="w-3.5 h-3.5" />
+                    </button>
+                    <button
+                      onClick={(e) => handleDeleteClick(e, item.id)}
+                      className="w-7 h-7 rounded-full bg-navy/60 backdrop-blur-sm flex items-center justify-center text-ivory hover:bg-navy/80 transition-colors"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
                   </div>
-                  <div
-                    role="button"
-                    className="p-2 rounded-full hover:bg-muted transition-colors"
-                    onClick={(e) => handleDeleteClick(e, item.id)}
-                  >
-                    <Trash2 className="w-4 h-4 text-muted-foreground" />
+
+                  {/* 콘텐츠명 + 제목 오버레이 */}
+                  <div className="absolute bottom-3 left-3 right-3">
+                    <p className="text-ivory/60 text-[11px] mb-0.5">{item.contentTitle}</p>
+                    <p className="font-heading text-ivory text-sm leading-snug line-clamp-2">{item.title}</p>
                   </div>
                 </div>
+
+                {/* 하단 메타 */}
+                <p className="text-xs text-muted-foreground">
+                  {item.date} · {item.region} · {item.placeCount}곳
+                </p>
               </div>
             ))}
           </div>
