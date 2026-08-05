@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router";
 import { Search } from "lucide-react";
 import { Input } from "../components/ui/input";
+import { BrandMark } from "../components/BrandMark";
 
 export default function Home() {
   const navigate = useNavigate();
@@ -60,6 +61,8 @@ export default function Home() {
     },
   ];
 
+  const [heroDynasty, ...otherDynasties] = dynastyItems;
+
   return (
     <div className="min-h-screen pb-10">
       {/* 검색바 */}
@@ -72,30 +75,58 @@ export default function Home() {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-5 space-y-14 mt-8">
+      <div className="max-w-7xl mx-auto px-5 mt-10 space-y-20">
 
-        {/* 왕조별 탐색 */}
+        {/* 시대별 탐색 — 히어로 + 보조 리스트 (비대칭) */}
         <section>
-          <h2 className="mb-5">시대별 탐색</h2>
-          <div className="overflow-x-auto -mx-5 px-5 pb-3">
-            <div className="flex gap-3 lg:grid lg:grid-cols-3 lg:gap-5">
-              {dynastyItems.map((item) => (
+          <p className="text-[11px] tracking-[0.2em] text-gold font-medium uppercase mb-2">Dynasty</p>
+          <h2 className="font-heading text-2xl mb-6">시대별 탐색</h2>
+
+          <div className="grid lg:grid-cols-[1.6fr_1fr] gap-8">
+            <button
+              onClick={() => navigate(`/app/dynasty/${heroDynasty.id}`)}
+              className="relative aspect-[16/11] overflow-hidden group text-left"
+            >
+              <img
+                src={heroDynasty.image}
+                alt={heroDynasty.name}
+                className="absolute inset-0 w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-700"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-terracotta/85 via-terracotta/10 to-transparent" />
+
+              {/* 코너 장식: 네이비 탭 + 골드 라인 (섹션 표식 겸용) */}
+              <div
+                className="absolute top-0 right-0 w-16 h-16 bg-navy"
+                style={{ clipPath: "polygon(100% 0, 0 0, 100% 100%)" }}
+              />
+              <div
+                className="absolute top-0 right-0 w-16 h-16 bg-gold"
+                style={{ clipPath: "polygon(100% 0, 52% 0, 100% 48%)" }}
+              />
+
+              <div className="absolute bottom-0 left-0 right-0 p-6">
+                <p className="text-ivory/55 text-xs tracking-wide mb-1">{heroDynasty.years}</p>
+                <p className="font-heading text-ivory text-4xl leading-none">{heroDynasty.name}</p>
+              </div>
+            </button>
+
+            <div className="flex flex-col divide-y divide-border">
+              {otherDynasties.map((item) => (
                 <button
                   key={item.id}
                   onClick={() => navigate(`/app/dynasty/${item.id}`)}
-                  className="shrink-0 w-64 lg:w-auto relative aspect-[4/3] rounded-2xl overflow-hidden group text-left"
+                  className="flex items-center gap-4 py-4 first:pt-0 last:pb-0 text-left group"
                 >
-                  <img
-                    src={item.image}
-                    alt={item.name}
-                    className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                  />
-                  {/* 그라데이션: 하단 60%만 */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
-                  {/* 텍스트: 하단 여백 넉넉히 */}
-                  <div className="absolute bottom-5 left-4">
-                    <p className="text-white text-xl font-semibold leading-tight">{item.name}</p>
-                    <p className="text-white/55 text-[11px] mt-1 tracking-wide">{item.years}</p>
+                  <div className="w-20 h-20 shrink-0 overflow-hidden">
+                    <img
+                      src={item.image}
+                      alt={item.name}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    />
+                  </div>
+                  <div>
+                    <p className="font-heading text-lg">{item.name}</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">{item.years}</p>
                   </div>
                 </button>
               ))}
@@ -103,71 +134,80 @@ export default function Home() {
           </div>
         </section>
 
-        {/* 인물별 탐색 */}
+        {/* 인기 콘텐츠 — 텍스트 중심 인덱스 리스트 */}
         <section>
-          <h2 className="mb-5">인물별 탐색</h2>
-          <div className="overflow-x-auto -mx-5 px-5 pb-3">
-            <div className="flex gap-3 lg:grid lg:grid-cols-4 lg:gap-5">
-              {personItems.map((item) => (
-                <button
-                  key={item.id}
-                  onClick={() => navigate(`/app/person/${item.id}`)}
-                  className="shrink-0 w-44 lg:w-auto relative aspect-[3/4] rounded-2xl overflow-hidden group text-left"
-                >
-                  <img
-                    src={item.image}
-                    alt={item.name}
-                    className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
-                  <div className="absolute bottom-4 left-4 right-4">
-                    <p className="text-white/55 text-[11px] mb-1 tracking-wide">{item.role}</p>
-                    <p className="text-white text-lg font-semibold leading-tight">{item.name}</p>
-                  </div>
-                </button>
-              ))}
+          <div className="flex items-end justify-between mb-6">
+            <div>
+              <p className="text-[11px] tracking-[0.2em] text-gold font-medium uppercase mb-2">Popular</p>
+              <h2 className="font-heading text-2xl">인기 콘텐츠</h2>
             </div>
-          </div>
-        </section>
-
-        {/* 인기 콘텐츠 */}
-        <section>
-          <div className="flex items-baseline justify-between mb-5">
-            <h2>인기 콘텐츠</h2>
             <button
               onClick={() => navigate("/app/popular")}
-              className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+              className="px-4 py-1.5 rounded-full bg-gold text-navy text-sm font-medium hover:bg-gold/80 transition-colors"
             >
               전체 보기
             </button>
           </div>
 
-          <div className="overflow-x-auto -mx-5 px-5 pb-3 lg:overflow-visible lg:mx-0 lg:px-0 lg:pb-0">
-            <div className="flex gap-3 lg:grid lg:grid-cols-4 lg:gap-4">
-              {popularContents.map((c) => (
-                <button
-                  key={c.id}
-                  onClick={() => navigate(`/app/content/${c.id}`)}
-                  className="shrink-0 w-40 lg:w-auto group text-left"
-                >
-                  <div className="aspect-[3/4] rounded-xl overflow-hidden mb-2">
-                    <img
-                      src={c.image}
-                      alt={c.title}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                    />
-                  </div>
-                  {/* 텍스트: 이미지 바로 아래 붙여서, 중앙 아닌 왼쪽 정렬은 유지하되 px 추가 */}
-                  <div className="px-0.5">
-                    <p className="font-medium text-sm leading-tight mb-0.5 line-clamp-1">{c.title}</p>
-                    <p className="text-xs text-muted-foreground">{c.meta}</p>
-                  </div>
-                </button>
-              ))}
-            </div>
+          <div className="border-t border-border">
+            {popularContents.map((c, i) => (
+              <button
+                key={c.id}
+                onClick={() => navigate(`/app/content/${c.id}`)}
+                className="w-full flex items-center gap-5 py-4 border-b border-border text-left group"
+              >
+                <span className="font-heading text-2xl text-muted-foreground/40 w-8 shrink-0">
+                  {String(i + 1).padStart(2, "0")}
+                </span>
+                <div className="w-14 h-14 shrink-0 overflow-hidden">
+                  <img src={c.image} alt={c.title} className="w-full h-full object-cover" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="font-medium truncate group-hover:text-gold transition-colors">{c.title}</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">{c.meta}</p>
+                </div>
+              </button>
+            ))}
           </div>
         </section>
 
+        {/* 인물별 탐색 — 얇은 보더 갤러리 그리드 */}
+        <section>
+          <p className="text-[11px] tracking-[0.2em] text-gold font-medium uppercase mb-2">Figures</p>
+          <h2 className="font-heading text-2xl mb-6">인물별 탐색</h2>
+
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-px bg-border">
+            {personItems.map((item, i) => (
+              <button
+                key={item.id}
+                onClick={() => navigate(`/app/person/${item.id}`)}
+                className="relative aspect-[3/4] bg-background text-left overflow-hidden group"
+              >
+                {i === 0 && (
+                  <div
+                    className="absolute top-0 left-0 w-10 h-10 bg-navy z-10"
+                    style={{ clipPath: "polygon(0 0, 100% 0, 0 100%)" }}
+                  />
+                )}
+                <img
+                  src={item.image}
+                  alt={item.name}
+                  className="w-full h-full object-cover grayscale-[20%] group-hover:grayscale-0 transition-all duration-500"
+                />
+                <div className="absolute inset-x-0 bottom-0 bg-background/92 px-3 py-2">
+                  <p className="text-[10px] text-muted-foreground tracking-wide">{item.role}</p>
+                  <p className="font-heading text-sm">{item.name}</p>
+                </div>
+              </button>
+            ))}
+          </div>
+        </section>
+
+      </div>
+
+      {/* 브랜드 워터마크 */}
+      <div className="hidden lg:block fixed bottom-6 right-6 opacity-30 pointer-events-none select-none z-30">
+        <BrandMark className="w-7 h-7 text-sm" />
       </div>
     </div>
   );
