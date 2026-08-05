@@ -41,21 +41,23 @@ export default function Manual() {
         </div>
       </div>
 
-      <div className="max-w-2xl mx-auto px-5 py-6 space-y-4">
-        <p className="text-sm text-muted-foreground px-1">
+      <div className="max-w-2xl mx-auto px-5 py-6">
+        <p className="text-sm text-muted-foreground mb-2">
           역사여행을 처음 이용하시나요? 아래 순서를 따라가면 쉽게 나만의 역사 여행을 계획할 수 있습니다.
         </p>
-        {steps.map((step) => (
-          <div key={step.title} className="bg-card border border-border rounded-2xl p-5 flex gap-4">
-            <div className="w-10 h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center shrink-0">
-              <step.icon className="w-5 h-5" />
+        <div className="border-t border-border">
+          {steps.map((step) => (
+            <div key={step.title} className="flex gap-4 py-5 border-b border-border">
+              <div className="w-10 h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                <step.icon className="w-5 h-5" />
+              </div>
+              <div className="space-y-1">
+                <p className="text-sm font-medium">{step.title}</p>
+                <p className="text-sm text-muted-foreground leading-relaxed">{step.body}</p>
+              </div>
             </div>
-            <div className="space-y-1">
-              <p className="text-sm font-medium">{step.title}</p>
-              <p className="text-sm text-muted-foreground leading-relaxed">{step.body}</p>
-            </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
     </div>
   );

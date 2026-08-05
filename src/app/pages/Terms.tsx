@@ -62,10 +62,10 @@ export default function Terms() {
       </div>
 
       <div className="max-w-2xl mx-auto px-5 py-6">
-        <div className="bg-card border border-border rounded-2xl p-6 space-y-6">
-          <p className="text-xs text-muted-foreground">시행일자: 2026. 1. 1.</p>
+        <p className="text-xs text-muted-foreground pb-4 border-b border-border">시행일자: 2026. 1. 1.</p>
+        <div className="divide-y divide-border">
           {sections.map((section) => (
-            <div key={section.title} className="space-y-1.5">
+            <div key={section.title} className="py-4 space-y-1.5">
               <p className="text-sm font-medium">{section.title}</p>
               <p className="text-sm text-muted-foreground leading-relaxed">{section.body}</p>
             </div>

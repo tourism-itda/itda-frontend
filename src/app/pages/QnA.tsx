@@ -57,7 +57,7 @@ export default function QnA() {
       </div>
 
       <div className="max-w-2xl mx-auto px-5 py-6">
-        <div className="bg-card border border-border rounded-2xl px-5">
+        <div className="border-t border-border">
           <Accordion type="single" collapsible>
             {faqs.map((faq, idx) => (
               <AccordionItem key={idx} value={`faq-${idx}`}>

@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router";
 import { ArrowLeft, ChevronDown } from "lucide-react";
-import { Separator } from "../components/ui/separator";
 
 const notices = [
   {
@@ -60,11 +59,11 @@ export default function Notice() {
       </div>
 
       <div className="max-w-2xl mx-auto px-5 py-6">
-        <div className="bg-card border border-border rounded-2xl overflow-hidden">
-          {notices.map((notice, idx) => {
+        <div className="border-t border-border">
+          {notices.map((notice) => {
             const isOpen = openId === notice.id;
             return (
-              <div key={notice.id}>
+              <div key={notice.id} className="border-b border-border">
                 <button
                   onClick={() => setOpenId(isOpen ? null : notice.id)}
                   className="flex items-center justify-between w-full px-5 py-4 text-left hover:bg-muted/50 transition-colors"
@@ -87,7 +86,6 @@ export default function Notice() {
                     <p className="text-sm text-muted-foreground leading-relaxed">{notice.body}</p>
                   </div>
                 )}
-                {idx < notices.length - 1 && <Separator />}
               </div>
             );
           })}
