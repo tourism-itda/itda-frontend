@@ -3,11 +3,17 @@
 :root {
   --font-size: 16px;
   --font-sans: "Pretendard", "Noto Sans KR", system-ui, sans-serif;
-  --font-display: "Pretendard", "Noto Sans KR", system-ui, sans-serif;
+  --font-heading: "Nanum Myeongjo", "Noto Serif KR", serif;
+  --font-display: var(--font-heading);
 
-  /* 브랜드 컬러 */
-  --brand: #C6392C; /* Primary accent — 절제된 브릭 레드 */
-  --brand-foreground: #ffffff;
+  /* 브랜드 컬러 — 다크 테라코타 / 골드 / 네이비 */
+  --terracotta: #7A3B2E; /* Primary background */
+  --gold: #E8A33D; /* Accent */
+  --navy: #1B2A4A; /* Secondary accent */
+  --ivory: #F5EFE6; /* Light surface */
+
+  --brand: var(--gold); /* Primary accent — 골드 */
+  --brand-foreground: var(--navy);
 
   /* 뉴트럴 스케일 (라이트) */
   --neutral-0: #ffffff;
@@ -19,7 +25,7 @@
   --neutral-700: #3F3F46;
   --neutral-900: #18181B;
 
-  --background: var(--neutral-50);
+  --background: var(--ivory);
   --foreground: var(--neutral-900);
   --card: var(--neutral-0);
   --card-foreground: var(--neutral-900);
@@ -31,8 +37,8 @@
   --secondary-foreground: var(--neutral-900);
   --muted: var(--neutral-100);
   --muted-foreground: var(--neutral-500);
-  --accent: #C99A3D;
-  --accent-foreground: #ffffff;
+  --accent: var(--gold);
+  --accent-foreground: var(--navy);
   --destructive: #D4183D;
   --destructive-foreground: #ffffff;
   --border: var(--neutral-200);
@@ -55,7 +61,7 @@
   --sidebar: var(--neutral-0);
   --sidebar-foreground: var(--neutral-900);
   --sidebar-primary: var(--brand);
-  --sidebar-primary-foreground: #ffffff;
+  --sidebar-primary-foreground: var(--navy);
   --sidebar-accent: var(--neutral-100);
   --sidebar-accent-foreground: var(--neutral-900);
   --sidebar-border: var(--neutral-200);
@@ -104,6 +110,11 @@
 }
 
 @theme inline {
+  --color-terracotta: var(--terracotta);
+  --color-gold: var(--gold);
+  --color-navy: var(--navy);
+  --color-ivory: var(--ivory);
+  --font-heading: var(--font-heading);
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
