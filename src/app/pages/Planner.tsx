@@ -56,7 +56,7 @@ export default function Planner() {
     <div className="min-h-screen">
       {/* 헤더: 내 플래너 + 일정 수 한 줄 */}
       <div className="border-b border-border bg-card sticky top-0 lg:top-16 z-40">
-        <div className="max-w-3xl mx-auto px-5 py-4">
+        <div className="max-w-7xl mx-auto px-5 py-4">
           <PageTitle
             eyebrow="Planner"
             title="내 플래너"
