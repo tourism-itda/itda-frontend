@@ -1,7 +1,6 @@
 import { useNavigate } from "react-router";
 import { Search } from "lucide-react";
 import { Input } from "../components/ui/input";
-import { BrandMark } from "../components/BrandMark";
 
 export default function Home() {
   const navigate = useNavigate();
@@ -85,7 +84,7 @@ export default function Home() {
           <div className="grid lg:grid-cols-[1.6fr_1fr] gap-8">
             <button
               onClick={() => navigate(`/app/dynasty/${heroDynasty.id}`)}
-              className="relative aspect-[16/11] overflow-hidden group text-left"
+              className="relative aspect-[16/11] rounded-sm overflow-hidden group text-left"
             >
               <img
                 src={heroDynasty.image}
@@ -117,7 +116,7 @@ export default function Home() {
                   onClick={() => navigate(`/app/dynasty/${item.id}`)}
                   className="flex items-center gap-4 py-4 first:pt-0 last:pb-0 text-left group"
                 >
-                  <div className="w-20 h-20 shrink-0 overflow-hidden">
+                  <div className="w-20 h-20 shrink-0 rounded-sm overflow-hidden">
                     <img
                       src={item.image}
                       alt={item.name}
@@ -159,7 +158,7 @@ export default function Home() {
                 <span className="font-heading text-2xl text-muted-foreground/40 w-8 shrink-0">
                   {String(i + 1).padStart(2, "0")}
                 </span>
-                <div className="w-14 h-14 shrink-0 overflow-hidden">
+                <div className="w-14 h-14 shrink-0 rounded-sm overflow-hidden">
                   <img src={c.image} alt={c.title} className="w-full h-full object-cover" />
                 </div>
                 <div className="min-w-0 flex-1">
@@ -203,11 +202,6 @@ export default function Home() {
           </div>
         </section>
 
-      </div>
-
-      {/* 브랜드 워터마크 */}
-      <div className="hidden lg:block fixed bottom-6 right-6 opacity-30 pointer-events-none select-none z-30">
-        <BrandMark className="w-7 h-7 text-sm" />
       </div>
     </div>
   );

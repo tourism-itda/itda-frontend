@@ -80,7 +80,7 @@ export default function Planner() {
                 onClick={() => navigate(`/app/itinerary/${item.id}`)}
               >
                 {/* 썸네일 */}
-                <div className="w-24 h-24 border border-border overflow-hidden shrink-0">
+                <div className="w-24 h-24 rounded-sm border border-border overflow-hidden shrink-0">
                   <img
                     src={item.thumbnail}
                     alt={item.title}

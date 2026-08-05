@@ -20,7 +20,7 @@ function RouteCard({ route, onOpen }: { route: RouteCardData; onOpen: () => void
   return (
     <button onClick={onOpen} className="group text-left">
       {/* 썸네일 + 오버레이 텍스트 */}
-      <div className="aspect-[4/3] border border-border overflow-hidden relative mb-3">
+      <div className="aspect-[4/3] rounded-sm border border-border overflow-hidden relative mb-3">
         <img
           src={route.thumbnail}
           alt={route.title}

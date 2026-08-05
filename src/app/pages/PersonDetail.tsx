@@ -296,7 +296,7 @@ export default function PersonDetail() {
                 <img
                   src={place.image}
                   alt={place.name}
-                  className="w-20 h-20 object-cover border border-border shrink-0 group-hover:opacity-90 transition-opacity"
+                  className="w-20 h-20 rounded-sm object-cover border border-border shrink-0 group-hover:opacity-90 transition-opacity"
                 />
                 <div className="flex-1 min-w-0">
                   <p className="text-xs text-muted-foreground mb-1">{place.category} · {place.location}</p>

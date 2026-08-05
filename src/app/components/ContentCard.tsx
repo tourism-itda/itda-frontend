@@ -15,7 +15,7 @@ export function ContentCard({ content }: ContentCardProps) {
 
   return (
     <button onClick={() => navigate(`/app/content/${content.id}`)} className="group text-left w-full">
-      <div className="aspect-[3/4] border border-border overflow-hidden mb-2">
+      <div className="aspect-[3/4] rounded-sm border border-border overflow-hidden mb-2">
         <img
           src={content.image}
           alt={content.title}
