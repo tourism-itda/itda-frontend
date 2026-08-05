@@ -186,7 +186,7 @@ export default function PopularContents() {
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                     />
                   </div>
-                  <div className="absolute inset-0 bg-gradient-to-t from-terracotta/85 via-terracotta/10 to-transparent" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
                   <div className="absolute bottom-2 left-2 right-2">
                     <p className="font-heading text-gold text-2xl leading-none mb-1">
                       {["①", "②", "③"][i]}

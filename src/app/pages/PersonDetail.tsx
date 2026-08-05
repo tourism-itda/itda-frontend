@@ -224,7 +224,7 @@ export default function PersonDetail() {
       {/* 히어로 이미지 */}
       <div className="relative h-56 md:h-72 overflow-hidden">
         <img src={person.image} alt={person.name} className="w-full h-full object-cover" />
-        <div className="absolute inset-0 bg-gradient-to-b from-terracotta/40 via-transparent to-terracotta/75" />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-black/60" />
 
         <button
           onClick={() => navigate(-1)}

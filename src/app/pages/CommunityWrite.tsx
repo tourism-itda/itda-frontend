@@ -86,7 +86,7 @@ export default function CommunityWrite() {
           {thumbnail ? (
             <div className="relative aspect-[4/3] rounded-2xl overflow-hidden group">
               <img src={thumbnail} alt="대표 이미지" className="w-full h-full object-cover" />
-              <div className="absolute inset-0 bg-gradient-to-t from-terracotta/50 via-transparent to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
               <button
                 onClick={() => {
                   setThumbnail("");

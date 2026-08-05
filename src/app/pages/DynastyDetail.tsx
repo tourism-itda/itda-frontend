@@ -259,7 +259,7 @@ export default function DynastyDetail() {
           alt={dynasty.name}
           className="w-full h-full object-cover"
         />
-        <div className="absolute inset-0 bg-gradient-to-b from-terracotta/40 via-transparent to-terracotta/75" />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-black/60" />
 
         {/* 뒤로가기 */}
         <button

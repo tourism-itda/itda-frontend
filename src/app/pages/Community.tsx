@@ -26,7 +26,7 @@ function RouteCard({ route, onOpen }: { route: RouteCardData; onOpen: () => void
           alt={route.title}
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-terracotta/85 via-terracotta/10 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
         {/* 별점 */}
         <div className="absolute top-2.5 right-2.5 bg-navy text-gold text-xs px-2 py-0.5 rounded-full flex items-center gap-1">
           <Star className="w-3 h-3 fill-gold" />

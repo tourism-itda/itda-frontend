@@ -1074,7 +1074,7 @@ export default function CommunityDetail() {
       {/* 히어로 */}
       <div className="relative h-52 md:h-64 overflow-hidden">
         <img src={route.thumbnail} alt={route.title} className="w-full h-full object-cover" />
-        <div className="absolute inset-0 bg-gradient-to-b from-terracotta/40 via-transparent to-terracotta/80" />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-black/65" />
         <button
           onClick={() => navigate(-1)}
           className="absolute top-4 left-4 w-9 h-9 rounded-full bg-navy/50 backdrop-blur-sm flex items-center justify-center text-ivory hover:bg-navy/70 transition-colors"

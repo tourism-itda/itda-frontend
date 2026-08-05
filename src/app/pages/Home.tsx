@@ -91,7 +91,7 @@ export default function Home() {
                 alt={heroDynasty.name}
                 className="absolute inset-0 w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-700"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-terracotta/85 via-terracotta/10 to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent" />
 
               {/* 코너 장식: 네이비 탭 + 골드 라인 (섹션 표식 겸용) */}
               <div
