@@ -19,22 +19,22 @@ function RouteCard({ route, onOpen }: { route: RouteCardData; onOpen: () => void
   return (
     <button onClick={onOpen} className="group text-left">
       {/* 썸네일 + 오버레이 텍스트 */}
-      <div className="aspect-[4/3] rounded-2xl overflow-hidden relative mb-3">
+      <div className="aspect-[4/3] border border-border overflow-hidden relative mb-3">
         <img
           src={route.thumbnail}
           alt={route.title}
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-terracotta/85 via-terracotta/10 to-transparent" />
         {/* 별점 */}
-        <div className="absolute top-2.5 right-2.5 bg-black/50 backdrop-blur-sm text-white text-xs px-2 py-0.5 rounded-full flex items-center gap-1">
-          <Star className="w-3 h-3 fill-white" />
+        <div className="absolute top-2.5 right-2.5 bg-navy text-gold text-xs px-2 py-0.5 rounded-full flex items-center gap-1">
+          <Star className="w-3 h-3 fill-gold" />
           {route.rating}
         </div>
         {/* 지역 + 제목 오버레이 */}
         <div className="absolute bottom-3 left-3 right-3">
-          <p className="text-white/65 text-[11px] mb-0.5">{route.region}</p>
-          <p className="text-white text-sm font-medium leading-snug line-clamp-2">{route.title}</p>
+          <p className="text-ivory/60 text-[11px] mb-0.5">{route.region}</p>
+          <p className="font-heading text-ivory text-sm leading-snug line-clamp-2">{route.title}</p>
         </div>
       </div>
 
@@ -152,7 +152,10 @@ export default function Community() {
       <div className="border-b border-border bg-card sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between mb-3">
-            <h1 className="text-2xl">커뮤니티</h1>
+            <div>
+              <p className="text-[11px] tracking-[0.2em] text-gold font-medium uppercase mb-1">Community</p>
+              <h1 className="font-heading text-2xl">커뮤니티</h1>
+            </div>
             <button
               onClick={() => navigate("/app/community/write")}
               className="flex items-center gap-1.5 h-9 px-3.5 rounded-full bg-foreground text-background text-sm font-medium hover:bg-foreground/90 transition-colors"

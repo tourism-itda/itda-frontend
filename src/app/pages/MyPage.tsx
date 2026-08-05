@@ -104,7 +104,8 @@ export default function MyPage() {
     <div className="min-h-screen">
       <div className="border-b border-border bg-card sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-5 py-4">
-          <h1 className="text-xl">마이페이지</h1>
+          <p className="text-[11px] tracking-[0.2em] text-gold font-medium uppercase mb-1">My Page</p>
+          <h1 className="font-heading text-xl">마이페이지</h1>
         </div>
       </div>
 
@@ -131,7 +132,7 @@ export default function MyPage() {
           {/* 설정 */}
           <div className="bg-card border border-border rounded-2xl overflow-hidden">
             <div className="px-5 pt-5 pb-2">
-              <p className="text-xs text-muted-foreground font-normal mb-3">설정</p>
+              <p className="text-xs tracking-wide uppercase text-muted-foreground font-normal mb-3">설정</p>
               {/* 다크모드 */}
               <div className="flex items-center justify-between py-3">
                 <div className="flex items-center gap-3">
@@ -200,7 +201,7 @@ export default function MyPage() {
             <div className="bg-card border border-border rounded-2xl p-6 h-fit sticky top-24">
               <div className="flex flex-col items-center mb-7">
                 <div className="relative">
-                  <img src={profile.avatar} alt={profile.nickname} className="w-20 h-20 rounded-full border-2 border-border" />
+                  <img src={profile.avatar} alt={profile.nickname} className="w-20 h-20 rounded-full border-2 border-gold" />
                   <button
                     onClick={handleChangeAvatar}
                     className="absolute bottom-0 right-0 w-7 h-7 bg-primary text-primary-foreground rounded-full flex items-center justify-center"
@@ -216,7 +217,7 @@ export default function MyPage() {
             <div className="space-y-5">
               <div className="bg-card border border-border rounded-2xl overflow-hidden">
                 <div className="px-5 pt-5 pb-2">
-                  <p className="text-xs text-muted-foreground font-normal mb-3">설정</p>
+                  <p className="text-xs tracking-wide uppercase text-muted-foreground font-normal mb-3">설정</p>
                   <div className="flex items-center justify-between py-3">
                     <div className="flex items-center gap-3">
                       <Moon className="w-5 h-5 text-muted-foreground shrink-0" />

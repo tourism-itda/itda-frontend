@@ -55,9 +55,12 @@ export default function Planner() {
     <div className="min-h-screen">
       {/* 헤더: 내 플래너 + 일정 수 한 줄 */}
       <div className="border-b border-border bg-card sticky top-0 z-40">
-        <div className="max-w-3xl mx-auto px-5 py-4 flex items-baseline gap-3">
-          <h1 className="text-xl">내 플래너</h1>
-          <span className="text-sm text-muted-foreground">일정 {savedItineraries.length}개</span>
+        <div className="max-w-3xl mx-auto px-5 py-4">
+          <p className="text-[11px] tracking-[0.2em] text-gold font-medium uppercase mb-1">Planner</p>
+          <div className="flex items-baseline gap-3">
+            <h1 className="font-heading text-xl">내 플래너</h1>
+            <span className="text-sm text-muted-foreground">일정 {savedItineraries.length}개</span>
+          </div>
         </div>
       </div>
 
@@ -68,15 +71,15 @@ export default function Planner() {
             <Button variant="outline" onClick={() => navigate("/app")}>탐색하기</Button>
           </div>
         ) : (
-          <div className="space-y-6">
+          <div className="border-t border-border">
             {savedItineraries.map((item) => (
               <div
                 key={item.id}
-                className="group flex gap-4 cursor-pointer"
+                className="group flex gap-4 py-5 border-b border-border cursor-pointer"
                 onClick={() => navigate(`/app/itinerary/${item.id}`)}
               >
-                {/* 썸네일 — 조금 더 크게 */}
-                <div className="w-28 h-28 rounded-2xl overflow-hidden shrink-0">
+                {/* 썸네일 */}
+                <div className="w-24 h-24 border border-border overflow-hidden shrink-0">
                   <img
                     src={item.thumbnail}
                     alt={item.title}
@@ -84,10 +87,10 @@ export default function Planner() {
                   />
                 </div>
 
-                {/* 텍스트 — py 넉넉히 */}
-                <div className="flex-1 min-w-0 py-2">
+                {/* 텍스트 */}
+                <div className="flex-1 min-w-0 py-1">
                   <p className="text-xs text-muted-foreground mb-1.5">{item.contentTitle}</p>
-                  <p className="font-medium leading-snug mb-2.5 line-clamp-2">{item.title}</p>
+                  <p className="font-heading leading-snug mb-2.5 line-clamp-2">{item.title}</p>
                   <p className="text-xs text-muted-foreground">
                     {item.date} · {item.region} · {item.placeCount}곳
                   </p>
