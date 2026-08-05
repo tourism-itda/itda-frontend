@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import { Search, Star, PenLine } from "lucide-react";
 import { Input } from "../components/ui/input";
+import { PageTitle } from "../components/PageTitle";
 import { CommunityPost, getUserPosts } from "../lib/communityPosts";
 
 interface RouteCardData {
@@ -152,10 +153,7 @@ export default function Community() {
       <div className="border-b border-border bg-card sticky top-0 lg:top-16 z-40">
         <div className="max-w-7xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between mb-3">
-            <div>
-              <p className="text-[11px] tracking-[0.2em] text-gold font-medium uppercase mb-1">Community</p>
-              <h1 className="font-heading text-2xl">커뮤니티</h1>
-            </div>
+            <PageTitle eyebrow="Community" title="커뮤니티" />
             <button
               onClick={() => navigate("/app/community/write")}
               className="flex items-center gap-1.5 h-9 px-3.5 rounded-full bg-foreground text-background text-sm font-medium hover:bg-foreground/90 transition-colors"
