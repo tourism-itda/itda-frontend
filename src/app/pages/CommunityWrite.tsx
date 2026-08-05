@@ -86,19 +86,19 @@ export default function CommunityWrite() {
           {thumbnail ? (
             <div className="relative aspect-[4/3] rounded-2xl overflow-hidden group">
               <img src={thumbnail} alt="대표 이미지" className="w-full h-full object-cover" />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-t from-terracotta/50 via-transparent to-transparent" />
               <button
                 onClick={() => {
                   setThumbnail("");
                   setShowThumbnailInput(false);
                 }}
-                className="absolute top-3 right-3 w-8 h-8 rounded-full bg-black/50 backdrop-blur-sm flex items-center justify-center text-white hover:bg-black/70 transition-colors"
+                className="absolute top-3 right-3 w-8 h-8 rounded-full bg-navy/60 backdrop-blur-sm flex items-center justify-center text-ivory hover:bg-navy/80 transition-colors"
               >
                 <X className="w-4 h-4" />
               </button>
               <button
                 onClick={() => setShowThumbnailInput((v) => !v)}
-                className="absolute bottom-3 right-3 h-8 px-3 rounded-full bg-black/50 backdrop-blur-sm text-white text-xs font-medium hover:bg-black/70 transition-colors"
+                className="absolute bottom-3 right-3 h-8 px-3 rounded-full bg-navy/60 backdrop-blur-sm text-ivory text-xs font-medium hover:bg-navy/80 transition-colors"
               >
                 이미지 변경
               </button>

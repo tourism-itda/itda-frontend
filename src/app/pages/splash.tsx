@@ -14,24 +14,24 @@ export default function Splash() {
   }, [navigate]);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background">
+    <div className="min-h-screen flex items-center justify-center bg-terracotta">
       <motion.div
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.5 }}
         className="text-center"
       >
-        <h1 className="text-4xl md:text-5xl font-semibold text-primary mb-4">
+        <h1 className="font-heading text-4xl md:text-5xl text-gold mb-4">
           사극 여행 플래너
         </h1>
-        <p className="text-muted-foreground">역사를 여행하다</p>
-        
+        <p className="text-ivory/60">역사를 여행하다</p>
+
         {/* Loading indicator */}
         <div className="flex items-center justify-center gap-2 mt-8">
           {[0, 1, 2].map((i) => (
             <motion.div
               key={i}
-              className="w-2 h-2 rounded-full bg-primary"
+              className="w-2 h-2 rounded-full bg-gold"
               animate={{
                 scale: [1, 1.2, 1],
                 opacity: [0.5, 1, 0.5],

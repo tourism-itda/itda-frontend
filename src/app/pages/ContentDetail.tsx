@@ -312,7 +312,7 @@ export default function ContentDetail() {
         <div className="absolute inset-0 bg-gradient-to-t from-background via-background/30 to-transparent" />
         <button
           onClick={() => navigate(-1)}
-          className="absolute top-4 left-4 w-9 h-9 rounded-full bg-black/30 backdrop-blur-sm flex items-center justify-center text-white hover:bg-black/50 transition-colors"
+          className="absolute top-4 left-4 w-9 h-9 rounded-full bg-navy/50 backdrop-blur-sm flex items-center justify-center text-ivory hover:bg-navy/70 transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
         </button>

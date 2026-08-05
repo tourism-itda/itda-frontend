@@ -186,17 +186,17 @@ export default function PopularContents() {
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                     />
                   </div>
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-terracotta/85 via-terracotta/10 to-transparent" />
                   <div className="absolute bottom-2 left-2 right-2">
-                    <p className="text-white font-bold text-2xl leading-none mb-1">
+                    <p className="font-heading text-gold text-2xl leading-none mb-1">
                       {["①", "②", "③"][i]}
                     </p>
-                    <p className="text-white text-xs font-medium line-clamp-2 leading-tight">{c.title}</p>
+                    <p className="text-ivory text-xs font-medium line-clamp-2 leading-tight">{c.title}</p>
                   </div>
                   <div className="absolute top-2 right-2">
-                    <div className="flex items-center gap-1 bg-black/40 rounded-full px-2 py-0.5">
-                      <TrendingUp className="w-3 h-3 text-white" />
-                      <span className="text-white text-[10px]">{c.views}</span>
+                    <div className="flex items-center gap-1 bg-navy/60 rounded-full px-2 py-0.5">
+                      <TrendingUp className="w-3 h-3 text-ivory" />
+                      <span className="text-ivory text-[10px]">{c.views}</span>
                     </div>
                   </div>
                 </div>

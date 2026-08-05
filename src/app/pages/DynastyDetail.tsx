@@ -259,21 +259,21 @@ export default function DynastyDetail() {
           alt={dynasty.name}
           className="w-full h-full object-cover"
         />
-        <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-black/60" />
+        <div className="absolute inset-0 bg-gradient-to-b from-terracotta/40 via-transparent to-terracotta/75" />
 
         {/* 뒤로가기 */}
         <button
           onClick={() => navigate(-1)}
-          className="absolute top-4 left-4 w-9 h-9 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center text-white hover:bg-black/60 transition-colors"
+          className="absolute top-4 left-4 w-9 h-9 rounded-full bg-navy/50 backdrop-blur-sm flex items-center justify-center text-ivory hover:bg-navy/70 transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
         </button>
 
         {/* 제목 오버레이 */}
         <div className="absolute bottom-5 left-5 right-5">
-          <p className="text-white/80 text-sm mb-1">{dynasty.period}</p>
-          <h1 className="text-white text-3xl font-bold leading-tight">{dynasty.name}시대</h1>
-          <p className="text-white/70 text-sm mt-1">{dynasty.years}</p>
+          <p className="text-ivory/70 text-sm mb-1">{dynasty.period}</p>
+          <h1 className="text-ivory text-3xl leading-tight">{dynasty.name}시대</h1>
+          <p className="text-ivory/60 text-sm mt-1">{dynasty.years}</p>
         </div>
       </div>
 
@@ -311,21 +311,21 @@ export default function DynastyDetail() {
         {/* 관련 역사 장소 */}
         <section>
           <h2 className="mb-5">관련 장소</h2>
-          <div className="space-y-3">
+          <div className="divide-y divide-border border-t border-border">
             {dynasty.places.map((place) => (
               <button
                 key={place.id}
-                className="w-full bg-card border border-border rounded-2xl overflow-hidden flex gap-4 p-4 hover:shadow-sm transition-shadow text-left group"
+                className="w-full flex gap-4 py-4 text-left group"
                 onClick={() => setSheetPlace({ id: `${dynasty.id}-${place.id}`, name: place.name, category: place.category, address: place.address, hours: place.hours, image: place.image, description: place.description })}
               >
                 <img
                   src={place.image}
                   alt={place.name}
-                  className="w-20 h-20 rounded-xl object-cover shrink-0"
+                  className="w-20 h-20 object-cover border border-border shrink-0 group-hover:opacity-90 transition-opacity"
                 />
                 <div className="flex-1 min-w-0">
                   <p className="text-xs text-muted-foreground mb-1">{place.category} · {place.location}</p>
-                  <p className="font-medium mb-1">{place.name}</p>
+                  <p className="font-heading mb-1">{place.name}</p>
                   <p className="text-sm text-muted-foreground line-clamp-2">{place.description}</p>
                 </div>
               </button>

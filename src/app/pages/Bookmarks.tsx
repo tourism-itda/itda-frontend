@@ -38,20 +38,20 @@ export default function Bookmarks() {
             <p className="text-sm text-muted-foreground/70">장소 상세 정보에서 북마크 아이콘을 눌러 저장해보세요</p>
           </div>
         ) : (
-          <div className="space-y-3">
+          <div className="divide-y divide-border border-t border-border">
             {bookmarks.map((place) => (
               <div
                 key={place.id}
-                className="bg-card border border-border rounded-2xl p-3 flex gap-3"
+                className="flex gap-3 py-4"
               >
                 <img
                   src={place.image}
                   alt={place.name}
-                  className="w-20 h-20 rounded-xl object-cover shrink-0"
+                  className="w-20 h-20 object-cover border border-border shrink-0"
                 />
                 <div className="flex-1 min-w-0 py-0.5">
                   <p className="text-xs text-muted-foreground mb-1">{place.category}</p>
-                  <p className="font-medium mb-1.5 truncate">{place.name}</p>
+                  <p className="font-heading mb-1.5 truncate">{place.name}</p>
                   {place.address && (
                     <div className="flex items-start gap-1 text-xs text-muted-foreground">
                       <MapPin className="w-3.5 h-3.5 shrink-0 mt-0.5" />

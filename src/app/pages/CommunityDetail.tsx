@@ -1074,17 +1074,17 @@ export default function CommunityDetail() {
       {/* 히어로 */}
       <div className="relative h-52 md:h-64 overflow-hidden">
         <img src={route.thumbnail} alt={route.title} className="w-full h-full object-cover" />
-        <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-black/65" />
+        <div className="absolute inset-0 bg-gradient-to-b from-terracotta/40 via-transparent to-terracotta/80" />
         <button
           onClick={() => navigate(-1)}
-          className="absolute top-4 left-4 w-9 h-9 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center text-white hover:bg-black/60 transition-colors"
+          className="absolute top-4 left-4 w-9 h-9 rounded-full bg-navy/50 backdrop-blur-sm flex items-center justify-center text-ivory hover:bg-navy/70 transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
         </button>
         {userPost && (
           <button
             onClick={() => setShowDeleteConfirm(true)}
-            className="absolute top-4 right-4 w-9 h-9 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center text-white hover:bg-black/60 transition-colors"
+            className="absolute top-4 right-4 w-9 h-9 rounded-full bg-navy/50 backdrop-blur-sm flex items-center justify-center text-ivory hover:bg-navy/70 transition-colors"
           >
             <Trash2 className="w-4 h-4" />
           </button>
@@ -1092,12 +1092,12 @@ export default function CommunityDetail() {
         <div className="absolute bottom-5 left-5 right-5">
           <div className="flex items-center gap-1.5 mb-1">
             {route.tags.map((t) => (
-              <span key={t} className="text-xs text-white/70 bg-white/15 rounded-full px-2 py-0.5">
+              <span key={t} className="text-xs text-ivory/70 bg-ivory/15 rounded-full px-2 py-0.5">
                 #{t}
               </span>
             ))}
           </div>
-          <h1 className="text-white text-2xl font-bold leading-tight">{route.title}</h1>
+          <h1 className="font-heading text-ivory text-2xl leading-tight">{route.title}</h1>
         </div>
       </div>
 
