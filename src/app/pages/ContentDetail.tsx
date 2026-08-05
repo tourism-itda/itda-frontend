@@ -422,7 +422,7 @@ export default function ContentDetail() {
       </div>
 
       {/* 하단 고정 CTA */}
-      <div className="fixed bottom-16 lg:bottom-0 left-0 right-0 z-40 px-4 pb-4 pt-3 bg-background border-t border-border lg:pl-64">
+      <div className="fixed bottom-16 lg:bottom-0 left-0 right-0 z-40 px-4 pb-4 pt-3 bg-background border-t border-border">
         <div className="max-w-2xl mx-auto">
           <Button onClick={() => navigate(`/app/itinerary/${content.id}`)} className="w-full h-11">
             여행 일정 보기

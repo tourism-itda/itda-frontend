@@ -66,7 +66,7 @@ export default function Home() {
   return (
     <div className="min-h-screen pb-10">
       {/* 검색바 */}
-      <div className="sticky top-0 z-40 bg-background/95 backdrop-blur-sm border-b border-border">
+      <div className="sticky top-0 lg:top-16 z-40 bg-background/95 backdrop-blur-sm border-b border-border">
         <div className="px-5 py-3 max-w-7xl mx-auto">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />

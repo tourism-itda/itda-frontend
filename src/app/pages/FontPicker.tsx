@@ -85,7 +85,7 @@ export default function FontPicker() {
   return (
     <div className="min-h-screen pb-10">
       {/* 헤더 */}
-      <div className="sticky top-0 z-40 bg-card border-b border-border">
+      <div className="sticky top-0 lg:top-16 z-40 bg-card border-b border-border">
         <div className="max-w-2xl mx-auto px-4 py-3 flex items-center gap-3">
           <button
             onClick={() => navigate(-1)}

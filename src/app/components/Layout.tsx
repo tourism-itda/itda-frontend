@@ -12,13 +12,13 @@ export default function Layout() {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* 데스크탑 사이드바 (≥1025px) */}
-      <aside className="hidden lg:block fixed left-0 top-0 h-screen w-64 border-r border-border bg-card z-50">
+      {/* 데스크탑 상단 내비게이션 (≥1025px) */}
+      <header className="hidden lg:block sticky top-0 h-16 border-b border-border bg-background/95 backdrop-blur-sm z-50">
         <DesktopNav />
-      </aside>
+      </header>
 
       {/* 메인 콘텐츠 영역 */}
-      <main className="lg:ml-64 min-h-screen pb-20 lg:pb-0">
+      <main className="min-h-screen pb-20 lg:pb-0">
         <Outlet />
       </main>
 

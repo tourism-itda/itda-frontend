@@ -54,7 +54,7 @@ export default function Planner() {
   return (
     <div className="min-h-screen">
       {/* 헤더: 내 플래너 + 일정 수 한 줄 */}
-      <div className="border-b border-border bg-card sticky top-0 z-40">
+      <div className="border-b border-border bg-card sticky top-0 lg:top-16 z-40">
         <div className="max-w-3xl mx-auto px-5 py-4">
           <p className="text-[11px] tracking-[0.2em] text-gold font-medium uppercase mb-1">Planner</p>
           <div className="flex items-baseline gap-3">

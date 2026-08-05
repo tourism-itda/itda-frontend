@@ -49,7 +49,7 @@ export default function Terms() {
 
   return (
     <div className="min-h-screen">
-      <div className="border-b border-border bg-card sticky top-0 z-40">
+      <div className="border-b border-border bg-card sticky top-0 lg:top-16 z-40">
         <div className="max-w-2xl mx-auto px-5 py-4 flex items-center gap-3">
           <button
             onClick={() => navigate(-1)}

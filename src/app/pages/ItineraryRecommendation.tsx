@@ -305,7 +305,7 @@ export default function ItineraryRecommendation() {
   return (
     <div className="min-h-screen">
       {/* 헤더 */}
-      <div className="sticky top-0 z-40 bg-card border-b border-border">
+      <div className="sticky top-0 lg:top-16 z-40 bg-card border-b border-border">
         <div className="px-4 py-3 flex items-center gap-3 max-w-2xl mx-auto">
           <button
             onClick={() => navigate(-1)}

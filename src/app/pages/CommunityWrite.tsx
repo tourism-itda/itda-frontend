@@ -61,7 +61,7 @@ export default function CommunityWrite() {
   return (
     <div className="min-h-screen pb-10">
       {/* 헤더 */}
-      <div className="border-b border-border bg-card sticky top-0 z-40">
+      <div className="border-b border-border bg-card sticky top-0 lg:top-16 z-40">
         <div className="max-w-2xl mx-auto px-4 h-14 flex items-center justify-between">
           <button
             onClick={() => navigate(-1)}

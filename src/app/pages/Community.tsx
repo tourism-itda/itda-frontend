@@ -149,7 +149,7 @@ export default function Community() {
   return (
     <div className="min-h-screen">
       {/* 헤더 */}
-      <div className="border-b border-border bg-card sticky top-0 z-40">
+      <div className="border-b border-border bg-card sticky top-0 lg:top-16 z-40">
         <div className="max-w-7xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between mb-3">
             <div>
