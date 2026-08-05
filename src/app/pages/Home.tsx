@@ -180,7 +180,7 @@ export default function Home() {
               <button
                 key={item.id}
                 onClick={() => navigate(`/app/person/${item.id}`)}
-                className="relative aspect-[3/4] bg-background text-left overflow-hidden group"
+                className="relative aspect-[3/4] rounded-sm bg-background text-left overflow-hidden group"
               >
                 {i === 0 && (
                   <div
