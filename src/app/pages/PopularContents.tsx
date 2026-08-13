@@ -63,18 +63,18 @@ export default function PopularContents() {
   return (
     <div className="min-h-screen pb-8">
       {/* 상단 헤더 */}
-      <div className="sticky top-0 lg:top-16 z-40 bg-background/95 backdrop-blur-sm border-b border-border">
+      <div className="sticky top-0 lg:top-16 z-40 bg-background/95 backdrop-blur-sm hanji-noise border-b border-border">
         <div className="max-w-3xl mx-auto px-4 py-4">
           <div className="flex items-center gap-3 mb-3">
             <button
               onClick={() => navigate(-1)}
-              className="w-8 h-8 rounded-full hover:bg-muted flex items-center justify-center transition-colors shrink-0"
+              className="w-11 h-11 -ml-1.5 rounded-full hover:bg-muted flex items-center justify-center transition-colors shrink-0 outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
             >
               <ArrowLeft className="w-4 h-4" />
             </button>
             <div>
               <h1 className="leading-tight">인기 콘텐츠</h1>
-              <p className="text-xs text-muted-foreground">사극 팬들이 가장 많이 찾은 콘텐츠</p>
+              <p className="text-sm text-muted-foreground">사극 팬들이 가장 많이 찾은 콘텐츠</p>
             </div>
           </div>
 
@@ -196,7 +196,7 @@ export default function PopularContents() {
                   <div className="absolute top-2 right-2">
                     <div className="flex items-center gap-1 bg-navy/60 rounded-full px-2 py-0.5">
                       <TrendingUp className="w-3 h-3 text-ivory" />
-                      <span className="text-ivory text-[10px]">{c.views}</span>
+                      <span className="text-ivory text-xs">{c.views}</span>
                     </div>
                   </div>
                 </div>

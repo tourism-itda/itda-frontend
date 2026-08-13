@@ -65,7 +65,7 @@ export default function CommunityWrite() {
         <div className="max-w-2xl mx-auto px-4 h-14 flex items-center justify-between">
           <button
             onClick={() => navigate(-1)}
-            className="w-9 h-9 -ml-1.5 flex items-center justify-center rounded-full hover:bg-muted/50 transition-colors"
+            className="w-11 h-11 -ml-2.5 flex items-center justify-center rounded-full hover:bg-muted/50 transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
           >
             <ArrowLeft className="w-5 h-5" />
           </button>
@@ -92,13 +92,13 @@ export default function CommunityWrite() {
                   setThumbnail("");
                   setShowThumbnailInput(false);
                 }}
-                className="absolute top-3 right-3 w-8 h-8 rounded-full bg-navy/60 backdrop-blur-sm flex items-center justify-center text-ivory hover:bg-navy/80 transition-colors"
+                className="absolute top-3 right-3 w-11 h-11 rounded-full bg-navy/60 backdrop-blur-sm hanji-noise flex items-center justify-center text-ivory hover:bg-navy/80 transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ivory focus-visible:ring-offset-2 focus-visible:ring-offset-navy"
               >
                 <X className="w-4 h-4" />
               </button>
               <button
                 onClick={() => setShowThumbnailInput((v) => !v)}
-                className="absolute bottom-3 right-3 h-8 px-3 rounded-full bg-navy/60 backdrop-blur-sm text-ivory text-xs font-medium hover:bg-navy/80 transition-colors"
+                className="absolute bottom-3 right-3 h-11 px-4 rounded-full bg-navy/60 backdrop-blur-sm hanji-noise text-ivory text-xs font-medium hover:bg-navy/80 transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ivory focus-visible:ring-offset-2 focus-visible:ring-offset-navy"
               >
                 이미지 변경
               </button>
@@ -210,7 +210,7 @@ export default function CommunityWrite() {
           />
         </div>
 
-        <p className="text-xs text-muted-foreground/60 pt-4">* 제목과 지역은 필수 입력 항목입니다</p>
+        <p className="text-sm text-muted-foreground/60 pt-4">* 제목과 지역은 필수 입력 항목입니다</p>
       </div>
     </div>
   );

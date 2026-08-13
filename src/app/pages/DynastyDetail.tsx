@@ -264,7 +264,7 @@ export default function DynastyDetail() {
         {/* 뒤로가기 */}
         <button
           onClick={() => navigate(-1)}
-          className="absolute top-4 left-4 w-9 h-9 rounded-full bg-navy/50 backdrop-blur-sm flex items-center justify-center text-ivory hover:bg-navy/70 transition-colors"
+          className="absolute top-4 left-4 w-11 h-11 rounded-full bg-navy/50 backdrop-blur-sm hanji-noise flex items-center justify-center text-ivory hover:bg-navy/70 transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ivory focus-visible:ring-offset-2 focus-visible:ring-offset-navy"
         >
           <ArrowLeft className="w-4 h-4" />
         </button>
@@ -315,7 +315,7 @@ export default function DynastyDetail() {
             {dynasty.places.map((place) => (
               <button
                 key={place.id}
-                className="w-full flex gap-4 py-4 text-left group"
+                className="w-full flex gap-4 py-4 -mx-2 px-2 rounded-xl text-left group transition-colors hover:bg-muted/40"
                 onClick={() => setSheetPlace({ id: `${dynasty.id}-${place.id}`, name: place.name, category: place.category, address: place.address, hours: place.hours, image: place.image, description: place.description })}
               >
                 <img
@@ -324,8 +324,8 @@ export default function DynastyDetail() {
                   className="w-20 h-20 rounded-sm object-cover border border-border shrink-0 group-hover:opacity-90 transition-opacity"
                 />
                 <div className="flex-1 min-w-0">
-                  <p className="text-xs text-muted-foreground mb-1">{place.category} · {place.location}</p>
-                  <p className="font-heading mb-1">{place.name}</p>
+                  <p className="text-sm text-muted-foreground mb-1">{place.category} · {place.location}</p>
+                  <p className="font-heading mb-1 group-hover:text-primary transition-colors">{place.name}</p>
                   <p className="text-sm text-muted-foreground line-clamp-2">{place.description}</p>
                 </div>
               </button>

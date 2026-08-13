@@ -24,7 +24,7 @@ export function ConfirmDeleteModal({
 
   return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center px-6">
-      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onCancel} />
+      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm hanji-noise" onClick={onCancel} />
       <div className="relative bg-card w-full max-w-xs rounded-2xl shadow-2xl p-6 text-center">
         <button
           onClick={onCancel}

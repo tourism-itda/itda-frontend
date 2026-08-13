@@ -1,4 +1,4 @@
-import { MapPin } from "lucide-react";
+import { Check, MapPin } from "lucide-react";
 
 interface Place {
   id: string;
@@ -7,6 +7,7 @@ interface Place {
   lat: number;
   lng: number;
   image: string;
+  confirmed?: boolean;
 }
 
 interface MapViewProps {
@@ -57,12 +58,21 @@ export function MapView({ places, selectedPlace }: MapViewProps) {
                   className={`w-10 h-10 rounded-full flex items-center justify-center shadow-lg ${
                     selectedPlace === place.id
                       ? "bg-primary text-primary-foreground ring-4 ring-primary/30"
+                      : place.confirmed
+                      ? "bg-primary text-primary-foreground"
                       : "bg-card text-foreground border-2 border-primary"
                   }`}
                 >
                   <span className="text-sm">{place.order}</span>
                 </div>
-                
+
+                {/* 확정된 장소는 지도에 고정됨을 나타내는 체크 배지 */}
+                {place.confirmed && (
+                  <div className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-success flex items-center justify-center shadow ring-2 ring-card">
+                    <Check className="w-2.5 h-2.5 text-white" strokeWidth={3} />
+                  </div>
+                )}
+
                 {/* 연결선 */}
                 {idx < places.length - 1 && (
                   <svg
@@ -109,7 +119,7 @@ export function MapView({ places, selectedPlace }: MapViewProps) {
       </div>
 
       {/* 지도 범례 */}
-      <div className="absolute bottom-4 left-4 bg-card/95 backdrop-blur-sm border border-border rounded-lg p-3 shadow-sm">
+      <div className="absolute bottom-4 left-4 bg-card/95 backdrop-blur-sm hanji-noise border border-border rounded-lg p-3 shadow-sm">
         <p className="text-xs text-muted-foreground mb-2">총 {places.length}개 장소</p>
         <div className="flex items-center gap-2 text-xs">
           <MapPin className="w-4 h-4 text-primary" />

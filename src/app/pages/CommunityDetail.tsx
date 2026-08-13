@@ -1077,14 +1077,14 @@ export default function CommunityDetail() {
         <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-black/65" />
         <button
           onClick={() => navigate(-1)}
-          className="absolute top-4 left-4 w-9 h-9 rounded-full bg-navy/50 backdrop-blur-sm flex items-center justify-center text-ivory hover:bg-navy/70 transition-colors"
+          className="absolute top-4 left-4 w-11 h-11 rounded-full bg-navy/50 backdrop-blur-sm hanji-noise flex items-center justify-center text-ivory hover:bg-navy/70 transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ivory focus-visible:ring-offset-2 focus-visible:ring-offset-navy"
         >
           <ArrowLeft className="w-4 h-4" />
         </button>
         {userPost && (
           <button
             onClick={() => setShowDeleteConfirm(true)}
-            className="absolute top-4 right-4 w-9 h-9 rounded-full bg-navy/50 backdrop-blur-sm flex items-center justify-center text-ivory hover:bg-navy/70 transition-colors"
+            className="absolute top-4 right-4 w-11 h-11 rounded-full bg-navy/50 backdrop-blur-sm hanji-noise flex items-center justify-center text-ivory hover:bg-navy/70 transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ivory focus-visible:ring-offset-2 focus-visible:ring-offset-navy"
           >
             <Trash2 className="w-4 h-4" />
           </button>
@@ -1115,7 +1115,7 @@ export default function CommunityDetail() {
                   <img src={route.authorAvatar} alt={route.author} className="w-10 h-10 rounded-full bg-muted shrink-0" />
                   <div className="min-w-0">
                     <p className="font-medium text-sm">{route.author}</p>
-                    <p className="text-xs text-muted-foreground truncate max-w-[160px]">{route.authorBio}</p>
+                    <p className="text-sm text-muted-foreground truncate max-w-[160px]">{route.authorBio}</p>
                   </div>
                 </div>
                 <Button variant="outline" size="sm" className="shrink-0" onClick={handleImport}>
@@ -1167,7 +1167,7 @@ export default function CommunityDetail() {
                       >
                         <img src={stop.image} alt={stop.name} className="w-20 h-20 rounded-2xl object-cover shrink-0" />
                         <div className="flex-1 min-w-0">
-                          <span className="text-xs text-muted-foreground">{stop.category} · {stop.duration}</span>
+                          <span className="text-sm text-muted-foreground">{stop.category} · {stop.duration}</span>
                           <p className="font-black text-[16px] mt-1 mb-1.5">{stop.name}</p>
                           <p className="text-sm text-muted-foreground line-clamp-2">{stop.description}</p>
                         </div>
@@ -1206,14 +1206,14 @@ export default function CommunityDetail() {
                   <div className="text-center shrink-0">
                     <p className="text-5xl font-black">{avgRating.toFixed(1)}</p>
                     <StarRating value={avgRating} size="sm" />
-                    <p className="text-xs text-muted-foreground mt-1">{reviews.length}개 리뷰</p>
+                    <p className="text-sm text-muted-foreground mt-1">{reviews.length}개 리뷰</p>
                   </div>
                   <div className="flex-1 space-y-1.5">
                     {[5, 4, 3, 2, 1].map((star) => {
                       const count = reviews.filter((r) => r.rating === star).length;
                       const pct = reviews.length ? (count / reviews.length) * 100 : 0;
                       return (
-                        <div key={star} className="flex items-center gap-2 text-xs text-muted-foreground">
+                        <div key={star} className="flex items-center gap-2 text-sm text-muted-foreground">
                           <span className="w-3">{star}</span>
                           <div className="flex-1 h-1.5 bg-muted rounded-full overflow-hidden">
                             <div
@@ -1238,6 +1238,7 @@ export default function CommunityDetail() {
                         onMouseEnter={() => setHoverRating(n)}
                         onMouseLeave={() => setHoverRating(0)}
                         onClick={() => setMyRating(n)}
+                        className="p-2 -m-2 rounded-full outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                       >
                         <Star
                           className={`w-7 h-7 transition-colors ${
@@ -1271,7 +1272,7 @@ export default function CommunityDetail() {
                     </Button>
                   </div>
                   {myRating === 0 && myComment.trim() && (
-                    <p className="text-xs text-destructive">별점을 선택해주세요</p>
+                    <p className="text-sm text-destructive">별점을 선택해주세요</p>
                   )}
                 </div>
 
@@ -1290,13 +1291,13 @@ export default function CommunityDetail() {
                             <p className="text-sm font-bold">{review.author}</p>
                             <StarRating value={review.rating} size="sm" />
                           </div>
-                          <p className="text-xs text-muted-foreground">{review.date}</p>
+                          <p className="text-sm text-muted-foreground">{review.date}</p>
                         </div>
                       </div>
                       <p className="text-sm text-foreground leading-relaxed mb-3">{review.text}</p>
                       <button
                         onClick={() => handleLike(review.id)}
-                        className={`flex items-center gap-1.5 text-xs transition-colors ${
+                        className={`flex items-center gap-1.5 text-sm transition-colors ${
                           review.likedByMe ? "text-primary" : "text-muted-foreground hover:text-foreground"
                         }`}
                       >
@@ -1317,14 +1318,14 @@ export default function CommunityDetail() {
                 <img src={route.authorAvatar} alt={route.author} className="w-12 h-12 rounded-full bg-muted shrink-0" />
                 <div className="min-w-0">
                   <p className="font-bold text-[15px]">{route.author}</p>
-                  <p className="text-xs text-muted-foreground truncate">{route.authorBio}</p>
+                  <p className="text-sm text-muted-foreground truncate">{route.authorBio}</p>
                 </div>
               </div>
               <div className="flex items-center gap-2 mb-1">
                 <span className="text-4xl font-black">{avgRating.toFixed(1)}</span>
                 <div className="flex flex-col">
                   <StarRating value={avgRating} size="sm" />
-                  <span className="text-xs text-muted-foreground mt-0.5">리뷰 {reviews.length}개</span>
+                  <span className="text-sm text-muted-foreground mt-0.5">리뷰 {reviews.length}개</span>
                 </div>
               </div>
               <div className="flex items-center gap-3 text-sm text-muted-foreground mt-5 pt-5 border-t border-border">
@@ -1343,7 +1344,7 @@ export default function CommunityDetail() {
         <div className="fixed inset-0 z-[60] flex items-end justify-center">
           {/* 딤 배경 */}
           <div
-            className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+            className="absolute inset-0 bg-black/40 backdrop-blur-sm hanji-noise"
             onClick={() => setSelectedStop(null)}
           />
 
@@ -1369,13 +1370,13 @@ export default function CommunityDetail() {
                     })
                   );
                 }}
-                className="w-8 h-8 rounded-full bg-muted flex items-center justify-center"
+                className="w-11 h-11 rounded-full bg-muted flex items-center justify-center outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
               >
                 <Bookmark className={`w-4 h-4 ${stopSaved ? "fill-primary text-primary" : "text-muted-foreground"}`} />
               </button>
               <button
                 onClick={() => setSelectedStop(null)}
-                className="w-8 h-8 rounded-full bg-muted flex items-center justify-center"
+                className="w-11 h-11 rounded-full bg-muted flex items-center justify-center outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
               >
                 <X className="w-4 h-4 text-muted-foreground" />
               </button>
@@ -1402,26 +1403,26 @@ export default function CommunityDetail() {
               </div>
               {/* 장소명 말풍선 */}
               <div className="absolute top-4 left-1/2 -translate-x-1/2 bg-card rounded-xl px-3 py-1.5 shadow-md border border-border whitespace-nowrap">
-                <p className="text-xs font-medium">{selectedStop.name}</p>
+                <p className="text-sm font-medium">{selectedStop.name}</p>
               </div>
             </div>
 
             {/* 장소 정보 */}
             <div className="px-5 py-4 space-y-4 overflow-y-auto">
               <div>
-                <p className="text-xs text-muted-foreground mb-0.5">{selectedStop.category} · {selectedStop.duration}</p>
+                <p className="text-sm text-muted-foreground mb-0.5">{selectedStop.category} · {selectedStop.duration}</p>
                 <h3 className="text-lg font-semibold">{selectedStop.name}</h3>
                 <p className="text-sm text-muted-foreground mt-1">{stopDetail?.description ?? selectedStop.description}</p>
               </div>
 
               {stopLookupStatus === "loading" && (
-                <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
                   <Loader2 className="w-3.5 h-3.5 animate-spin" />
                   실시간 정보를 불러오는 중...
                 </div>
               )}
               {(stopLookupStatus === "error" || stopLookupStatus === "not-found") && (
-                <p className="text-xs text-muted-foreground">
+                <p className="text-sm text-muted-foreground">
                   실시간 정보를 불러오지 못해 안내된 정보로 표시하고 있어요.
                 </p>
               )}
@@ -1459,13 +1460,13 @@ export default function CommunityDetail() {
       {showImportModal && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center px-6">
           <div
-            className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+            className="absolute inset-0 bg-black/40 backdrop-blur-sm hanji-noise"
             onClick={() => setShowImportModal(false)}
           />
           <div className="relative bg-card w-full max-w-xs rounded-2xl shadow-2xl p-6 text-center">
             <button
               onClick={() => setShowImportModal(false)}
-              className="absolute top-3 right-3 w-7 h-7 rounded-full flex items-center justify-center hover:bg-muted/50 transition-colors"
+              className="absolute top-3 right-3 w-11 h-11 rounded-full flex items-center justify-center hover:bg-muted/50 transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
             >
               <X className="w-4 h-4 text-muted-foreground" />
             </button>

@@ -16,7 +16,7 @@ export function MobileNav() {
           key={item.to}
           to={item.to}
           end={item.end}
-          className="flex flex-col items-center justify-center gap-1 flex-1 min-w-0 h-full"
+          className="flex flex-col items-center justify-center gap-1 flex-1 min-w-0 h-full outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-lg"
         >
           {({ isActive }) => (
             <>
@@ -27,7 +27,7 @@ export function MobileNav() {
                   strokeWidth={isActive ? 2.5 : 1.8}
                 />
               </div>
-              <span className={`text-[10px] transition-colors ${isActive ? "text-primary font-medium" : "text-muted-foreground"}`}>
+              <span className={`text-sm transition-colors ${isActive ? "text-primary font-medium" : "text-muted-foreground"}`}>
                 {item.label}
               </span>
             </>

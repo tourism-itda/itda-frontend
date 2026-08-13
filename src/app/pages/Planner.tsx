@@ -76,15 +76,15 @@ export default function Planner() {
             {savedItineraries.map((item) => (
               <div
                 key={item.id}
-                className="group cursor-pointer"
+                className="group cursor-pointer transition-transform duration-200 hover:-translate-y-0.5"
                 onClick={() => navigate(`/app/itinerary/${item.id}`)}
               >
                 {/* 썸네일 + 오버레이 텍스트 */}
-                <div className="aspect-[4/3] rounded-sm border border-border overflow-hidden relative mb-3">
+                <div className="aspect-[4/3] rounded-sm border border-border overflow-hidden relative mb-3 transition-shadow duration-200 group-hover:shadow-md">
                   <img
                     src={item.thumbnail}
                     alt={item.title}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    className="w-full h-full object-cover"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
 
@@ -95,13 +95,13 @@ export default function Planner() {
                         e.stopPropagation();
                         toast("커뮤니티에 공유되었습니다!");
                       }}
-                      className="w-7 h-7 rounded-full bg-navy/60 backdrop-blur-sm flex items-center justify-center text-ivory hover:bg-navy/80 transition-colors"
+                      className="w-11 h-11 rounded-full bg-navy/60 backdrop-blur-sm hanji-noise flex items-center justify-center text-ivory hover:bg-navy/80 transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ivory focus-visible:ring-offset-2 focus-visible:ring-offset-navy"
                     >
                       <Share2 className="w-3.5 h-3.5" />
                     </button>
                     <button
                       onClick={(e) => handleDeleteClick(e, item.id)}
-                      className="w-7 h-7 rounded-full bg-navy/60 backdrop-blur-sm flex items-center justify-center text-ivory hover:bg-navy/80 transition-colors"
+                      className="w-11 h-11 rounded-full bg-navy/60 backdrop-blur-sm hanji-noise flex items-center justify-center text-ivory hover:bg-navy/80 transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ivory focus-visible:ring-offset-2 focus-visible:ring-offset-navy"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>
@@ -109,13 +109,13 @@ export default function Planner() {
 
                   {/* 콘텐츠명 + 제목 오버레이 */}
                   <div className="absolute bottom-3 left-3 right-3">
-                    <p className="text-ivory/60 text-[11px] mb-0.5">{item.contentTitle}</p>
+                    <p className="text-ivory/90 text-sm mb-0.5">{item.contentTitle}</p>
                     <p className="font-heading text-ivory text-sm leading-snug line-clamp-2">{item.title}</p>
                   </div>
                 </div>
 
                 {/* 하단 메타 */}
-                <p className="text-xs text-muted-foreground">
+                <p className="text-sm text-muted-foreground">
                   {item.date} · {item.region} · {item.placeCount}곳
                 </p>
               </div>

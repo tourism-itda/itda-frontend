@@ -22,7 +22,7 @@ export default function Bookmarks() {
         <div className="max-w-2xl mx-auto px-5 py-4 flex items-center gap-3">
           <button
             onClick={() => navigate(-1)}
-            className="w-8 h-8 -ml-1 flex items-center justify-center rounded-full hover:bg-muted/50 transition-colors"
+            className="w-11 h-11 -ml-2.5 flex items-center justify-center rounded-full hover:bg-muted/50 transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
           >
             <ArrowLeft className="w-4.5 h-4.5" />
           </button>
@@ -50,10 +50,10 @@ export default function Bookmarks() {
                   className="w-20 h-20 rounded-sm object-cover border border-border shrink-0"
                 />
                 <div className="flex-1 min-w-0 py-0.5">
-                  <p className="text-xs text-muted-foreground mb-1">{place.category}</p>
+                  <p className="text-sm text-muted-foreground mb-1">{place.category}</p>
                   <p className="font-heading mb-1.5 truncate">{place.name}</p>
                   {place.address && (
-                    <div className="flex items-start gap-1 text-xs text-muted-foreground">
+                    <div className="flex items-start gap-1 text-sm text-muted-foreground">
                       <MapPin className="w-3.5 h-3.5 shrink-0 mt-0.5" />
                       <span className="line-clamp-1">{place.address}</span>
                     </div>

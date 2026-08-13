@@ -312,7 +312,7 @@ export default function ContentDetail() {
         <div className="absolute inset-0 bg-gradient-to-t from-background via-background/30 to-transparent" />
         <button
           onClick={() => navigate(-1)}
-          className="absolute top-4 left-4 w-9 h-9 rounded-full bg-navy/50 backdrop-blur-sm flex items-center justify-center text-ivory hover:bg-navy/70 transition-colors"
+          className="absolute top-4 left-4 w-11 h-11 rounded-full bg-navy/50 backdrop-blur-sm hanji-noise flex items-center justify-center text-ivory hover:bg-navy/70 transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ivory focus-visible:ring-offset-2 focus-visible:ring-offset-navy"
         >
           <ArrowLeft className="w-4 h-4" />
         </button>
@@ -376,19 +376,19 @@ export default function ContentDetail() {
           {/* 섹션 구분 강조: 배경색으로 완전히 다른 느낌 */}
           <div className="bg-muted/60 rounded-[28px] p-5">
             <h2 className="text-[16px] font-extrabold mb-1">사실 vs 각색</h2>
-            <p className="text-xs text-muted-foreground mb-5">드라마가 역사를 어떻게 바꿨는지 확인해보세요</p>
+            <p className="text-sm text-muted-foreground mb-5">드라마가 역사를 어떻게 바꿨는지 확인해보세요</p>
             <div className="space-y-6">
               {content.factCheck.map((item, i) => (
                 <div key={i}>
                   <p className="font-medium text-sm mb-3">{item.topic}</p>
                   <div className="grid grid-cols-2 gap-2">
                     <div className="bg-card rounded-xl p-3">
-                      <p className="text-[10px] font-semibold text-green-700 dark:text-green-400 mb-1.5 uppercase tracking-wide">사실</p>
-                      <p className="text-xs leading-relaxed text-foreground/80">{item.fact}</p>
+                      <p className="text-xs font-semibold text-green-700 dark:text-green-400 mb-1.5 uppercase tracking-wide">사실</p>
+                      <p className="text-sm leading-relaxed text-foreground/80">{item.fact}</p>
                     </div>
                     <div className="bg-card rounded-xl p-3">
-                      <p className="text-[10px] font-semibold text-amber-600 dark:text-amber-400 mb-1.5 uppercase tracking-wide">각색</p>
-                      <p className="text-xs leading-relaxed text-foreground/80">{item.fiction}</p>
+                      <p className="text-xs font-semibold text-amber-600 dark:text-amber-400 mb-1.5 uppercase tracking-wide">각색</p>
+                      <p className="text-sm leading-relaxed text-foreground/80">{item.fiction}</p>
                     </div>
                   </div>
                 </div>
@@ -409,7 +409,7 @@ export default function ContentDetail() {
                   key={i}
                   onClick={() => handleToggleRelated(i, p)}
                   className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm transition-colors ${
-                    saved ? "bg-primary/10 text-primary" : "bg-muted hover:bg-muted/70"
+                    saved ? "bg-primary/10 text-primary hover:bg-primary/20" : "bg-muted hover:bg-muted/70"
                   }`}
                 >
                   <Bookmark className={`w-3.5 h-3.5 ${saved ? "fill-primary" : ""}`} />

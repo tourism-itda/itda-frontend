@@ -13,7 +13,7 @@ export default function Layout() {
   return (
     <div className="min-h-screen bg-background">
       {/* 데스크탑 상단 내비게이션 (≥1025px) */}
-      <header className="hidden lg:block sticky top-0 h-[68px] border-b border-border bg-background/95 backdrop-blur-sm z-50">
+      <header className="hidden lg:block sticky top-0 h-[68px] border-b border-border bg-background/95 backdrop-blur-sm z-50 hanji-noise">
         <DesktopNav />
       </header>
 
@@ -23,7 +23,7 @@ export default function Layout() {
       </main>
 
       {/* 모바일 하단 탭바 (≤1024px) */}
-      <div className="lg:hidden fixed bottom-0 left-0 right-0 border-t border-border bg-card/95 backdrop-blur-sm z-50">
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 border-t border-border bg-card/95 backdrop-blur-sm z-50 hanji-noise">
         <MobileNav />
       </div>
     </div>

@@ -37,7 +37,7 @@ export function PlaceSheet({ place, onClose }: PlaceSheetProps) {
 
   return (
     <div className="fixed inset-0 z-[60] flex items-end justify-center">
-      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
+      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm hanji-noise" onClick={onClose} />
 
       <div className="relative bg-card w-full max-w-lg max-h-[85vh] rounded-t-3xl overflow-hidden shadow-2xl flex flex-col">
         {/* 핸들 */}

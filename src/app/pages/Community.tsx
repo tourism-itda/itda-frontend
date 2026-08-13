@@ -28,7 +28,7 @@ function RouteCard({ route, onOpen }: { route: RouteCardData; onOpen: () => void
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
         />
         <div className="absolute left-3 bottom-3">
-          <span className="px-2.5 py-1 rounded-full bg-neutral-900/70 backdrop-blur-sm text-white text-[11px] font-bold tracking-wide">
+          <span className="px-2.5 py-1 rounded-full bg-neutral-900/70 backdrop-blur-sm text-white text-xs font-bold tracking-wide">
             {route.region}
           </span>
         </div>

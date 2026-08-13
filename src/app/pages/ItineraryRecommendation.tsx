@@ -300,7 +300,7 @@ export default function ItineraryRecommendation() {
     navigate("/app/planner");
   }
 
-  const mapPlaces = slots.map((s) => ({ ...s.place }));
+  const mapPlaces = slots.map((s) => ({ ...s.place, confirmed: s.confirmed }));
 
   return (
     <div className="min-h-screen">
@@ -315,7 +315,7 @@ export default function ItineraryRecommendation() {
           </button>
           <div className="flex-1 min-w-0">
             <h1 className="text-base leading-tight">추천 여행 일정</h1>
-            <p className="text-xs text-muted-foreground">{subtitle}</p>
+            <p className="text-sm text-muted-foreground">{subtitle}</p>
           </div>
         </div>
       </div>
@@ -329,7 +329,7 @@ export default function ItineraryRecommendation() {
                 <div key={i} className={`w-1.5 h-1.5 rounded-full transition-colors ${s.confirmed ? "bg-foreground" : "bg-border"}`} />
               ))}
             </div>
-            <span className="text-xs text-muted-foreground truncate">
+            <span className="text-sm text-muted-foreground truncate">
               {confirmedCount === slots.length ? "모두 확정" : confirmedCount === 0 ? "장소를 확정해주세요" : `${confirmedCount}/${slots.length} 확정`}
             </span>
           </div>
@@ -385,7 +385,7 @@ export default function ItineraryRecommendation() {
         </div>
 
         {/* 하단 고정 액션 */}
-        <div className="fixed bottom-16 left-0 right-0 lg:hidden z-40 px-4 pb-3 pt-2 bg-background/95 backdrop-blur-sm border-t border-border">
+        <div className="fixed bottom-16 left-0 right-0 lg:hidden z-40 px-4 pb-3 pt-2 bg-background/95 backdrop-blur-sm hanji-noise border-t border-border">
           <div className="max-w-2xl mx-auto">
             <Button onClick={() => setShowSaveSheet(true)} className="w-full">저장하기</Button>
           </div>
@@ -430,7 +430,7 @@ export default function ItineraryRecommendation() {
       {showSaveSheet && (
         <div className="fixed inset-0 z-[60] flex items-end lg:items-center justify-center">
           <div
-            className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+            className="absolute inset-0 bg-black/40 backdrop-blur-sm hanji-noise"
             onClick={() => setShowSaveSheet(false)}
           />
           <div className="relative bg-card border border-border rounded-t-2xl lg:rounded-2xl w-full max-w-md max-h-[85vh] shadow-xl flex flex-col overflow-hidden">
@@ -447,7 +447,7 @@ export default function ItineraryRecommendation() {
             <div className="px-6 pb-6 overflow-y-auto">
               {/* 일정 요약 */}
               <div className="bg-muted/50 rounded-xl p-3 mb-5 space-y-1.5">
-                <p className="text-xs text-muted-foreground pb-1">{tripDuration} · 장소 {slots.length}곳</p>
+                <p className="text-sm text-muted-foreground pb-1">{tripDuration} · 장소 {slots.length}곳</p>
                 {slots.map((s, i) => (
                   <div key={i} className="flex items-center gap-2 text-sm">
                     <span
@@ -543,7 +543,7 @@ function PlaceSlotCard({ slot, isSelected, onSelect, onConfirm, onSwap }: PlaceS
       {/* 확정 상태 배너 */}
       {confirmed && (
         <div className="bg-muted/50 px-4 py-1.5">
-          <span className="text-xs text-muted-foreground">확정됨</span>
+          <span className="text-sm text-muted-foreground">확정됨</span>
         </div>
       )}
 
@@ -576,8 +576,8 @@ function PlaceSlotCard({ slot, isSelected, onSelect, onConfirm, onSwap }: PlaceS
             {place.category}
           </span>
           <h3 className="font-medium mb-1 leading-tight">{place.name}</h3>
-          <p className="text-xs text-muted-foreground line-clamp-2 mb-2">{description}</p>
-          <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs text-muted-foreground">
+          <p className="text-sm text-muted-foreground line-clamp-2 mb-2">{description}</p>
+          <div className="flex flex-wrap gap-x-3 gap-y-1 text-sm text-muted-foreground">
             <span className="flex items-center gap-1">
               <Clock className="w-3 h-3" />{hours}
               {lookupStatus === "loading" && <Loader2 className="w-3 h-3 animate-spin" />}
@@ -594,7 +594,7 @@ function PlaceSlotCard({ slot, isSelected, onSelect, onConfirm, onSwap }: PlaceS
 
       {/* 이동 정보 */}
       {place.nextDistance !== "-" && (
-        <div className="px-4 pb-2 flex items-center gap-1.5 text-xs text-muted-foreground">
+        <div className="px-4 pb-2 flex items-center gap-1.5 text-sm text-muted-foreground">
           <Navigation className="w-3.5 h-3.5" />
           다음 장소까지 {place.nextDistance} · {place.nextDuration}
         </div>

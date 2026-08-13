@@ -104,7 +104,7 @@ export default function MyPage() {
     <div className="min-h-screen">
       <div className="border-b border-border bg-card sticky top-0 lg:top-16 z-40">
         <div className="max-w-7xl mx-auto px-5 py-4">
-          <p className="text-[11px] tracking-[0.2em] text-gold font-medium uppercase mb-1">My Page</p>
+          <p className="text-xs tracking-[0.2em] text-gold font-medium uppercase mb-1">My Page</p>
           <h1 className="font-heading text-xl">마이페이지</h1>
         </div>
       </div>
@@ -223,7 +223,7 @@ export default function MyPage() {
                       <Moon className="w-5 h-5 text-muted-foreground shrink-0" />
                       <div>
                         <p className="text-sm">다크 모드</p>
-                        <p className="text-xs text-muted-foreground font-normal">화면 테마를 어둡게 변경합니다</p>
+                        <p className="text-sm text-muted-foreground font-normal">화면 테마를 어둡게 변경합니다</p>
                       </div>
                     </div>
                     <Switch checked={darkMode} onCheckedChange={toggleDarkMode} />

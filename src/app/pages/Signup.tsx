@@ -116,7 +116,7 @@ export default function Signup() {
                 className={errors.name ? "border-destructive" : ""}
               />
               {errors.name && (
-                <p className="text-xs text-destructive">{errors.name}</p>
+                <p className="text-sm text-destructive">{errors.name}</p>
               )}
             </div>
 
@@ -131,7 +131,7 @@ export default function Signup() {
                 className={errors.birthdate ? "border-destructive" : ""}
               />
               {errors.birthdate && (
-                <p className="text-xs text-destructive">{errors.birthdate}</p>
+                <p className="text-sm text-destructive">{errors.birthdate}</p>
               )}
             </div>
 
@@ -156,7 +156,7 @@ export default function Signup() {
                 </Button>
               </div>
               {errors.username && (
-                <p className="text-xs text-destructive">{errors.username}</p>
+                <p className="text-sm text-destructive">{errors.username}</p>
               )}
             </div>
 
@@ -172,7 +172,7 @@ export default function Signup() {
                 className={errors.password ? "border-destructive" : ""}
               />
               {errors.password && (
-                <p className="text-xs text-destructive">{errors.password}</p>
+                <p className="text-sm text-destructive">{errors.password}</p>
               )}
             </div>
 
@@ -188,7 +188,7 @@ export default function Signup() {
                 className={errors.confirmPassword ? "border-destructive" : ""}
               />
               {errors.confirmPassword && (
-                <p className="text-xs text-destructive">{errors.confirmPassword}</p>
+                <p className="text-sm text-destructive">{errors.confirmPassword}</p>
               )}
             </div>
 
@@ -203,7 +203,7 @@ export default function Signup() {
                 className={errors.nickname ? "border-destructive" : ""}
               />
               {errors.nickname && (
-                <p className="text-xs text-destructive">{errors.nickname}</p>
+                <p className="text-sm text-destructive">{errors.nickname}</p>
               )}
             </div>
 
@@ -219,7 +219,7 @@ export default function Signup() {
                 className={errors.email ? "border-destructive" : ""}
               />
               {errors.email && (
-                <p className="text-xs text-destructive">{errors.email}</p>
+                <p className="text-sm text-destructive">{errors.email}</p>
               )}
             </div>
 
@@ -236,7 +236,7 @@ export default function Signup() {
                 </Label>
               </div>
               {errors.terms && (
-                <p className="text-xs text-destructive">{errors.terms}</p>
+                <p className="text-sm text-destructive">{errors.terms}</p>
               )}
             </div>
 
