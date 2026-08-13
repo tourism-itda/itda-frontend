@@ -99,7 +99,7 @@ export default function Signup() {
             </Link>
             <h1 className="text-2xl mb-2">회원가입</h1>
             <p className="text-muted-foreground text-sm">
-              역사여행과 함께 사극 속 장소를 탐험해보세요
+              잇다 관광과 함께 사극 속 장소를 탐험해보세요
             </p>
           </div>
 

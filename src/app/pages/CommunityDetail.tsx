@@ -1072,7 +1072,7 @@ export default function CommunityDetail() {
   return (
     <div className="min-h-screen pb-8">
       {/* 히어로 */}
-      <div className="relative h-52 md:h-64 overflow-hidden">
+      <div className="relative h-52 md:h-64 lg:h-80 overflow-hidden">
         <img src={route.thumbnail} alt={route.title} className="w-full h-full object-cover" />
         <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-black/65" />
         <button
@@ -1089,218 +1089,253 @@ export default function CommunityDetail() {
             <Trash2 className="w-4 h-4" />
           </button>
         )}
-        <div className="absolute bottom-5 left-5 right-5">
-          <div className="flex items-center gap-1.5 mb-1">
-            {route.tags.map((t) => (
-              <span key={t} className="text-xs text-ivory/70 bg-ivory/15 rounded-full px-2 py-0.5">
-                #{t}
-              </span>
-            ))}
+        <div className="absolute bottom-5 lg:bottom-10 left-5 right-5 lg:left-0 lg:right-0">
+          <div className="lg:max-w-[1280px] lg:mx-auto lg:px-8">
+            <div className="flex items-center gap-1.5 mb-1">
+              {route.tags.map((t) => (
+                <span key={t} className="text-xs font-bold text-ivory/70 bg-ivory/15 rounded-full px-2 py-0.5">
+                  #{t}
+                </span>
+              ))}
+            </div>
+            <h1 className="font-heading text-ivory text-2xl lg:text-4xl font-black leading-tight max-w-3xl">{route.title}</h1>
           </div>
-          <h1 className="font-heading text-ivory text-2xl leading-tight">{route.title}</h1>
         </div>
       </div>
 
-      <div className="max-w-2xl mx-auto px-4 mt-5 space-y-6">
-        {/* 작성자 + 메타 */}
-        <div className="flex items-center justify-between gap-3">
-          <div className="flex items-center gap-3 min-w-0">
-            <img src={route.authorAvatar} alt={route.author} className="w-10 h-10 rounded-full bg-muted shrink-0" />
-            <div className="min-w-0">
-              <p className="font-medium text-sm">{route.author}</p>
-              <p className="text-xs text-muted-foreground truncate max-w-[160px]">{route.authorBio}</p>
-            </div>
-          </div>
-          <Button variant="outline" size="sm" className="shrink-0" onClick={handleImport}>
-            <Download className="w-4 h-4 mr-1.5" />
-            가져오기
-          </Button>
-        </div>
+      <div className="max-w-[1280px] mx-auto px-4 lg:px-8 mt-6 lg:mt-10 pb-10">
+        <div className="lg:grid lg:grid-cols-[1fr_360px] lg:gap-12 lg:items-start">
 
-        {/* 요약 스탯 */}
-        <div className="flex items-center gap-4 text-sm text-muted-foreground">
-          <span>장소 {route.placeCount}곳</span>
-          <span>·</span>
-          <span>{route.duration}</span>
-          <span>·</span>
-          <div className="flex items-center gap-1">
-            <Star className="w-3.5 h-3.5 fill-accent text-accent" />
-            <span className="text-foreground font-medium">{avgRating.toFixed(1)}</span>
-            <span className="text-muted-foreground">({reviews.length})</span>
-          </div>
-        </div>
-
-        {/* 탭 */}
-        <div className="flex border-b border-border">
-          {(["route", "review"] as const).map((tab) => (
-            <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              className={`flex-1 py-2.5 text-sm font-medium transition-colors relative ${
-                activeTab === tab ? "text-primary" : "text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              {tab === "route" ? "루트 경로" : `리뷰 ${reviews.length}`}
-              {activeTab === tab && (
-                <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary rounded-full" />
-              )}
-            </button>
-          ))}
-        </div>
-
-        {/* 루트 탭 */}
-        {activeTab === "route" && (
-          <div className="space-y-1">
-            <p className="text-sm text-muted-foreground mb-4">{route.description}</p>
-            {visibleStops.map((stop, idx) => (
-              <div key={stop.order}>
-                <button
-                  onClick={() => setSelectedStop(stop)}
-                  className="w-full bg-card border border-border rounded-xl overflow-hidden flex gap-3 p-4 text-left hover:bg-muted/30 transition-colors"
-                >
-                  <img src={stop.image} alt={stop.name} className="w-16 h-16 rounded-lg object-cover shrink-0" />
-                  <div className="flex-1 min-w-0">
-                    <span className="text-xs text-muted-foreground">{stop.category} · {stop.duration}</span>
-                    <p className="font-medium text-sm mt-0.5 mb-1">{stop.name}</p>
-                    <p className="text-xs text-muted-foreground line-clamp-2">{stop.description}</p>
+          {/* 좌측: 탭 콘텐츠 */}
+          <div className="space-y-6 lg:space-y-8">
+            {/* 작성자 + 메타 — 모바일 전용 (데스크톱은 우측 사이드바에 표시) */}
+            <div className="lg:hidden space-y-4">
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex items-center gap-3 min-w-0">
+                  <img src={route.authorAvatar} alt={route.author} className="w-10 h-10 rounded-full bg-muted shrink-0" />
+                  <div className="min-w-0">
+                    <p className="font-medium text-sm">{route.author}</p>
+                    <p className="text-xs text-muted-foreground truncate max-w-[160px]">{route.authorBio}</p>
                   </div>
-                  <ChevronRight className="w-4 h-4 text-muted-foreground shrink-0 self-center" />
-                </button>
-                {idx < visibleStops.length - 1 && (
-                  <div className="flex items-center justify-center gap-2 py-1.5">
-                    <div className="h-px w-8 bg-border" />
-                    <span className="text-muted-foreground/50 text-xs">↓</span>
-                    <div className="h-px w-8 bg-border" />
-                  </div>
-                )}
-              </div>
-            ))}
-            {!showAllStops && (route.moreStops?.length ?? 0) > 0 && (
-              <button
-                onClick={() => setShowAllStops(true)}
-                className="w-full mt-3 py-3 text-sm text-primary border border-primary/30 rounded-xl hover:bg-primary/5 transition-colors"
-              >
-                나머지 {route.placeCount - visibleStops.length}개 장소 더 보기
-              </button>
-            )}
-            <div className="flex gap-2 pt-2">
-              <Button onClick={handleImport} className="flex-1">가져오기</Button>
-              <Button variant="outline" onClick={handleShare}><Share2 className="w-4 h-4" /></Button>
-            </div>
-          </div>
-        )}
-
-        {/* 리뷰 탭 */}
-        {activeTab === "review" && (
-          <div className="space-y-5">
-            {/* 별점 분포 요약 */}
-            <div className="bg-card border border-border rounded-xl p-4 flex items-center gap-6">
-              <div className="text-center shrink-0">
-                <p className="text-4xl font-bold">{avgRating.toFixed(1)}</p>
-                <StarRating value={avgRating} size="sm" />
-                <p className="text-xs text-muted-foreground mt-1">{reviews.length}개 리뷰</p>
-              </div>
-              <div className="flex-1 space-y-1.5">
-                {[5, 4, 3, 2, 1].map((star) => {
-                  const count = reviews.filter((r) => r.rating === star).length;
-                  const pct = reviews.length ? (count / reviews.length) * 100 : 0;
-                  return (
-                    <div key={star} className="flex items-center gap-2 text-xs text-muted-foreground">
-                      <span className="w-3">{star}</span>
-                      <div className="flex-1 h-1.5 bg-muted rounded-full overflow-hidden">
-                        <div
-                          className="h-full bg-accent rounded-full transition-all duration-500"
-                          style={{ width: `${pct}%` }}
-                        />
-                      </div>
-                      <span className="w-4 text-right">{count}</span>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* 리뷰 작성 */}
-            <div className="bg-card border border-border rounded-xl p-4 space-y-3">
-              <p className="text-sm font-medium">리뷰 남기기</p>
-              <div className="flex items-center gap-1">
-                {[1, 2, 3, 4, 5].map((n) => (
-                  <button
-                    key={n}
-                    onMouseEnter={() => setHoverRating(n)}
-                    onMouseLeave={() => setHoverRating(0)}
-                    onClick={() => setMyRating(n)}
-                  >
-                    <Star
-                      className={`w-7 h-7 transition-colors ${
-                        n <= (hoverRating || myRating)
-                          ? "fill-accent text-accent"
-                          : "text-muted-foreground/30 hover:text-accent/50"
-                      }`}
-                    />
-                  </button>
-                ))}
-                {myRating > 0 && (
-                  <span className="ml-2 text-sm text-muted-foreground">
-                    {["", "별로예요", "아쉬워요", "괜찮아요", "좋아요", "최고예요"][myRating]}
-                  </span>
-                )}
-              </div>
-              <div className="flex gap-2">
-                <Input
-                  value={myComment}
-                  onChange={(e) => setMyComment(e.target.value)}
-                  placeholder="이 루트를 다녀온 후기를 남겨주세요"
-                  className="flex-1 text-sm h-10 bg-input-background"
-                  onKeyDown={(e) => e.key === "Enter" && handleSubmitReview()}
-                />
-                <Button
-                  size="sm"
-                  onClick={handleSubmitReview}
-                  disabled={!myComment.trim() || myRating === 0}
-                  className="h-10 px-3"
-                >
-                  <Send className="w-4 h-4" />
+                </div>
+                <Button variant="outline" size="sm" className="shrink-0" onClick={handleImport}>
+                  <Download className="w-4 h-4 mr-1.5" />
+                  가져오기
                 </Button>
               </div>
-              {myRating === 0 && myComment.trim() && (
-                <p className="text-xs text-destructive">별점을 선택해주세요</p>
-              )}
+              <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                <span>장소 {route.placeCount}곳</span>
+                <span>·</span>
+                <span>{route.duration}</span>
+                <span>·</span>
+                <div className="flex items-center gap-1">
+                  <Star className="w-3.5 h-3.5 fill-accent text-accent" />
+                  <span className="text-foreground font-medium">{avgRating.toFixed(1)}</span>
+                  <span className="text-muted-foreground">({reviews.length})</span>
+                </div>
+              </div>
             </div>
 
-            {/* 리뷰 목록 */}
-            <div className="space-y-4">
-              {reviews.map((review) => (
-                <div key={review.id} className="bg-card border border-border rounded-xl p-4">
-                  <div className="flex items-center gap-2.5 mb-3">
-                    <img
-                      src={review.avatar}
-                      alt={review.author}
-                      className="w-8 h-8 rounded-full bg-muted shrink-0"
-                    />
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <p className="text-sm font-medium">{review.author}</p>
-                        <StarRating value={review.rating} size="sm" />
-                      </div>
-                      <p className="text-xs text-muted-foreground">{review.date}</p>
-                    </div>
-                  </div>
-                  <p className="text-sm text-foreground leading-relaxed mb-3">{review.text}</p>
-                  <button
-                    onClick={() => handleLike(review.id)}
-                    className={`flex items-center gap-1.5 text-xs transition-colors ${
-                      review.likedByMe ? "text-primary" : "text-muted-foreground hover:text-foreground"
-                    }`}
-                  >
-                    <ThumbsUp className={`w-3.5 h-3.5 ${review.likedByMe ? "fill-current" : ""}`} />
-                    <span>도움이 됐어요 {review.likes}</span>
-                  </button>
-                </div>
+            {/* 탭 */}
+            <div className="flex border-b border-border">
+              {(["route", "review"] as const).map((tab) => (
+                <button
+                  key={tab}
+                  onClick={() => setActiveTab(tab)}
+                  className={`flex-1 lg:flex-none lg:px-8 py-3 text-[16px] font-bold transition-colors relative ${
+                    activeTab === tab ? "text-primary" : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  {tab === "route" ? "루트 경로" : `리뷰 ${reviews.length}`}
+                  {activeTab === tab && (
+                    <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary rounded-full" />
+                  )}
+                </button>
               ))}
             </div>
+
+            {/* 루트 탭 */}
+            {activeTab === "route" && (
+              <div className="space-y-1">
+                <p className="text-[15px] leading-relaxed text-muted-foreground mb-6">{route.description}</p>
+                <div className="lg:grid lg:grid-cols-2 lg:gap-4 lg:space-y-0 space-y-1">
+                  {visibleStops.map((stop, idx) => (
+                    <div key={stop.order}>
+                      <button
+                        onClick={() => setSelectedStop(stop)}
+                        className="w-full bg-card border border-border rounded-[24px] overflow-hidden flex gap-4 p-5 text-left hover:bg-muted/30 hover:shadow-sm transition-all"
+                      >
+                        <img src={stop.image} alt={stop.name} className="w-20 h-20 rounded-2xl object-cover shrink-0" />
+                        <div className="flex-1 min-w-0">
+                          <span className="text-xs text-muted-foreground">{stop.category} · {stop.duration}</span>
+                          <p className="font-black text-[16px] mt-1 mb-1.5">{stop.name}</p>
+                          <p className="text-sm text-muted-foreground line-clamp-2">{stop.description}</p>
+                        </div>
+                        <ChevronRight className="w-4 h-4 text-muted-foreground shrink-0 self-center" />
+                      </button>
+                      {idx < visibleStops.length - 1 && (
+                        <div className="lg:hidden flex items-center justify-center gap-2 py-1.5">
+                          <div className="h-px w-8 bg-border" />
+                          <span className="text-muted-foreground/50 text-xs">↓</span>
+                          <div className="h-px w-8 bg-border" />
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+                {!showAllStops && (route.moreStops?.length ?? 0) > 0 && (
+                  <button
+                    onClick={() => setShowAllStops(true)}
+                    className="w-full mt-4 py-3.5 text-sm font-bold text-primary border border-primary/30 rounded-full hover:bg-primary/5 transition-colors"
+                  >
+                    나머지 {route.placeCount - visibleStops.length}개 장소 더 보기
+                  </button>
+                )}
+                <div className="hidden lg:flex gap-3 pt-6">
+                  <Button onClick={handleImport} className="h-12 px-6 text-[14px] font-black">가져오기</Button>
+                  <Button variant="outline" className="h-12 px-6" onClick={handleShare}><Share2 className="w-4 h-4" /></Button>
+                </div>
+              </div>
+            )}
+
+            {/* 리뷰 탭 */}
+            {activeTab === "review" && (
+              <div className="space-y-6">
+                {/* 별점 분포 요약 */}
+                <div className="bg-card border border-border rounded-[24px] p-6 flex items-center gap-8">
+                  <div className="text-center shrink-0">
+                    <p className="text-5xl font-black">{avgRating.toFixed(1)}</p>
+                    <StarRating value={avgRating} size="sm" />
+                    <p className="text-xs text-muted-foreground mt-1">{reviews.length}개 리뷰</p>
+                  </div>
+                  <div className="flex-1 space-y-1.5">
+                    {[5, 4, 3, 2, 1].map((star) => {
+                      const count = reviews.filter((r) => r.rating === star).length;
+                      const pct = reviews.length ? (count / reviews.length) * 100 : 0;
+                      return (
+                        <div key={star} className="flex items-center gap-2 text-xs text-muted-foreground">
+                          <span className="w-3">{star}</span>
+                          <div className="flex-1 h-1.5 bg-muted rounded-full overflow-hidden">
+                            <div
+                              className="h-full bg-accent rounded-full transition-all duration-500"
+                              style={{ width: `${pct}%` }}
+                            />
+                          </div>
+                          <span className="w-4 text-right">{count}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* 리뷰 작성 */}
+                <div className="bg-card border border-border rounded-[24px] p-6 space-y-3">
+                  <p className="text-[16px] font-extrabold">리뷰 남기기</p>
+                  <div className="flex items-center gap-1">
+                    {[1, 2, 3, 4, 5].map((n) => (
+                      <button
+                        key={n}
+                        onMouseEnter={() => setHoverRating(n)}
+                        onMouseLeave={() => setHoverRating(0)}
+                        onClick={() => setMyRating(n)}
+                      >
+                        <Star
+                          className={`w-7 h-7 transition-colors ${
+                            n <= (hoverRating || myRating)
+                              ? "fill-accent text-accent"
+                              : "text-muted-foreground/30 hover:text-accent/50"
+                          }`}
+                        />
+                      </button>
+                    ))}
+                    {myRating > 0 && (
+                      <span className="ml-2 text-sm text-muted-foreground">
+                        {["", "별로예요", "아쉬워요", "괜찮아요", "좋아요", "최고예요"][myRating]}
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex gap-2">
+                    <Input
+                      value={myComment}
+                      onChange={(e) => setMyComment(e.target.value)}
+                      placeholder="이 루트를 다녀온 후기를 남겨주세요"
+                      className="flex-1 text-sm h-11 bg-input-background"
+                      onKeyDown={(e) => e.key === "Enter" && handleSubmitReview()}
+                    />
+                    <Button
+                      onClick={handleSubmitReview}
+                      disabled={!myComment.trim() || myRating === 0}
+                      className="h-11 px-4"
+                    >
+                      <Send className="w-4 h-4" />
+                    </Button>
+                  </div>
+                  {myRating === 0 && myComment.trim() && (
+                    <p className="text-xs text-destructive">별점을 선택해주세요</p>
+                  )}
+                </div>
+
+                {/* 리뷰 목록 */}
+                <div className="lg:grid lg:grid-cols-2 lg:gap-4 space-y-4 lg:space-y-0">
+                  {reviews.map((review) => (
+                    <div key={review.id} className="bg-card border border-border rounded-[24px] p-6">
+                      <div className="flex items-center gap-2.5 mb-3">
+                        <img
+                          src={review.avatar}
+                          alt={review.author}
+                          className="w-9 h-9 rounded-full bg-muted shrink-0"
+                        />
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <p className="text-sm font-bold">{review.author}</p>
+                            <StarRating value={review.rating} size="sm" />
+                          </div>
+                          <p className="text-xs text-muted-foreground">{review.date}</p>
+                        </div>
+                      </div>
+                      <p className="text-sm text-foreground leading-relaxed mb-3">{review.text}</p>
+                      <button
+                        onClick={() => handleLike(review.id)}
+                        className={`flex items-center gap-1.5 text-xs transition-colors ${
+                          review.likedByMe ? "text-primary" : "text-muted-foreground hover:text-foreground"
+                        }`}
+                      >
+                        <ThumbsUp className={`w-3.5 h-3.5 ${review.likedByMe ? "fill-current" : ""}`} />
+                        <span>도움이 됐어요 {review.likes}</span>
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
-        )}
+
+          {/* 우측: 요약 사이드바 — 데스크톱 전용 */}
+          <div className="hidden lg:block sticky top-24 mt-16 space-y-4">
+            <div className="bg-card border border-border rounded-[28px] p-6">
+              <div className="flex items-center gap-3 pb-5 mb-5 border-b border-border">
+                <img src={route.authorAvatar} alt={route.author} className="w-12 h-12 rounded-full bg-muted shrink-0" />
+                <div className="min-w-0">
+                  <p className="font-bold text-[15px]">{route.author}</p>
+                  <p className="text-xs text-muted-foreground truncate">{route.authorBio}</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2 mb-1">
+                <span className="text-4xl font-black">{avgRating.toFixed(1)}</span>
+                <div className="flex flex-col">
+                  <StarRating value={avgRating} size="sm" />
+                  <span className="text-xs text-muted-foreground mt-0.5">리뷰 {reviews.length}개</span>
+                </div>
+              </div>
+              <div className="flex items-center gap-3 text-sm text-muted-foreground mt-5 pt-5 border-t border-border">
+                <span>장소 {route.placeCount}곳</span>
+                <span>·</span>
+                <span>{route.duration}</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
       </div>
 
       {/* 장소 정보 바텀시트 */}

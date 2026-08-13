@@ -11,6 +11,7 @@ interface RouteCardData {
   author: string;
   authorAvatar: string;
   rating: number;
+  reviewCount?: number;
   region: string;
   placeCount: number;
   thumbnail: string;
@@ -18,33 +19,41 @@ interface RouteCardData {
 
 function RouteCard({ route, onOpen }: { route: RouteCardData; onOpen: () => void }) {
   return (
-    <button onClick={onOpen} className="group text-left">
-      {/* 썸네일 + 오버레이 텍스트 */}
-      <div className="aspect-[4/3] rounded-sm border border-border overflow-hidden relative mb-3">
+    <button onClick={onOpen} className="group text-left bg-card rounded-[28px] border border-border shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 overflow-hidden">
+      {/* 썸네일 + 배지 오버레이 */}
+      <div className="relative aspect-[4/3] overflow-hidden">
         <img
           src={route.thumbnail}
           alt={route.title}
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
-        {/* 별점 */}
-        <div className="absolute top-2.5 right-2.5 bg-navy text-gold text-xs px-2 py-0.5 rounded-full flex items-center gap-1">
-          <Star className="w-3 h-3 fill-gold" />
-          {route.rating}
+        <div className="absolute left-3 bottom-3">
+          <span className="px-2.5 py-1 rounded-full bg-neutral-900/70 backdrop-blur-sm text-white text-[11px] font-bold tracking-wide">
+            {route.region}
+          </span>
         </div>
-        {/* 지역 + 제목 오버레이 */}
-        <div className="absolute bottom-3 left-3 right-3">
-          <p className="text-ivory/60 text-[11px] mb-0.5">{route.region}</p>
-          <p className="font-heading text-ivory text-sm leading-snug line-clamp-2">{route.title}</p>
+        <div className="absolute top-3 right-3 flex items-center gap-1 px-2.5 py-1 rounded-full bg-neutral-900/70 backdrop-blur-sm text-white text-xs font-bold">
+          <Star className="w-3.5 h-3.5 fill-primary text-primary" />
+          {route.rating}
         </div>
       </div>
 
-      {/* 하단 메타 */}
-      <div className="flex items-center gap-2">
-        <img src={route.authorAvatar} className="w-4 h-4 rounded-full shrink-0" />
-        <span className="text-xs text-muted-foreground truncate">{route.author}</span>
-        <span className="text-xs text-muted-foreground/40 shrink-0">·</span>
-        <span className="text-xs text-muted-foreground shrink-0">장소 {route.placeCount}곳</span>
+      {/* 본문 */}
+      <div className="px-5 pt-5 pb-5">
+        <p className="font-heading text-[18px] font-black mb-3 line-clamp-2 leading-snug">{route.title}</p>
+        <div className="flex items-center gap-2 mb-2">
+          <img src={route.authorAvatar} className="w-6 h-6 rounded-full shrink-0" />
+          <span className="text-sm font-semibold text-foreground truncate">{route.author}</span>
+        </div>
+        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          <span>장소 {route.placeCount}곳</span>
+          {route.reviewCount !== undefined && (
+            <>
+              <span className="text-muted-foreground/40">·</span>
+              <span>리뷰 {route.reviewCount}개</span>
+            </>
+          )}
+        </div>
       </div>
     </button>
   );
@@ -151,30 +160,30 @@ export default function Community() {
     <div className="min-h-screen">
       {/* 헤더 */}
       <div className="border-b border-border bg-card sticky top-0 lg:top-16 z-40">
-        <div className="max-w-7xl mx-auto px-4 py-4">
-          <div className="flex items-center justify-between mb-3">
+        <div className="max-w-[1280px] mx-auto px-4 lg:px-8 py-6">
+          <div className="flex items-center justify-between mb-5">
             <PageTitle eyebrow="Community" title="커뮤니티" />
             <button
               onClick={() => navigate("/app/community/write")}
-              className="flex items-center gap-1.5 h-9 px-3.5 rounded-full bg-foreground text-background text-sm font-medium hover:bg-foreground/90 transition-colors"
+              className="flex items-center gap-1.5 h-11 px-5 rounded-full bg-foreground text-background text-sm font-black hover:bg-foreground/90 transition-colors"
             >
-              <PenLine className="w-3.5 h-3.5" />
+              <PenLine className="w-4 h-4" />
               글쓰기
             </button>
           </div>
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+          <div className="relative max-w-2xl">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input
               placeholder="지역, 테마, 작성자"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9 h-10 bg-input-background text-sm"
+              className="pl-11 h-12 rounded-full bg-input-background text-[16px] font-semibold"
             />
           </div>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 py-6 space-y-10">
+      <div className="max-w-[1280px] mx-auto px-4 lg:px-8 py-8 space-y-12">
         {isEmpty ? (
           <div className="flex flex-col items-center justify-center py-24 text-center">
             <p className="text-muted-foreground mb-6">등록된 루트가 없습니다</p>
@@ -189,8 +198,8 @@ export default function Community() {
           <>
             {filteredUserPosts.length > 0 && (
               <section>
-                <h2 className="text-sm font-medium text-muted-foreground mb-3">내 글</h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                <h2 className="text-[20px] font-black mb-5">내 글</h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {filteredUserPosts.map((route) => (
                     <RouteCard
                       key={route.id}
@@ -205,9 +214,9 @@ export default function Community() {
             {filteredDemoRoutes.length > 0 && (
               <section>
                 {filteredUserPosts.length > 0 && (
-                  <h2 className="text-sm font-medium text-muted-foreground mb-3">전체 루트</h2>
+                  <h2 className="text-[20px] font-black mb-5">전체 루트</h2>
                 )}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {filteredDemoRoutes.map((route) => (
                     <RouteCard
                       key={route.id}

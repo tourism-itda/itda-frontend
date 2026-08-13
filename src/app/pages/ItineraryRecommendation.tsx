@@ -306,7 +306,7 @@ export default function ItineraryRecommendation() {
     <div className="min-h-screen">
       {/* 헤더 */}
       <div className="sticky top-0 lg:top-16 z-40 bg-card border-b border-border">
-        <div className="px-4 py-3 flex items-center gap-3 max-w-2xl mx-auto">
+        <div className="px-4 lg:px-8 py-3 flex items-center gap-3 max-w-2xl lg:max-w-none mx-auto">
           <button
             onClick={() => navigate(-1)}
             className="w-9 h-9 rounded-lg flex items-center justify-center hover:bg-muted transition-colors shrink-0"

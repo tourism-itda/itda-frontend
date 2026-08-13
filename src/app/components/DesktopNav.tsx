@@ -10,11 +10,11 @@ export function DesktopNav() {
   ];
 
   return (
-    <div className="relative max-w-7xl mx-auto h-full px-6 flex items-center">
+    <div className="relative max-w-[1280px] mx-auto h-full px-8 flex items-center">
       {/* 로고/브랜드 — 좌측 */}
-      <div className="flex items-center gap-2.5">
-        <BrandMark />
-        <span className="font-heading text-lg">역사여행</span>
+      <div className="flex items-center gap-2.5 h-7">
+        <BrandMark className="w-7 h-7 text-sm" />
+        <span className="font-heading text-lg font-black text-primary leading-none">잇다 관광</span>
       </div>
 
       {/* 내비게이션 — 정중앙 */}

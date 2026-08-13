@@ -35,7 +35,7 @@ export default function Login() {
           <div className="flex flex-col items-center mb-9">
             <div className="flex items-center gap-2.5 mb-2">
               <BrandMark className="w-10 h-10 text-lg" />
-              <span className="font-heading text-2xl">역사여행</span>
+              <span className="font-heading text-2xl font-black text-primary">잇다 관광</span>
             </div>
             <p className="text-muted-foreground text-sm">사극 속 이야기를 따라 떠나는 여행</p>
           </div>

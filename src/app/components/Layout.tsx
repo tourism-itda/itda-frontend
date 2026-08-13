@@ -13,7 +13,7 @@ export default function Layout() {
   return (
     <div className="min-h-screen bg-background">
       {/* 데스크탑 상단 내비게이션 (≥1025px) */}
-      <header className="hidden lg:block sticky top-0 h-16 border-b border-border bg-background/95 backdrop-blur-sm z-50">
+      <header className="hidden lg:block sticky top-0 h-[68px] border-b border-border bg-background/95 backdrop-blur-sm z-50">
         <DesktopNav />
       </header>
 

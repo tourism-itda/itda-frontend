@@ -323,13 +323,13 @@ export default function ContentDetail() {
         {/* 타이틀 */}
         <div className="mb-8">
           <p className="text-sm text-muted-foreground mb-2">{content.genre} · {content.era}</p>
-          <h1 className="text-4xl mb-4">{content.title}</h1>
+          <h1 className="text-[24px] font-extrabold mb-4">{content.title}</h1>
           <p className="text-foreground/80 leading-relaxed">{content.plot}</p>
         </div>
 
         {/* 등장인물 */}
         <div className="mb-10">
-          <h2 className="text-lg mb-4">등장인물</h2>
+          <h2 className="text-[16px] font-extrabold mb-4">등장인물</h2>
           <div className="space-y-0">
             {content.characters.map((c, i) => (
               <div key={i} className="flex items-center justify-between py-3.5 border-b border-border last:border-0">
@@ -347,8 +347,8 @@ export default function ContentDetail() {
 
         {/* 역사 스토리텔링 */}
         <div className="mb-10">
-          <h2 className="text-lg mb-4">역사 이야기</h2>
-          <div className="rounded-2xl bg-card border border-border/60 shadow-[var(--shadow-md)] p-6 sm:p-8">
+          <h2 className="text-[16px] font-extrabold mb-4">역사 이야기</h2>
+          <div className="rounded-[28px] bg-card border border-border/60 shadow-[var(--shadow-md)] p-6 sm:p-8">
             <p className="text-muted-foreground text-xs text-center tracking-widest uppercase mb-7 font-semibold">
               {content.historyStory.intro}
             </p>
@@ -374,8 +374,8 @@ export default function ContentDetail() {
         {/* 사실 vs 각색 — 이전 "팩트체크" */}
         <div className="mb-12">
           {/* 섹션 구분 강조: 배경색으로 완전히 다른 느낌 */}
-          <div className="bg-muted/60 rounded-2xl p-5">
-            <h2 className="text-base font-semibold mb-1">사실 vs 각색</h2>
+          <div className="bg-muted/60 rounded-[28px] p-5">
+            <h2 className="text-[16px] font-extrabold mb-1">사실 vs 각색</h2>
             <p className="text-xs text-muted-foreground mb-5">드라마가 역사를 어떻게 바꿨는지 확인해보세요</p>
             <div className="space-y-6">
               {content.factCheck.map((item, i) => (
@@ -399,7 +399,7 @@ export default function ContentDetail() {
 
         {/* 관련 장소 */}
         <div className="mb-10">
-          <h2 className="text-lg mb-4">관련 장소</h2>
+          <h2 className="text-[16px] font-extrabold mb-4">관련 장소</h2>
           <div className="flex flex-wrap gap-2">
             {content.relatedPlaces.map((p, i) => {
               const bid = `${content.id}-related-${i}`;
@@ -424,7 +424,7 @@ export default function ContentDetail() {
       {/* 하단 고정 CTA */}
       <div className="fixed bottom-16 lg:bottom-0 left-0 right-0 z-40 px-4 pb-4 pt-3 bg-background border-t border-border">
         <div className="max-w-2xl mx-auto">
-          <Button onClick={() => navigate(`/app/itinerary/${content.id}`)} className="w-full h-11">
+          <Button onClick={() => navigate(`/app/itinerary/${content.id}`)} className="w-full h-12 text-[14px] font-black">
             여행 일정 보기
           </Button>
         </div>

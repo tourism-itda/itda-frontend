@@ -43,7 +43,7 @@ export default function Manual() {
 
       <div className="max-w-2xl mx-auto px-5 py-6">
         <p className="text-sm text-muted-foreground mb-2">
-          역사여행을 처음 이용하시나요? 아래 순서를 따라가면 쉽게 나만의 역사 여행을 계획할 수 있습니다.
+          잇다 관광을 처음 이용하시나요? 아래 순서를 따라가면 쉽게 나만의 역사 여행을 계획할 수 있습니다.
         </p>
         <div className="border-t border-border">
           {steps.map((step) => (

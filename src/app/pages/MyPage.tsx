@@ -189,7 +189,7 @@ export default function MyPage() {
             </button>
           </div>
 
-          <p className="text-center text-xs text-muted-foreground py-2">역사여행 v1.0.0</p>
+          <p className="text-center text-xs text-muted-foreground py-2">잇다 관광 v1.0.0</p>
         </div>
       </div>
 
@@ -273,7 +273,7 @@ export default function MyPage() {
                 </button>
               </div>
 
-              <p className="text-center text-xs text-muted-foreground py-2">역사여행 v1.0.0</p>
+              <p className="text-center text-xs text-muted-foreground py-2">잇다 관광 v1.0.0</p>
             </div>
           </div>
         </div>
