@@ -1,262 +1,65 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useNavigate, useParams } from "react-router";
+import { toast } from "sonner";
 import {
   ArrowLeft,
   CheckCircle2,
-  Circle,
-  CalendarDays,
   Clock,
-  DollarSign,
   Navigation,
-  Shuffle,
   Save,
   X,
   Bookmark,
+  Info,
   Loader2,
+  MapPinOff,
 } from "lucide-react";
 import { Button } from "../components/ui/button";
 import { MapView } from "../components/MapView";
 import { isBookmarked, toggleBookmark } from "../lib/bookmarks";
-import { usePlaceLookup } from "../lib/usePlaceLookup";
+import { useItineraryRecommendation } from "../lib/useItineraryRecommendation";
+import { ItineraryRecommendPlace, ItinerarySavePlace, saveItinerary } from "../lib/itineraryRecommend";
+import { PlaceSheet, PlaceSheetData } from "../components/PlaceSheet";
+import { ApiError } from "../lib/api";
 
-interface Place {
-  id: string;
-  order: number;
-  name: string;
-  category: string;
-  categoryColor: string;
-  description: string;
-  image: string;
-  hours: string;
-  fee: string;
-  nextDistance: string;
-  nextDuration: string;
-  lat: number;
-  lng: number;
+// 슬롯 순서(1부터 시작)에 따라 카테고리 배지 색을 순환시킨다. API가 색상 정보를 내려주지
+// 않으므로, 이전 UI와 비슷하게 시각적으로 구분되도록 순서 기반으로만 정한다.
+const categoryVariantCycle = ["primary", "secondary", "accent", "support"] as const;
+const categoryVariantStyles: Record<(typeof categoryVariantCycle)[number], string> = {
+  primary: "bg-primary/10 text-primary",
+  secondary: "bg-muted text-foreground",
+  accent: "bg-accent/10 text-accent",
+  support: "bg-muted text-foreground",
+};
+function categoryStyleFor(visitOrder: number): string {
+  return categoryVariantStyles[categoryVariantCycle[(visitOrder - 1) % categoryVariantCycle.length]];
 }
 
-interface SlotState {
-  confirmed: boolean;
-  place: Place;
+function formatDistance(m: number | null): string | null {
+  if (m === null || m === undefined) return null;
+  return m >= 1000 ? `${(m / 1000).toFixed(1)}km` : `${m}m`;
 }
 
-// 각 슬롯에 대한 대안 후보 풀
-const alternativePool: Record<number, Place[]> = {
-  1: [
-    {
-      id: "p1a",
-      order: 1,
-      name: "경복궁",
-      category: "역사 관광지",
-      categoryColor: "primary",
-      description: "조선 왕조의 법궁이자 세종대왕이 한글을 창제한 곳",
-      image: "https://images.unsplash.com/photo-1638964663550-e2123ac8900b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=600",
-      hours: "09:00 - 18:00",
-      fee: "3,000원",
-      nextDistance: "1.2km",
-      nextDuration: "도보 15분",
-      lat: 37.5796,
-      lng: 126.977,
-    },
-    {
-      id: "p1b",
-      order: 1,
-      name: "창덕궁",
-      category: "역사 관광지",
-      categoryColor: "primary",
-      description: "유네스코 세계문화유산, 조선의 이궁. 후원(비원)이 유명합니다.",
-      image: "https://images.unsplash.com/photo-1599033769063-fcd3ef816810?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=600",
-      hours: "09:00 - 17:30",
-      fee: "3,000원",
-      nextDistance: "1.0km",
-      nextDuration: "도보 13분",
-      lat: 37.5792,
-      lng: 126.991,
-    },
-    {
-      id: "p1c",
-      order: 1,
-      name: "덕수궁",
-      category: "역사 관광지",
-      categoryColor: "primary",
-      description: "대한제국기 황궁. 석조전과 정관헌이 볼 만합니다.",
-      image: "https://images.unsplash.com/photo-1591025788510-163f73e9abca?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=600",
-      hours: "09:00 - 21:00",
-      fee: "1,000원",
-      nextDistance: "1.5km",
-      nextDuration: "도보 18분",
-      lat: 37.5657,
-      lng: 126.975,
-    },
-  ],
-  2: [
-    {
-      id: "p2a",
-      order: 2,
-      name: "북촌한옥마을",
-      category: "체험",
-      categoryColor: "secondary",
-      description: "전통 한옥과 골목길이 보존된 역사 마을",
-      image: "https://images.unsplash.com/photo-1703825864792-5880081beaaf?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=600",
-      hours: "24시간 개방",
-      fee: "무료",
-      nextDistance: "800m",
-      nextDuration: "도보 10분",
-      lat: 37.5825,
-      lng: 126.983,
-    },
-    {
-      id: "p2b",
-      order: 2,
-      name: "국립민속박물관",
-      category: "박물관",
-      categoryColor: "secondary",
-      description: "한국인의 생활·풍속·문화를 전시하는 국립 박물관",
-      image: "https://images.unsplash.com/photo-1766662538511-650430a2fa6b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=600",
-      hours: "09:00 - 18:00",
-      fee: "무료",
-      nextDistance: "600m",
-      nextDuration: "도보 8분",
-      lat: 37.581,
-      lng: 126.978,
-    },
-    {
-      id: "p2c",
-      order: 2,
-      name: "종묘",
-      category: "유적지",
-      categoryColor: "secondary",
-      description: "조선 역대 왕과 왕비의 신위를 모신 유네스코 세계문화유산",
-      image: "https://images.unsplash.com/photo-1602479185195-32f5cd203559?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=600",
-      hours: "09:00 - 18:00",
-      fee: "1,000원",
-      nextDistance: "900m",
-      nextDuration: "도보 11분",
-      lat: 37.5748,
-      lng: 126.994,
-    },
-  ],
-  3: [
-    {
-      id: "p3a",
-      order: 3,
-      name: "궁중요리 전문점",
-      category: "식당",
-      categoryColor: "accent",
-      description: "조선 왕실의 음식 문화를 재현한 한정식",
-      image: "https://images.unsplash.com/photo-1498654896293-37aacf113fd9?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=600",
-      hours: "11:30 - 21:00",
-      fee: "25,000원~",
-      nextDistance: "500m",
-      nextDuration: "도보 6분",
-      lat: 37.5835,
-      lng: 126.985,
-    },
-    {
-      id: "p3b",
-      order: 3,
-      name: "인사동 전통 식당",
-      category: "식당",
-      categoryColor: "accent",
-      description: "인사동 골목 속 오랜 전통의 된장찌개·비빔밥 전문점",
-      image: "https://images.unsplash.com/photo-1624262536362-12cbb4965721?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=600",
-      hours: "11:00 - 20:00",
-      fee: "12,000원~",
-      nextDistance: "400m",
-      nextDuration: "도보 5분",
-      lat: 37.5741,
-      lng: 126.985,
-    },
-  ],
-  4: [
-    {
-      id: "p4a",
-      order: 4,
-      name: "전통 찻집",
-      category: "카페",
-      categoryColor: "support",
-      description: "한옥에서 즐기는 전통차와 한과",
-      image: "https://images.unsplash.com/photo-1624262536362-12cbb4965721?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=600",
-      hours: "10:00 - 20:00",
-      fee: "8,000원~",
-      nextDistance: "-",
-      nextDuration: "-",
-      lat: 37.584,
-      lng: 126.988,
-    },
-    {
-      id: "p4b",
-      order: 4,
-      name: "국립고궁박물관",
-      category: "박물관",
-      categoryColor: "support",
-      description: "조선·대한제국 왕실 문화재 6만여 점을 소장한 박물관",
-      image: "https://images.unsplash.com/photo-1766662538511-650430a2fa6b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=600",
-      hours: "10:00 - 18:00",
-      fee: "무료",
-      nextDistance: "-",
-      nextDuration: "-",
-      lat: 37.578,
-      lng: 126.975,
-    },
-    {
-      id: "p4c",
-      order: 4,
-      name: "청계천 역사문화관",
-      category: "전시관",
-      categoryColor: "support",
-      description: "청계천의 역사와 복원 과정을 다루는 전시관",
-      image: "https://images.unsplash.com/photo-1591025788510-163f73e9abca?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=600",
-      hours: "09:00 - 19:00",
-      fee: "무료",
-      nextDistance: "-",
-      nextDuration: "-",
-      lat: 37.57,
-      lng: 126.999,
-    },
-  ],
-};
-
-function pickAlternative(slotIndex: number, excludeId: string): Place {
-  const pool = alternativePool[slotIndex] ?? alternativePool[1];
-  const others = pool.filter((p) => p.id !== excludeId);
-  return others[Math.floor(Math.random() * others.length)] ?? pool[0];
+function formatDuration(min: number | null): string | null {
+  if (min === null || min === undefined) return null;
+  return `도보 ${min}분`;
 }
-
-const categoryVariants: Record<string, string> = {
-  primary: "bg-primary/10 text-primary border-primary/20",
-  secondary: "bg-muted text-foreground border-border",
-  accent: "bg-accent/10 text-accent border-accent/20",
-  support: "bg-muted text-foreground border-border",
-};
-
-const itinerarySubtitles: Record<string, string> = {
-  "101": "뿌리깊은 나무 테마 · 서울",
-  "102": "왕의 남자 테마 · 경기 수원",
-  "103": "광해, 왕이 된 남자 테마 · 서울",
-  "104": "육룡이 나르샤 테마 · 서울",
-  "105": "이산 테마 · 경기 수원",
-  i1: "뿌리깊은 나무 테마 여행 · 서울 종로구",
-  i2: "왕의 남자 촬영지 투어 · 경기도 수원",
-  i3: "육룡이 나르샤 역사탐방 · 전라북도 전주",
-};
 
 export default function ItineraryRecommendation() {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
-  const subtitle = itinerarySubtitles[id ?? ""] ?? "뿌리깊은 나무 테마 · 서울";
+  const contentId = id !== undefined && !Number.isNaN(Number(id)) ? Number(id) : undefined;
 
-  const [slots, setSlots] = useState<SlotState[]>([
-    { confirmed: false, place: alternativePool[1][0] },
-    { confirmed: false, place: alternativePool[2][0] },
-    { confirmed: false, place: alternativePool[3][0] },
-    { confirmed: false, place: alternativePool[4][0] },
-  ]);
+  const { status, data } = useItineraryRecommendation(contentId);
+  const slots = data?.slots ?? [];
 
+  const [confirmedIds, setConfirmedIds] = useState<Set<number>>(new Set());
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [sheetPlace, setSheetPlace] = useState<PlaceSheetData | null>(null);
   const [showSaveSheet, setShowSaveSheet] = useState(false);
   const [travelDate, setTravelDate] = useState("");
   const [tripDuration, setTripDuration] = useState("당일치기");
+  const [title, setTitle] = useState("");
+  const [isSaving, setIsSaving] = useState(false);
 
   const durationOptions = ["당일치기", "1박 2일", "2박 3일"];
   const dayCounts: Record<string, number> = { "당일치기": 1, "1박 2일": 2, "2박 3일": 3 };
@@ -275,32 +78,84 @@ export default function ItineraryRecommendation() {
     }
   }
 
-  const confirmedCount = slots.filter((s) => s.confirmed).length;
+  const confirmedCount = slots.filter((s) => confirmedIds.has(s.place.place_id)).length;
 
-  function toggleConfirm(idx: number) {
-    setSlots((prev) =>
-      prev.map((s, i) => (i === idx ? { ...s, confirmed: !s.confirmed } : s))
-    );
+  function toggleConfirm(placeId: number) {
+    setConfirmedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(placeId)) next.delete(placeId);
+      else next.add(placeId);
+      return next;
+    });
   }
 
-  function swapPlace(idx: number) {
-    setSlots((prev) =>
-      prev.map((s, i) =>
-        i === idx
-          ? { ...s, place: pickAlternative(idx + 1, s.place.id) }
-          : s
-      )
-    );
+  function openDetail(place: ItineraryRecommendPlace) {
+    setSheetPlace({
+      id: String(place.place_id),
+      placeId: place.place_id,
+      name: place.name,
+      category: place.category,
+      address: "",
+      hours: place.opening_hours,
+      image: place.image_url,
+      description: place.description,
+    });
   }
 
-  function handleSave() {
-    if (!travelDate) return;
-    // 실제 저장 로직은 Supabase 연동 시 추가
-    setShowSaveSheet(false);
-    navigate("/app/planner");
+  async function handleSave() {
+    if (!travelDate || !data || slots.length === 0) return;
+
+    const places: ItinerarySavePlace[] = slots.map((s) => ({
+      place_id: s.place.place_id,
+      visit_order: s.visit_order,
+      // 신규 저장이라 전 슬롯 PENDING으로 시작한다. 화면의 "확정" 토글은 저장 여부를 가르는
+      // 로컬 UI 상태일 뿐, 서버 status와는 별개다.
+      status: "PENDING",
+    }));
+
+    setIsSaving(true);
+    try {
+      const result = await saveItinerary({
+        content_id: data.content_id,
+        title: title.trim() || data.content_title,
+        travel_date: travelDate,
+        region: data.region,
+        duration_label: tripDuration,
+        places,
+      });
+      toast("일정이 저장되었습니다.");
+      setShowSaveSheet(false);
+      navigate("/app/planner", { state: { itineraryId: result.itinerary_id } });
+    } catch (err) {
+      // itda-backend는 인증 필요 라우트에 토큰이 없으면 401이 아니라 403(Forbidden)을 반환한다
+      // (Spring Security 기본 동작, 실제 로컬 테스트로 확인함).
+      if (err instanceof ApiError && (err.status === 401 || err.status === 403)) {
+        toast("로그인이 필요한 기능이에요. 로그인 후 다시 시도해주세요.");
+        navigate("/login");
+      } else {
+        toast(err instanceof ApiError ? err.message : "일정을 저장하지 못했어요. 잠시 후 다시 시도해주세요.");
+      }
+    } finally {
+      setIsSaving(false);
+    }
   }
 
-  const mapPlaces = slots.map((s) => ({ ...s.place, confirmed: s.confirmed }));
+  const mapPlaces = slots.map((s) => ({
+    id: String(s.place.place_id),
+    order: s.visit_order,
+    name: s.place.name,
+    lat: s.place.latitude,
+    lng: s.place.longitude,
+    image: s.place.image_url,
+    confirmed: confirmedIds.has(s.place.place_id),
+  }));
+
+  const subtitle =
+    status === "loading"
+      ? "불러오는 중..."
+      : data
+      ? `${data.content_title} · ${data.region}`
+      : "";
 
   return (
     <div className="min-h-screen">
@@ -315,116 +170,159 @@ export default function ItineraryRecommendation() {
           </button>
           <div className="flex-1 min-w-0">
             <h1 className="text-base leading-tight">추천 여행 일정</h1>
-            <p className="text-sm text-muted-foreground">{subtitle}</p>
+            <p className="text-sm text-muted-foreground truncate">{subtitle}</p>
           </div>
         </div>
       </div>
 
-      {/* 확정 현황 + 여행 기간 */}
-      <div className="border-b border-border">
-        <div className="max-w-2xl mx-auto px-4 py-3 flex items-center justify-between gap-3">
-          <div className="flex items-center gap-2.5 min-w-0">
-            <div className="flex gap-1.5 shrink-0">
-              {slots.map((s, i) => (
-                <div key={i} className={`w-1.5 h-1.5 rounded-full transition-colors ${s.confirmed ? "bg-foreground" : "bg-border"}`} />
-              ))}
-            </div>
-            <span className="text-sm text-muted-foreground truncate">
-              {confirmedCount === slots.length ? "모두 확정" : confirmedCount === 0 ? "장소를 확정해주세요" : `${confirmedCount}/${slots.length} 확정`}
-            </span>
-          </div>
-
-          <div className="flex bg-muted rounded-full p-0.5 shrink-0">
-            {durationOptions.map((option) => (
-              <button
-                key={option}
-                type="button"
-                onClick={() => setTripDuration(option)}
-                className={`px-2.5 py-1 rounded-full text-xs font-medium transition-colors whitespace-nowrap ${
-                  tripDuration === option
-                    ? "bg-card text-foreground shadow-sm"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                {option}
-              </button>
-            ))}
-          </div>
+      {status === "loading" && (
+        <div className="flex flex-col items-center justify-center gap-3 py-24 text-muted-foreground">
+          <Loader2 className="w-6 h-6 animate-spin" />
+          <p className="text-sm">추천 일정을 불러오는 중이에요...</p>
         </div>
-      </div>
+      )}
 
-      {/* 모바일 */}
-      <div className="lg:hidden max-w-2xl mx-auto">
-        {/* 지도 */}
-        <div className="h-52 border-b border-border">
-          <MapView places={mapPlaces} selectedPlace={selectedId} />
+      {status === "error" && (
+        <div className="flex flex-col items-center justify-center gap-3 py-24 px-6 text-center">
+          <MapPinOff className="w-8 h-8 text-muted-foreground" />
+          <p className="text-sm text-muted-foreground">
+            추천 일정을 불러오지 못했어요. 잠시 후 다시 시도해주세요.
+          </p>
+          <Button variant="outline" onClick={() => navigate(-1)}>
+            돌아가기
+          </Button>
         </div>
+      )}
 
-        {/* 장소 카드 리스트 */}
-        <div className="p-4 space-y-5 pb-36">
-          {dayGroups.map((indices, dayIdx) => (
-            <div key={dayIdx} className="space-y-3">
-              {dayCount > 1 && (
-                <div className="flex items-center gap-2 pt-1">
-                  <span className="text-sm font-semibold text-primary shrink-0">{dayIdx + 1}일차</span>
-                  <div className="flex-1 h-px bg-border" />
+      {status === "done" && slots.length === 0 && (
+        <div className="flex flex-col items-center justify-center gap-3 py-24 px-6 text-center">
+          <MapPinOff className="w-8 h-8 text-muted-foreground" />
+          <p className="text-sm text-muted-foreground">
+            이 콘텐츠와 연관된 추천 장소가 아직 없어요.
+          </p>
+        </div>
+      )}
+
+      {status === "done" && slots.length > 0 && (
+        <>
+          {/* 확정 현황 + 여행 기간 */}
+          <div className="border-b border-border">
+            <div className="max-w-2xl mx-auto px-4 py-3 flex items-center justify-between gap-3">
+              <div className="flex items-center gap-2.5 min-w-0">
+                <div className="flex gap-1.5 shrink-0">
+                  {slots.map((s) => (
+                    <div
+                      key={s.place.place_id}
+                      className={`w-1.5 h-1.5 rounded-full transition-colors ${
+                        confirmedIds.has(s.place.place_id) ? "bg-foreground" : "bg-border"
+                      }`}
+                    />
+                  ))}
                 </div>
-              )}
-              {indices.map((idx) => (
-                <PlaceSlotCard
-                  key={slots[idx].place.id + idx}
-                  slot={slots[idx]}
-                  onSelect={() => setSelectedId(slots[idx].place.id)}
-                  isSelected={selectedId === slots[idx].place.id}
-                  onConfirm={() => toggleConfirm(idx)}
-                  onSwap={() => swapPlace(idx)}
-                />
-              ))}
-            </div>
-          ))}
-        </div>
+                <span className="text-sm text-muted-foreground truncate">
+                  {confirmedCount === slots.length
+                    ? "모두 확정"
+                    : confirmedCount === 0
+                    ? "장소를 확정해주세요"
+                    : `${confirmedCount}/${slots.length} 확정`}
+                </span>
+              </div>
 
-        {/* 하단 고정 액션 */}
-        <div className="fixed bottom-16 left-0 right-0 lg:hidden z-40 px-4 pb-3 pt-2 bg-background/95 backdrop-blur-sm hanji-noise border-t border-border">
-          <div className="max-w-2xl mx-auto">
-            <Button onClick={() => setShowSaveSheet(true)} className="w-full">저장하기</Button>
-          </div>
-        </div>
-      </div>
-
-      {/* 데스크탑 2분할 */}
-      <div className="hidden lg:flex h-[calc(100vh-105px)]">
-        <div className="w-[520px] border-r border-border overflow-y-auto flex flex-col">
-          <div className="flex-1 p-5 space-y-5">
-            {dayGroups.map((indices, dayIdx) => (
-              <div key={dayIdx} className="space-y-3">
-                {dayCount > 1 && (
-                  <div className="flex items-center gap-2 pt-1">
-                    <span className="text-sm font-semibold text-primary shrink-0">{dayIdx + 1}일차</span>
-                    <div className="flex-1 h-px bg-border" />
-                  </div>
-                )}
-                {indices.map((idx) => (
-                  <PlaceSlotCard
-                    key={slots[idx].place.id + idx}
-                    slot={slots[idx]}
-                    onSelect={() => setSelectedId(slots[idx].place.id)}
-                    isSelected={selectedId === slots[idx].place.id}
-                    onConfirm={() => toggleConfirm(idx)}
-                    onSwap={() => swapPlace(idx)}
-                  />
+              <div className="flex bg-muted rounded-full p-0.5 shrink-0">
+                {durationOptions.map((option) => (
+                  <button
+                    key={option}
+                    type="button"
+                    onClick={() => setTripDuration(option)}
+                    className={`px-2.5 py-1 rounded-full text-xs font-medium transition-colors whitespace-nowrap ${
+                      tripDuration === option
+                        ? "bg-card text-foreground shadow-sm"
+                        : "text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    {option}
+                  </button>
                 ))}
               </div>
-            ))}
+            </div>
           </div>
-          <div className="p-5 border-t border-border">
-            <Button onClick={() => setShowSaveSheet(true)} className="w-full">저장하기</Button>
+
+          {/* 모바일 */}
+          <div className="lg:hidden max-w-2xl mx-auto">
+            {/* 지도 */}
+            <div className="h-52 border-b border-border">
+              <MapView places={mapPlaces} selectedPlace={selectedId} />
+            </div>
+
+            {/* 장소 카드 리스트 */}
+            <div className="p-4 space-y-5 pb-36">
+              {dayGroups.map((indices, dayIdx) => (
+                <div key={dayIdx} className="space-y-3">
+                  {dayCount > 1 && (
+                    <div className="flex items-center gap-2 pt-1">
+                      <span className="text-sm font-semibold text-primary shrink-0">{dayIdx + 1}일차</span>
+                      <div className="flex-1 h-px bg-border" />
+                    </div>
+                  )}
+                  {indices.map((idx) => (
+                    <PlaceSlotCard
+                      key={slots[idx].place.place_id}
+                      slot={slots[idx]}
+                      confirmed={confirmedIds.has(slots[idx].place.place_id)}
+                      isSelected={selectedId === String(slots[idx].place.place_id)}
+                      onSelect={() => setSelectedId(String(slots[idx].place.place_id))}
+                      onConfirm={() => toggleConfirm(slots[idx].place.place_id)}
+                      onOpenDetail={() => openDetail(slots[idx].place)}
+                    />
+                  ))}
+                </div>
+              ))}
+            </div>
+
+            {/* 하단 고정 액션 */}
+            <div className="fixed bottom-16 left-0 right-0 lg:hidden z-40 px-4 pb-3 pt-2 bg-background/95 backdrop-blur-sm hanji-noise border-t border-border">
+              <div className="max-w-2xl mx-auto">
+                <Button onClick={() => setShowSaveSheet(true)} className="w-full">저장하기</Button>
+              </div>
+            </div>
           </div>
-        </div>
-        <div className="flex-1">
-          <MapView places={mapPlaces} selectedPlace={selectedId} />
-        </div>
-      </div>
+
+          {/* 데스크탑 2분할 */}
+          <div className="hidden lg:flex h-[calc(100vh-105px)]">
+            <div className="w-[520px] border-r border-border overflow-y-auto flex flex-col">
+              <div className="flex-1 p-5 space-y-5">
+                {dayGroups.map((indices, dayIdx) => (
+                  <div key={dayIdx} className="space-y-3">
+                    {dayCount > 1 && (
+                      <div className="flex items-center gap-2 pt-1">
+                        <span className="text-sm font-semibold text-primary shrink-0">{dayIdx + 1}일차</span>
+                        <div className="flex-1 h-px bg-border" />
+                      </div>
+                    )}
+                    {indices.map((idx) => (
+                      <PlaceSlotCard
+                        key={slots[idx].place.place_id}
+                        slot={slots[idx]}
+                        confirmed={confirmedIds.has(slots[idx].place.place_id)}
+                        isSelected={selectedId === String(slots[idx].place.place_id)}
+                        onSelect={() => setSelectedId(String(slots[idx].place.place_id))}
+                        onConfirm={() => toggleConfirm(slots[idx].place.place_id)}
+                        onOpenDetail={() => openDetail(slots[idx].place)}
+                      />
+                    ))}
+                  </div>
+                ))}
+              </div>
+              <div className="p-5 border-t border-border">
+                <Button onClick={() => setShowSaveSheet(true)} className="w-full">저장하기</Button>
+              </div>
+            </div>
+            <div className="flex-1">
+              <MapView places={mapPlaces} selectedPlace={selectedId} />
+            </div>
+          </div>
+        </>
+      )}
 
       {/* 날짜 선택 바텀시트 */}
       {showSaveSheet && (
@@ -448,25 +346,41 @@ export default function ItineraryRecommendation() {
               {/* 일정 요약 */}
               <div className="bg-muted/50 rounded-xl p-3 mb-5 space-y-1.5">
                 <p className="text-sm text-muted-foreground pb-1">{tripDuration} · 장소 {slots.length}곳</p>
-                {slots.map((s, i) => (
-                  <div key={i} className="flex items-center gap-2 text-sm">
+                {slots.map((s) => (
+                  <div key={s.place.place_id} className="flex items-center gap-2 text-sm">
                     <span
                       className={`w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold shrink-0 ${
-                        s.confirmed
+                        confirmedIds.has(s.place.place_id)
                           ? "bg-primary text-primary-foreground"
                           : "bg-border text-muted-foreground"
                       }`}
                     >
-                      {i + 1}
+                      {s.visit_order}
                     </span>
-                    <span className={s.confirmed ? "text-foreground" : "text-muted-foreground"}>
+                    <span
+                      className={
+                        confirmedIds.has(s.place.place_id) ? "text-foreground" : "text-muted-foreground"
+                      }
+                    >
                       {s.place.name}
                     </span>
-                    {s.confirmed && (
+                    {confirmedIds.has(s.place.place_id) && (
                       <CheckCircle2 className="w-3.5 h-3.5 text-primary ml-auto shrink-0" />
                     )}
                   </div>
                 ))}
+              </div>
+
+              {/* 제목 */}
+              <div className="mb-5">
+                <label className="block text-sm font-medium mb-2">일정 제목</label>
+                <input
+                  type="text"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  placeholder={data?.content_title ?? "일정 제목을 입력하세요"}
+                  className="w-full h-11 px-3 rounded-lg border border-border bg-input text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
+                />
               </div>
 
               {/* 날짜 선택 */}
@@ -483,51 +397,48 @@ export default function ItineraryRecommendation() {
 
               <Button
                 onClick={handleSave}
-                disabled={!travelDate}
+                disabled={!travelDate || isSaving}
                 className="w-full h-11"
               >
-                <Save className="w-4 h-4 mr-2" />
+                {isSaving ? (
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                ) : (
+                  <Save className="w-4 h-4 mr-2" />
+                )}
                 저장하고 플래너로 이동
               </Button>
             </div>
           </div>
         </div>
       )}
+
+      <PlaceSheet place={sheetPlace} onClose={() => setSheetPlace(null)} />
     </div>
   );
 }
 
 // ─── 장소 슬롯 카드 컴포넌트 ────────────────────────────────────────────────
 
+interface ItineraryRecommendSlotLike {
+  visit_order: number;
+  place: ItineraryRecommendPlace;
+}
+
 interface PlaceSlotCardProps {
-  slot: SlotState;
+  slot: ItineraryRecommendSlotLike;
+  confirmed: boolean;
   isSelected: boolean;
   onSelect: () => void;
   onConfirm: () => void;
-  onSwap: () => void;
+  onOpenDetail: () => void;
 }
 
-const categoryVariantsLocal: Record<string, string> = {
-  primary: "bg-primary/10 text-primary",
-  secondary: "bg-muted text-foreground",
-  accent: "bg-accent/10 text-accent",
-  support: "bg-muted text-foreground",
-};
+function PlaceSlotCard({ slot, confirmed, isSelected, onSelect, onConfirm, onOpenDetail }: PlaceSlotCardProps) {
+  const { place, visit_order } = slot;
+  const [saved, setSaved] = useState(() => isBookmarked(String(place.place_id)));
 
-function PlaceSlotCard({ slot, isSelected, onSelect, onConfirm, onSwap }: PlaceSlotCardProps) {
-  const { place, confirmed } = slot;
-  const [saved, setSaved] = useState(false);
-  // place는 큐레이션된 후보(이름/카테고리/좌표)이고, 실제 설명·이미지·운영시간은 이름으로
-  // 관광정보 API를 조회해 보강한다. 입장료·좌표는 API가 일관되게 제공하지 않아 큐레이션 값을 유지한다.
-  const { status: lookupStatus, data: lookup } = usePlaceLookup(place.name);
-
-  useEffect(() => {
-    setSaved(isBookmarked(place.id));
-  }, [place.id]);
-
-  const description = lookup?.description ?? place.description;
-  const image = lookup?.image ?? place.image;
-  const hours = lookup?.hours ?? place.hours;
+  const distance = formatDistance(place.to_next_distance_m);
+  const duration = formatDuration(place.to_next_duration_min);
 
   return (
     <div
@@ -556,12 +467,12 @@ function PlaceSlotCard({ slot, isSelected, onSelect, onConfirm, onSwap }: PlaceS
               : "bg-muted text-muted-foreground"
           }`}
         >
-          {place.order}
+          {visit_order}
         </div>
 
         {/* 이미지 */}
         <img
-          src={image}
+          src={place.image_url}
           alt={place.name}
           className="w-20 h-20 rounded-lg object-cover shrink-0"
         />
@@ -569,34 +480,25 @@ function PlaceSlotCard({ slot, isSelected, onSelect, onConfirm, onSwap }: PlaceS
         {/* 정보 */}
         <div className="flex-1 min-w-0">
           <span
-            className={`inline-block text-xs px-2 py-0.5 rounded-full mb-1.5 ${
-              categoryVariantsLocal[place.categoryColor] ?? "bg-muted text-muted-foreground"
-            }`}
+            className={`inline-block text-xs px-2 py-0.5 rounded-full mb-1.5 ${categoryStyleFor(visit_order)}`}
           >
             {place.category}
           </span>
           <h3 className="font-medium mb-1 leading-tight">{place.name}</h3>
-          <p className="text-sm text-muted-foreground line-clamp-2 mb-2">{description}</p>
+          <p className="text-sm text-muted-foreground line-clamp-2 mb-2">{place.description}</p>
           <div className="flex flex-wrap gap-x-3 gap-y-1 text-sm text-muted-foreground">
             <span className="flex items-center gap-1">
-              <Clock className="w-3 h-3" />{hours}
-              {lookupStatus === "loading" && <Loader2 className="w-3 h-3 animate-spin" />}
+              <Clock className="w-3 h-3" />{place.opening_hours}
             </span>
-            <span className="flex items-center gap-1">
-              <DollarSign className="w-3 h-3" />{place.fee}
-            </span>
-            {(lookupStatus === "error" || lookupStatus === "not-found") && (
-              <span className="text-muted-foreground/60">안내 정보 기준</span>
-            )}
           </div>
         </div>
       </div>
 
       {/* 이동 정보 */}
-      {place.nextDistance !== "-" && (
+      {distance && duration && (
         <div className="px-4 pb-2 flex items-center gap-1.5 text-sm text-muted-foreground">
           <Navigation className="w-3.5 h-3.5" />
-          다음 장소까지 {place.nextDistance} · {place.nextDuration}
+          다음 장소까지 {distance} · {duration}
         </div>
       )}
 
@@ -605,14 +507,6 @@ function PlaceSlotCard({ slot, isSelected, onSelect, onConfirm, onSwap }: PlaceS
         className="flex gap-2 px-4 pb-4 pt-2 border-t border-border"
         onClick={(e) => e.stopPropagation()}
       >
-        <button
-          onClick={onSwap}
-          disabled={confirmed}
-          className="flex-1 flex items-center justify-center gap-1.5 h-9 rounded-lg border border-border text-sm hover:bg-muted transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
-        >
-          <Shuffle className="w-3.5 h-3.5" />
-          다른 곳 추천
-        </button>
         <button
           onClick={onConfirm}
           className={`flex-1 flex items-center justify-center gap-1.5 h-9 rounded-lg text-sm font-medium transition-colors ${
@@ -624,14 +518,21 @@ function PlaceSlotCard({ slot, isSelected, onSelect, onConfirm, onSwap }: PlaceS
           {confirmed ? "확정 취소" : "확정"}
         </button>
         <button
+          onClick={onOpenDetail}
+          className="flex-1 flex items-center justify-center gap-1.5 h-9 rounded-lg border border-border text-sm hover:bg-muted transition-colors"
+        >
+          <Info className="w-3.5 h-3.5" />
+          상세보기
+        </button>
+        <button
           onClick={() =>
             setSaved(
               toggleBookmark({
-                id: place.id,
+                id: String(place.place_id),
                 name: place.name,
                 category: place.category,
-                image,
-                hours,
+                image: place.image_url,
+                hours: place.opening_hours,
               })
             )
           }

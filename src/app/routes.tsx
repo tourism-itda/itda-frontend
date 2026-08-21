@@ -2,6 +2,7 @@ import { createBrowserRouter } from "react-router";
 import Splash from "./pages/splash";
 import Signup from "./pages/Signup";
 import Login from "./pages/Login";
+import ForgotPassword from "./pages/ForgotPassword";
 import Home from "./pages/Home";
 import ContentDetail from "./pages/ContentDetail";
 import ItineraryRecommendation from "./pages/ItineraryRecommendation";
@@ -33,6 +34,10 @@ export const router = createBrowserRouter([
   {
     path: "/login",
     element: <Login />,
+  },
+  {
+    path: "/forgot-password",
+    element: <ForgotPassword />,
   },
   {
     path: "/app",

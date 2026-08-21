@@ -161,12 +161,14 @@ export function getMyProfile(): Promise<UserProfileResponse> {
   return apiFetch<UserProfileResponse>("/api/users/me");
 }
 
-// 백엔드는 { user: {...} }가 아니라 UserProfileResponse를 그대로 반환한다(UserController.updateMyProfile).
-export function updateMyProfile(data: UpdateProfileRequest): Promise<UserProfileResponse> {
-  return apiFetch<UserProfileResponse>("/api/users/me", {
+// 백엔드는 UpdateProfileResponse(UserProfileResponse user)로 { user: {...} } 래핑해 응답한다
+// (UserController.updateMyProfile). 실코드/실호출로 재검증됨 — 언래핑해서 호출부에 넘긴다.
+export async function updateMyProfile(data: UpdateProfileRequest): Promise<UserProfileResponse> {
+  const res = await apiFetch<{ user: UserProfileResponse }>("/api/users/me", {
     method: "PATCH",
     body: JSON.stringify(data),
   });
+  return res.user;
 }
 
 export async function deleteMyAccount(): Promise<SuccessResponse> {

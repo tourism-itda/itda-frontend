@@ -104,13 +104,12 @@ export default function Login() {
 
           {/* 하단 링크 — 폰트 통일 */}
           <div className="flex justify-center gap-4 mt-6">
-            <button
-              type="button"
-              onClick={() => toast("비밀번호 찾기 기능은 준비 중입니다.")}
+            <Link
+              to="/forgot-password"
               className="text-sm text-muted-foreground hover:text-foreground transition-colors"
             >
               비밀번호 찾기
-            </button>
+            </Link>
             <span className="text-sm text-border">|</span>
             <Link to="/signup" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
               회원가입

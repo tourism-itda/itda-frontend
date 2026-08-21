@@ -1,16 +1,28 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router";
 import { motion } from "motion/react";
+import { getSession } from "../lib/auth";
 
 export default function Splash() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      navigate("/login");
+    let cancelled = false;
+
+    const timer = setTimeout(async () => {
+      try {
+        const session = await getSession();
+        if (cancelled) return;
+        navigate(session.user ? "/app" : "/login");
+      } catch {
+        if (!cancelled) navigate("/login");
+      }
     }, 2000);
 
-    return () => clearTimeout(timer);
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
   }, [navigate]);
 
   return (

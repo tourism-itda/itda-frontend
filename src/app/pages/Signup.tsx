@@ -6,7 +6,7 @@ import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
 import { Checkbox } from "../components/ui/checkbox";
 import { ArrowLeft } from "lucide-react";
-import { signup } from "../lib/auth";
+import { signup, checkLoginIdAvailable, checkNicknameAvailable } from "../lib/auth";
 import { ApiError } from "../lib/api";
 
 export default function Signup() {
@@ -22,6 +22,8 @@ export default function Signup() {
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [agreedToTerms, setAgreedToTerms] = useState(false);
+  const [checkingUsername, setCheckingUsername] = useState(false);
+  const [checkingNickname, setCheckingNickname] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -36,17 +38,47 @@ export default function Signup() {
     }
   };
 
-  const checkUsername = () => {
-    // Mock 중복 확인
-    if (formData.username === "existing") {
-      setErrors((prev) => ({ ...prev, username: "이미 사용 중인 아이디입니다." }));
-    } else if (formData.username) {
-      toast("사용 가능한 아이디입니다.");
-      setErrors((prev) => {
-        const newErrors = { ...prev };
-        delete newErrors.username;
-        return newErrors;
-      });
+  const checkUsername = async () => {
+    if (!formData.username || checkingUsername) return;
+    setCheckingUsername(true);
+    try {
+      const available = await checkLoginIdAvailable(formData.username);
+      if (available) {
+        toast("사용 가능한 아이디입니다.");
+        setErrors((prev) => {
+          const newErrors = { ...prev };
+          delete newErrors.username;
+          return newErrors;
+        });
+      } else {
+        setErrors((prev) => ({ ...prev, username: "이미 사용 중인 아이디입니다." }));
+      }
+    } catch (err) {
+      toast(err instanceof ApiError ? err.message : "아이디 중복 확인에 실패했습니다.");
+    } finally {
+      setCheckingUsername(false);
+    }
+  };
+
+  const checkNickname = async () => {
+    if (!formData.nickname || checkingNickname) return;
+    setCheckingNickname(true);
+    try {
+      const available = await checkNicknameAvailable(formData.nickname);
+      if (available) {
+        toast("사용 가능한 닉네임입니다.");
+        setErrors((prev) => {
+          const newErrors = { ...prev };
+          delete newErrors.nickname;
+          return newErrors;
+        });
+      } else {
+        setErrors((prev) => ({ ...prev, nickname: "이미 사용 중인 닉네임입니다." }));
+      }
+    } catch (err) {
+      toast(err instanceof ApiError ? err.message : "닉네임 중복 확인에 실패했습니다.");
+    } finally {
+      setCheckingNickname(false);
     }
   };
 
@@ -71,6 +103,7 @@ export default function Signup() {
     }
 
     try {
+      // signup()이 이미 accessToken을 localStorage에 저장하므로 재로그인 없이 바로 진입한다.
       await signup({
         loginId: formData.username,
         password: formData.password,
@@ -80,7 +113,7 @@ export default function Signup() {
         birthDate: formData.birthdate,
         agreedToTerms,
       });
-      navigate("/login");
+      navigate("/app");
     } catch (err) {
       toast(err instanceof ApiError ? err.message : "회원가입에 실패했습니다.");
     }
@@ -150,9 +183,10 @@ export default function Signup() {
                   type="button"
                   variant="outline"
                   onClick={checkUsername}
+                  disabled={checkingUsername || !formData.username}
                   className="shrink-0"
                 >
-                  중복확인
+                  {checkingUsername ? "확인 중..." : "중복확인"}
                 </Button>
               </div>
               {errors.username && (
@@ -194,14 +228,25 @@ export default function Signup() {
 
             <div className="space-y-2">
               <Label htmlFor="nickname">닉네임</Label>
-              <Input
-                id="nickname"
-                name="nickname"
-                value={formData.nickname}
-                onChange={handleChange}
-                placeholder="다른 사용자에게 보여질 이름"
-                className={errors.nickname ? "border-destructive" : ""}
-              />
+              <div className="flex gap-2">
+                <Input
+                  id="nickname"
+                  name="nickname"
+                  value={formData.nickname}
+                  onChange={handleChange}
+                  placeholder="다른 사용자에게 보여질 이름"
+                  className={errors.nickname ? "border-destructive flex-1" : "flex-1"}
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={checkNickname}
+                  disabled={checkingNickname || !formData.nickname}
+                  className="shrink-0"
+                >
+                  {checkingNickname ? "확인 중..." : "중복확인"}
+                </Button>
+              </div>
               {errors.nickname && (
                 <p className="text-sm text-destructive">{errors.nickname}</p>
               )}

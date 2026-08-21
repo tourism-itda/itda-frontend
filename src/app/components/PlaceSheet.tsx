@@ -2,9 +2,13 @@ import { useEffect, useState } from "react";
 import { X, MapPin, Clock, Navigation, Bookmark, Loader2 } from "lucide-react";
 import { isBookmarked, toggleBookmark } from "../lib/bookmarks";
 import { usePlaceLookup } from "../lib/usePlaceLookup";
+import { usePlaceDetail } from "../lib/usePlaceDetail";
 
 export interface PlaceSheetData {
   id: string;
+  // 백엔드 장소 PK. 있으면 GET /api/places/:place_id로 실제 상세 정보를 조회한다.
+  // 없는 큐레이션 콘텐츠(인물/왕조 등)는 기존처럼 이름 기반 조회로 보강한다.
+  placeId?: number;
   name: string;
   category: string;
   address: string;
@@ -21,19 +25,34 @@ interface PlaceSheetProps {
 export function PlaceSheet({ place, onClose }: PlaceSheetProps) {
   const [saved, setSaved] = useState(false);
   // place는 큐레이션된 시드 데이터(이름/카테고리 등)이고, 실제 주소·운영시간·이미지·설명은
-  // 이름으로 관광정보 API를 조회해 보강한다. 조회 실패 시 시드 데이터로 자연스럽게 대체된다.
-  const { status, data } = usePlaceLookup(place?.name);
+  // placeId가 있으면 장소 상세 API로, 없으면 이름으로 관광정보 API를 조회해 보강한다.
+  // 조회 실패 시 시드 데이터로 자연스럽게 대체된다.
+  const lookup = usePlaceLookup(place?.placeId ? undefined : place?.name);
+  const detail = usePlaceDetail(place?.placeId);
+  const status = place?.placeId ? detail.status : lookup.status;
+  const primaryImage =
+    detail.data?.images.find((img) => img.is_primary) ?? detail.data?.images[0];
 
   useEffect(() => {
     setSaved(place ? isBookmarked(place.id) : false);
   }, [place?.id]);
 
+  // is_bookmarked는 로그인 시에만 개인화되어 내려오므로, 이미 로컬에 저장된 상태는 유지하고
+  // 서버가 true를 알려주는 경우에만 반영한다.
+  useEffect(() => {
+    if (detail.data?.is_bookmarked) setSaved(true);
+  }, [detail.data]);
+
   if (!place) return null;
 
-  const address = data?.address ?? place.address;
-  const hours = data?.hours ?? place.hours;
-  const image = data?.image ?? place.image;
-  const description = data?.description ?? place.description;
+  const address = detail.data?.address ?? lookup.data?.address ?? place.address;
+  const hours = detail.data?.opening_hours ?? lookup.data?.hours ?? place.hours;
+  const image = primaryImage?.image_url ?? lookup.data?.image ?? place.image;
+  const description = detail.data?.description ?? lookup.data?.description ?? place.description;
+  const category = detail.data?.category ?? place.category;
+  const mapHref = detail.data
+    ? `https://maps.google.com/?q=${detail.data.latitude},${detail.data.longitude}`
+    : `https://maps.google.com/?q=${encodeURIComponent(address)}`;
 
   return (
     <div className="fixed inset-0 z-[60] flex items-end justify-center">
@@ -53,7 +72,7 @@ export function PlaceSheet({ place, onClose }: PlaceSheetProps) {
                 toggleBookmark({
                   id: place.id,
                   name: place.name,
-                  category: place.category,
+                  category,
                   image,
                   address,
                   hours,
@@ -98,7 +117,7 @@ export function PlaceSheet({ place, onClose }: PlaceSheetProps) {
         {/* 장소 정보 */}
         <div className="px-5 py-4 space-y-4 overflow-y-auto">
           <div>
-            <p className="text-xs text-muted-foreground mb-0.5">{place.category}</p>
+            <p className="text-xs text-muted-foreground mb-0.5">{category}</p>
             <h3 className="text-lg font-semibold">{place.name}</h3>
             <p className="text-sm text-muted-foreground mt-1">{description}</p>
           </div>
@@ -127,7 +146,7 @@ export function PlaceSheet({ place, onClose }: PlaceSheetProps) {
           </div>
 
           <a
-            href={`https://maps.google.com/?q=${encodeURIComponent(address)}`}
+            href={mapHref}
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center justify-center gap-2 w-full h-11 rounded-2xl bg-foreground text-background text-sm font-medium hover:bg-foreground/90 transition-colors"

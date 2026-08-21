@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
+import { toast } from "sonner";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
@@ -18,32 +19,127 @@ import {
   Camera,
 } from "lucide-react";
 import { ConfirmDeleteModal } from "../components/ConfirmDeleteModal";
+import { getMyProfile, updateMyProfile, logout, deleteMyAccount, UserProfileResponse } from "../lib/auth";
+import { ApiError } from "../lib/api";
 
 export default function MyPage() {
   const navigate = useNavigate();
-  const [darkMode, setDarkMode] = useState(false);
+  const [profile, setProfile] = useState<UserProfileResponse | null>(null);
+  const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [nicknameInput, setNicknameInput] = useState("");
   const [showWithdrawConfirm, setShowWithdrawConfirm] = useState(false);
-  const [profile, setProfile] = useState({
-    name: "홍길동",
-    nickname: "역사덕후",
-    email: "hong@example.com",
-    avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=user",
-  });
+  const [withdrawing, setWithdrawing] = useState(false);
 
-  const handleSave = () => setIsEditing(false);
+  useEffect(() => {
+    let cancelled = false;
 
-  const handleChangeAvatar = () => {
-    setProfile((prev) => ({
-      ...prev,
-      avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${Date.now()}`,
-    }));
+    getMyProfile()
+      .then((me) => {
+        if (cancelled) return;
+        setProfile(me);
+        setNicknameInput(me.nickname);
+        document.documentElement.classList.toggle("dark", me.darkMode);
+      })
+      .catch((err) => {
+        if (cancelled) return;
+        if (err instanceof ApiError && (err.status === 401 || err.status === 403)) {
+          navigate("/login");
+        } else {
+          toast(err instanceof ApiError ? err.message : "내 정보를 불러오지 못했어요.");
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [navigate]);
+
+  const handleSave = async () => {
+    if (!profile) return;
+    if (!nicknameInput.trim()) {
+      toast("닉네임을 입력해주세요.");
+      return;
+    }
+    setSaving(true);
+    try {
+      const updated = await updateMyProfile({ nickname: nicknameInput.trim() });
+      setProfile(updated);
+      setNicknameInput(updated.nickname);
+      setIsEditing(false);
+      toast("프로필이 저장되었습니다.");
+    } catch (err) {
+      if (err instanceof ApiError && (err.status === 401 || err.status === 403)) {
+        navigate("/login");
+      } else {
+        toast(err instanceof ApiError ? err.message : "프로필 저장에 실패했어요.");
+      }
+    } finally {
+      setSaving(false);
+    }
   };
 
-  const toggleDarkMode = (checked: boolean) => {
-    setDarkMode(checked);
+  const handleAvatarClick = () => {
+    toast("준비 중인 기능이에요.");
+  };
+
+  const toggleDarkMode = async (checked: boolean) => {
+    if (!profile) return;
     document.documentElement.classList.toggle("dark", checked);
+    setProfile((prev) => (prev ? { ...prev, darkMode: checked } : prev));
+    try {
+      const updated = await updateMyProfile({ darkMode: checked });
+      setProfile(updated);
+    } catch (err) {
+      document.documentElement.classList.toggle("dark", !checked);
+      setProfile((prev) => (prev ? { ...prev, darkMode: !checked } : prev));
+      if (err instanceof ApiError && (err.status === 401 || err.status === 403)) {
+        navigate("/login");
+      } else {
+        toast(err instanceof ApiError ? err.message : "다크 모드 설정을 저장하지 못했어요.");
+      }
+    }
   };
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+    } finally {
+      navigate("/login");
+    }
+  };
+
+  const handleWithdraw = async () => {
+    setWithdrawing(true);
+    try {
+      await deleteMyAccount();
+      setShowWithdrawConfirm(false);
+      navigate("/login");
+    } catch (err) {
+      if (err instanceof ApiError && (err.status === 401 || err.status === 403)) {
+        setShowWithdrawConfirm(false);
+        navigate("/login");
+      } else {
+        toast(err instanceof ApiError ? err.message : "회원 탈퇴에 실패했어요.");
+      }
+    } finally {
+      setWithdrawing(false);
+    }
+  };
+
+  if (loading || !profile) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p className="text-sm text-muted-foreground">불러오는 중...</p>
+      </div>
+    );
+  }
+
+  const avatarUrl = profile.profileUrl || `https://api.dicebear.com/7.x/avataaars/svg?seed=${profile.nickname}`;
 
   const menuItems = [
     { icon: Bookmark, label: "내 북마크", path: "/app/bookmarks" },
@@ -59,39 +155,39 @@ export default function MyPage() {
         <Label htmlFor={`nickname${suffix}`} className="text-sm font-normal text-muted-foreground">닉네임</Label>
         <Input
           id={`nickname${suffix}`}
-          value={profile.nickname}
-          onChange={(e) => setProfile({ ...profile, nickname: e.target.value })}
-          disabled={!isEditing}
+          value={nicknameInput}
+          onChange={(e) => setNicknameInput(e.target.value)}
+          disabled={!isEditing || saving}
           className="h-11"
         />
       </div>
+      {/* 이름/이메일은 백엔드 PATCH /users/me가 지원하지 않는 필드라 읽기 전용으로만 표시한다 */}
       <div className="space-y-1.5">
         <Label htmlFor={`name${suffix}`} className="text-sm font-normal text-muted-foreground">이름</Label>
-        <Input
-          id={`name${suffix}`}
-          value={profile.name}
-          onChange={(e) => setProfile({ ...profile, name: e.target.value })}
-          disabled={!isEditing}
-          className="h-11"
-        />
+        <Input id={`name${suffix}`} value={profile.name} disabled className="h-11" />
       </div>
       <div className="space-y-1.5">
         <Label htmlFor={`email${suffix}`} className="text-sm font-normal text-muted-foreground">이메일</Label>
-        <Input
-          id={`email${suffix}`}
-          type="email"
-          value={profile.email}
-          onChange={(e) => setProfile({ ...profile, email: e.target.value })}
-          disabled={!isEditing}
-          className="h-11"
-        />
+        <Input id={`email${suffix}`} type="email" value={profile.email} disabled className="h-11" />
       </div>
       {/* 프로필 수정 버튼: 이메일과 간격 */}
       <div className="pt-3">
         {isEditing ? (
           <div className="flex gap-2">
-            <Button variant="outline" onClick={() => setIsEditing(false)} className="flex-1">취소</Button>
-            <Button onClick={handleSave} className="flex-1">저장</Button>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setIsEditing(false);
+                setNicknameInput(profile.nickname);
+              }}
+              disabled={saving}
+              className="flex-1"
+            >
+              취소
+            </Button>
+            <Button onClick={handleSave} disabled={saving} className="flex-1">
+              {saving ? "저장 중..." : "저장"}
+            </Button>
           </div>
         ) : (
           <Button variant="outline" onClick={() => setIsEditing(true)} className="w-full">프로필 수정</Button>
@@ -117,9 +213,9 @@ export default function MyPage() {
           <div className="bg-card border border-border rounded-2xl p-6">
             <div className="flex flex-col items-center mb-7">
               <div className="relative">
-                <img src={profile.avatar} alt={profile.nickname} className="w-20 h-20 rounded-full border-2 border-border" />
+                <img src={avatarUrl} alt={profile.nickname} className="w-20 h-20 rounded-full border-2 border-border" />
                 <button
-                  onClick={handleChangeAvatar}
+                  onClick={handleAvatarClick}
                   className="absolute bottom-0 right-0 w-7 h-7 bg-primary text-primary-foreground rounded-full flex items-center justify-center"
                 >
                   <Camera className="w-3.5 h-3.5" />
@@ -139,7 +235,7 @@ export default function MyPage() {
                   <Moon className="w-5 h-5 text-muted-foreground shrink-0" />
                   <span className="text-sm">다크 모드</span>
                 </div>
-                <Switch checked={darkMode} onCheckedChange={toggleDarkMode} />
+                <Switch checked={profile.darkMode} onCheckedChange={toggleDarkMode} />
               </div>
             </div>
           </div>
@@ -166,7 +262,7 @@ export default function MyPage() {
           {/* 계정 관리 */}
           <div className="bg-card border border-border rounded-2xl overflow-hidden">
             <button
-              onClick={() => navigate("/login")}
+              onClick={handleLogout}
               className="flex items-center justify-between w-full px-5 py-3.5 hover:bg-muted/50 transition-colors"
             >
               <div className="flex items-center gap-3">
@@ -201,9 +297,9 @@ export default function MyPage() {
             <div className="bg-card border border-border rounded-2xl p-6 h-fit sticky top-24">
               <div className="flex flex-col items-center mb-7">
                 <div className="relative">
-                  <img src={profile.avatar} alt={profile.nickname} className="w-20 h-20 rounded-full border-2 border-gold" />
+                  <img src={avatarUrl} alt={profile.nickname} className="w-20 h-20 rounded-full border-2 border-gold" />
                   <button
-                    onClick={handleChangeAvatar}
+                    onClick={handleAvatarClick}
                     className="absolute bottom-0 right-0 w-7 h-7 bg-primary text-primary-foreground rounded-full flex items-center justify-center"
                   >
                     <Camera className="w-3.5 h-3.5" />
@@ -226,7 +322,7 @@ export default function MyPage() {
                         <p className="text-sm text-muted-foreground font-normal">화면 테마를 어둡게 변경합니다</p>
                       </div>
                     </div>
-                    <Switch checked={darkMode} onCheckedChange={toggleDarkMode} />
+                    <Switch checked={profile.darkMode} onCheckedChange={toggleDarkMode} />
                   </div>
                 </div>
               </div>
@@ -251,7 +347,7 @@ export default function MyPage() {
 
               <div className="bg-card border border-border rounded-2xl overflow-hidden">
                 <button
-                  onClick={() => navigate("/login")}
+                  onClick={handleLogout}
                   className="flex items-center justify-between w-full px-5 py-3.5 hover:bg-muted/50 transition-colors"
                 >
                   <div className="flex items-center gap-3">
@@ -283,8 +379,8 @@ export default function MyPage() {
         open={showWithdrawConfirm}
         title="정말 탈퇴하시겠습니까?"
         description="탈퇴하면 저장된 정보와 플래너, 북마크가 모두 삭제되며 복구할 수 없습니다."
-        confirmLabel="탈퇴"
-        onConfirm={() => navigate("/login")}
+        confirmLabel={withdrawing ? "탈퇴 처리 중..." : "탈퇴"}
+        onConfirm={handleWithdraw}
         onCancel={() => setShowWithdrawConfirm(false)}
       />
     </div>
