@@ -1,10 +1,12 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router";
-import { Calendar, ChevronRight, Footprints, MapPin, Search } from "lucide-react";
+import { Calendar, ChevronRight, Footprints, MapPin, MapPinOff, Search } from "lucide-react";
 import { Input } from "../components/ui/input";
+import { Skeleton } from "../components/ui/skeleton";
+import { ContentCard } from "../components/ContentCard";
+import { useContents } from "../lib/useContents";
 
 type Category = "인기 콘텐츠" | "시대별 탐색" | "인물별 탐색";
-type Genre = "전체" | "드라마" | "영화" | "다큐";
 
 interface ExploreItem {
   id: string;
@@ -18,14 +20,11 @@ interface ExploreItem {
 
 const categories: Category[] = ["인기 콘텐츠", "시대별 탐색", "인물별 탐색"];
 
-const popularContents: (ExploreItem & { genre: Genre })[] = [
-  { id: "101", title: "뿌리깊은 나무", tag: "드라마", genre: "드라마", date: "2011", location: "경복궁 일원", image: "https://images.unsplash.com/photo-1766662538511-650430a2fa6b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=600", href: "/app/content/101" },
-  { id: "102", title: "왕의 남자", tag: "영화", genre: "영화", date: "2005", location: "창덕궁 후원", image: "https://images.unsplash.com/photo-1703825864792-5880081beaaf?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=600", href: "/app/content/102" },
-  { id: "103", title: "광해, 왕이 된 남자", tag: "영화", genre: "영화", date: "2012", location: "창경궁", image: "https://images.unsplash.com/photo-1602479185195-32f5cd203559?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=600", href: "/app/content/103" },
-  { id: "104", title: "육룡이 나르샤", tag: "드라마", genre: "드라마", date: "2015", location: "개경 유적지", image: "https://images.unsplash.com/photo-1599033769063-fcd3ef816810?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=600", href: "/app/content/104" },
-  { id: "105", title: "이산", tag: "드라마", genre: "드라마", date: "2007", location: "수원 화성", image: "https://images.unsplash.com/photo-1591025788510-163f73e9abca?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=600", href: "/app/content/105" },
-  { id: "110", title: "역사스페셜: 고려청자", tag: "다큐", genre: "다큐", date: "2019", location: "강진 청자마을", image: "https://images.unsplash.com/photo-1599033769063-fcd3ef816810?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=600", href: "/app/content/110" },
-];
+const mediaTypeLabel: Record<string, string> = {
+  MOVIE: "영화",
+  DRAMA: "드라마",
+  DOCUMENTARY: "다큐",
+};
 
 const dynastyItems: ExploreItem[] = [
   { id: "1", title: "조선", tag: "시대", date: "1392–1897", location: "한양(서울)", image: "https://images.unsplash.com/photo-1602479185195-32f5cd203559?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=1080", href: "/app/dynasty/1" },
@@ -97,14 +96,18 @@ export default function Home() {
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState<Category>("인기 콘텐츠");
 
-  const activeItems = useMemo(() => {
-    const source: ExploreItem[] =
-      category === "인기 콘텐츠"
-        ? popularContents
-        : category === "시대별 탐색"
-        ? dynastyItems
-        : personItems;
+  // 인기 콘텐츠 탭은 검색어를 API 쿼리(q)로 보내므로, 매 타이핑마다 요청하지 않도록 디바운스한다.
+  const [debouncedQuery, setDebouncedQuery] = useState("");
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedQuery(query), 300);
+    return () => clearTimeout(timer);
+  }, [query]);
 
+  const popular = useContents({ sort: "popular", limit: 6, q: debouncedQuery || undefined });
+
+  const activeItems = useMemo(() => {
+    if (category === "인기 콘텐츠") return [];
+    const source: ExploreItem[] = category === "시대별 탐색" ? dynastyItems : personItems;
     if (query === "") return source;
     return source.filter((item) => item.title.includes(query) || item.location.includes(query));
   }, [category, query]);
@@ -180,7 +183,9 @@ export default function Home() {
               </p>
               <div className="flex items-baseline gap-2">
                 <h2 className="font-heading text-[24px] font-black">{category}</h2>
-                <span className="text-sm text-muted-foreground">총 {activeItems.length}개</span>
+                <span className="text-sm text-muted-foreground">
+                  총 {category === "인기 콘텐츠" ? popular.data?.total ?? 0 : activeItems.length}개
+                </span>
               </div>
             </div>
             {category === "인기 콘텐츠" && (
@@ -194,7 +199,49 @@ export default function Home() {
             )}
           </div>
 
-          {activeItems.length > 0 ? (
+          {category === "인기 콘텐츠" ? (
+            <>
+              {popular.status === "loading" && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                  {Array.from({ length: 6 }).map((_, i) => (
+                    <div key={i}>
+                      <Skeleton className="aspect-[3/4] rounded-sm mb-2" />
+                      <Skeleton className="h-4 w-3/4 mb-1.5" />
+                      <Skeleton className="h-3 w-1/3" />
+                    </div>
+                  ))}
+                </div>
+              )}
+              {popular.status === "error" && (
+                <div className="text-center py-16 text-muted-foreground">
+                  <MapPinOff className="w-10 h-10 mx-auto mb-3 opacity-30" />
+                  <p className="text-sm">콘텐츠를 불러오지 못했어요. 잠시 후 다시 시도해주세요.</p>
+                </div>
+              )}
+              {popular.status === "done" && (popular.data?.data.length ?? 0) === 0 && (
+                <div className="text-center py-16 text-muted-foreground">
+                  <Search className="w-10 h-10 mx-auto mb-3 opacity-30" />
+                  <p className="text-sm">검색 결과가 없습니다</p>
+                </div>
+              )}
+              {popular.status === "done" && (popular.data?.data.length ?? 0) > 0 && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                  {popular.data!.data.map((item) => (
+                    <ContentCard
+                      key={item.content_id}
+                      content={{
+                        id: String(item.content_id),
+                        title: item.title,
+                        genre: item.media ? mediaTypeLabel[item.media.type] ?? item.media.type : "",
+                        era: item.media?.release_year ? String(item.media.release_year) : "",
+                        image: item.thumbnail_url ?? "/images/tiger.png",
+                      }}
+                    />
+                  ))}
+                </div>
+              )}
+            </>
+          ) : activeItems.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
               {activeItems.map((item) => (
                 <ExploreCard key={item.id} item={item} onClick={() => navigate(item.href)} />
