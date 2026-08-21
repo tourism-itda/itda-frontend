@@ -6,7 +6,7 @@ import { Skeleton } from "../components/ui/skeleton";
 import { ContentCard } from "../components/ContentCard";
 import { useContents } from "../lib/useContents";
 
-type Category = "인기 콘텐츠" | "시대별 탐색" | "인물별 탐색";
+type Category = "콘텐츠 둘러보기" | "나라별" | "인물별";
 
 interface ExploreItem {
   id: string;
@@ -18,7 +18,7 @@ interface ExploreItem {
   href: string;
 }
 
-const categories: Category[] = ["인기 콘텐츠", "시대별 탐색", "인물별 탐색"];
+const categories: Category[] = ["콘텐츠 둘러보기", "나라별", "인물별"];
 
 const mediaTypeLabel: Record<string, string> = {
   MOVIE: "영화",
@@ -46,9 +46,9 @@ const upcomingSchedule = [
 ];
 
 const categoryEyebrow: Record<Category, string> = {
-  "인기 콘텐츠": "Popular",
-  "시대별 탐색": "Dynasty",
-  "인물별 탐색": "Figures",
+  "콘텐츠 둘러보기": "Popular",
+  "나라별": "Dynasty",
+  "인물별": "Figures",
 };
 
 function ExploreCard({ item, onClick }: { item: ExploreItem; onClick: () => void }) {
@@ -94,9 +94,9 @@ function ExploreCard({ item, onClick }: { item: ExploreItem; onClick: () => void
 export default function Home() {
   const navigate = useNavigate();
   const [query, setQuery] = useState("");
-  const [category, setCategory] = useState<Category>("인기 콘텐츠");
+  const [category, setCategory] = useState<Category>("콘텐츠 둘러보기");
 
-  // 인기 콘텐츠 탭은 검색어를 API 쿼리(q)로 보내므로, 매 타이핑마다 요청하지 않도록 디바운스한다.
+  // 콘텐츠 둘러보기 탭은 검색어를 API 쿼리(q)로 보내므로, 매 타이핑마다 요청하지 않도록 디바운스한다.
   const [debouncedQuery, setDebouncedQuery] = useState("");
   useEffect(() => {
     const timer = setTimeout(() => setDebouncedQuery(query), 300);
@@ -106,8 +106,8 @@ export default function Home() {
   const popular = useContents({ sort: "popular", limit: 6, q: debouncedQuery || undefined });
 
   const activeItems = useMemo(() => {
-    if (category === "인기 콘텐츠") return [];
-    const source: ExploreItem[] = category === "시대별 탐색" ? dynastyItems : personItems;
+    if (category === "콘텐츠 둘러보기") return [];
+    const source: ExploreItem[] = category === "나라별" ? dynastyItems : personItems;
     if (query === "") return source;
     return source.filter((item) => item.title.includes(query) || item.location.includes(query));
   }, [category, query]);
@@ -184,11 +184,11 @@ export default function Home() {
               <div className="flex items-baseline gap-2">
                 <h2 className="font-heading text-[24px] font-black">{category}</h2>
                 <span className="text-sm text-muted-foreground">
-                  총 {category === "인기 콘텐츠" ? popular.data?.total ?? 0 : activeItems.length}개
+                  총 {category === "콘텐츠 둘러보기" ? popular.data?.total ?? 0 : activeItems.length}개
                 </span>
               </div>
             </div>
-            {category === "인기 콘텐츠" && (
+            {category === "콘텐츠 둘러보기" && (
               <button
                 onClick={() => navigate("/app/popular")}
                 className="text-sm text-primary font-bold hover:underline flex items-center gap-0.5 shrink-0"
@@ -199,7 +199,7 @@ export default function Home() {
             )}
           </div>
 
-          {category === "인기 콘텐츠" ? (
+          {category === "콘텐츠 둘러보기" ? (
             <>
               {popular.status === "loading" && (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
