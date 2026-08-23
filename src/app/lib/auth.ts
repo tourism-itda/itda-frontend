@@ -1,4 +1,4 @@
-import { apiFetch } from "./api";
+import { apiFetch, ApiError } from "./api";
 
 // itda-backend(참고용) 실제 DTO는 요청/응답 모두 camelCase이며 Jackson 네이밍 전략 변경이 없다.
 // (LoginRequest, SignupRequest, UpdateProfileRequest 등 전부 camelCase 필드명의 record)
@@ -57,6 +57,11 @@ export interface UpdateProfileRequest {
   notificationEnabled?: boolean;
 }
 
+export interface PresignedUrlResponse {
+  presignedUrl: string;
+  publicUrl: string;
+}
+
 const ACCESS_TOKEN_KEY = "accessToken";
 const USER_KEY = "user";
 
@@ -90,26 +95,16 @@ export async function login(loginId: string, password: string): Promise<AuthResp
   return auth;
 }
 
-// 카카오 로그인은 현재 프론트에서 연결할 수 없다(2026-08-22 dev 브랜치 기준, 실제 소스로 확인함).
-//
-// - 명세서엔 POST /auth/oauth/kakao로 돼있지만 실제로는 그런 경로가 없다.
-// - 백엔드에 카카오 인가 URL로 리다이렉트해주는 엔드포인트도 없다(Spring Security의 표준
-//   oauth2Login/ClientRegistration도 안 씀). 즉 프론트가 직접 카카오 인가 URL
-//   (https://kauth.kakao.com/oauth/authorize?client_id=...&redirect_uri=...)로 이동시켜야 한다.
-// - application.yml의 kakao.redirect-uri가 "http://localhost:8080/api/auth/kakao/callback"으로
-//   고정돼 있다(프로필 override 없음). 카카오 토큰 교환 시 이 값이 그대로 쓰이므로, 인가 요청의
-//   redirect_uri도 반드시 이 값과 정확히 일치해야 한다 — 즉 카카오 동의 후 브라우저는 프론트가
-//   아니라 백엔드(localhost:8080) 주소로 직접 리다이렉트된다.
-// - 그런데 GET /api/auth/kakao/callback(AuthController.kakaoCallback)은 리다이렉트가 아니라
-//   LoginResponse({accessToken, user}) JSON을 그대로 반환한다. 프론트로 돌아오는 리다이렉트나
-//   토큰 전달 로직이 전혀 없다.
-// - 결과: 카카오 동의를 마치면 사용자는 SPA로 못 돌아오고 백엔드가 반환한 raw JSON 화면에서
-//   멈춘다. 이건 프론트 코드로 고칠 수 없는 백엔드 쪽 문제다(itda-backend는 읽기 전용).
-//   고치려면 kakaoCallback이 토큰을 쿼리파라미터 등으로 실어 프론트 URL로 302 리다이렉트하도록
-//   바뀌어야 한다. 그 전까지 Login.tsx의 카카오 버튼은 "준비 중" 안내만 띄운다.
-//
-// (예전에 여기 있던 loginWithKakao(code)는 "프론트 라우트가 code를 받아 fetch로 콜백을 부른다"고
-// 가정하고 짜여 있었는데, 위 이유로 그 시나리오 자체가 발생하지 않아 도달 불가능한 코드였다.)
+// 카카오 로그인: 백엔드가 POST /api/auth/kakao({ code }) 방식으로 확정했다(AuthController.kakaoLogin,
+// 실제 소스로 재검증함). 응답은 일반 로그인과 동일한 LoginResponse({accessToken, user})라 저장 로직도 동일하게 재사용한다.
+export async function loginWithKakao(code: string): Promise<AuthResponse> {
+  const auth = await apiFetch<AuthResponse>("/api/auth/kakao", {
+    method: "POST",
+    body: JSON.stringify({ code }),
+  });
+  persistAuth(auth);
+  return auth;
+}
 
 export async function checkLoginIdAvailable(loginId: string): Promise<boolean> {
   const res = await apiFetch<{ available: boolean }>(
@@ -192,5 +187,30 @@ export function getCurrentUser(): UserResponse | null {
     return JSON.parse(raw) as UserResponse;
   } catch {
     return null;
+  }
+}
+
+// UserController.getAvatarPresignedUrl: GET /api/users/me/avatar/presigned?contentType=...
+// -> PresignedUrlResponse(presignedUrl, publicUrl). 실제 소스로 필드명 재검증함.
+export function getAvatarPresignedUrl(contentType: string): Promise<PresignedUrlResponse> {
+  return apiFetch<PresignedUrlResponse>(
+    `/api/users/me/avatar/presigned?contentType=${encodeURIComponent(contentType)}`,
+  );
+}
+
+// S3Service.generatePresignedUrl은 PutObjectRequest에 지정된 contentType으로만 서명되므로,
+// PUT 요청의 Content-Type은 반드시 presigned URL을 발급받을 때 넘긴 값과 동일해야 한다.
+// apiFetch는 항상 Authorization/Content-Type: application/json을 붙이므로 여기서는 쓸 수 없다 —
+// S3는 우리 백엔드가 아니라 서명된 요청만 검증하며, Authorization 헤더가 섞이면 서명 불일치로 거부된다.
+// S3가 돌려주는 상태코드(예: 403)는 우리 백엔드 세션과 무관하므로 ApiError가 아닌 일반 Error로
+// 던진다 — 호출부에서 401/403이면 /login으로 보내는 공용 처리에 걸리지 않게 하기 위함.
+export async function uploadAvatarFile(presignedUrl: string, file: File): Promise<void> {
+  const res = await fetch(presignedUrl, {
+    method: "PUT",
+    headers: { "Content-Type": file.type },
+    body: file,
+  });
+  if (!res.ok) {
+    throw new Error("이미지 업로드에 실패했어요.");
   }
 }

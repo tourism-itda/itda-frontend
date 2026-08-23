@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
 import { Button } from "../components/ui/button";
@@ -19,7 +19,15 @@ import {
   Camera,
 } from "lucide-react";
 import { ConfirmDeleteModal } from "../components/ConfirmDeleteModal";
-import { getMyProfile, updateMyProfile, logout, deleteMyAccount, UserProfileResponse } from "../lib/auth";
+import {
+  getMyProfile,
+  updateMyProfile,
+  logout,
+  deleteMyAccount,
+  getAvatarPresignedUrl,
+  uploadAvatarFile,
+  UserProfileResponse,
+} from "../lib/auth";
 import { ApiError } from "../lib/api";
 
 export default function MyPage() {
@@ -31,6 +39,8 @@ export default function MyPage() {
   const [nicknameInput, setNicknameInput] = useState("");
   const [showWithdrawConfirm, setShowWithdrawConfirm] = useState(false);
   const [withdrawing, setWithdrawing] = useState(false);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const avatarInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -84,7 +94,36 @@ export default function MyPage() {
   };
 
   const handleAvatarClick = () => {
-    toast("준비 중인 기능이에요.");
+    if (uploadingAvatar) return;
+    avatarInputRef.current?.click();
+  };
+
+  const handleAvatarFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file || !profile) return;
+
+    if (!file.type.startsWith("image/")) {
+      toast("이미지 파일만 업로드할 수 있어요.");
+      return;
+    }
+
+    setUploadingAvatar(true);
+    try {
+      const { presignedUrl, publicUrl } = await getAvatarPresignedUrl(file.type);
+      await uploadAvatarFile(presignedUrl, file);
+      const updated = await updateMyProfile({ profileUrl: publicUrl });
+      setProfile(updated);
+      toast("프로필 사진이 변경되었습니다.");
+    } catch (err) {
+      if (err instanceof ApiError && (err.status === 401 || err.status === 403)) {
+        navigate("/login");
+      } else {
+        toast(err instanceof ApiError ? err.message : "프로필 사진 업로드에 실패했어요.");
+      }
+    } finally {
+      setUploadingAvatar(false);
+    }
   };
 
   const toggleDarkMode = async (checked: boolean) => {
@@ -198,6 +237,13 @@ export default function MyPage() {
 
   return (
     <div className="min-h-screen">
+      <input
+        ref={avatarInputRef}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={handleAvatarFileChange}
+      />
       <div className="border-b border-border bg-card sticky top-0 lg:top-16 z-40">
         <div className="max-w-7xl mx-auto px-5 py-4">
           <p className="text-xs tracking-[0.2em] text-gold font-medium uppercase mb-1">My Page</p>
@@ -216,7 +262,8 @@ export default function MyPage() {
                 <img src={avatarUrl} alt={profile.nickname} className="w-20 h-20 rounded-full border-2 border-border" />
                 <button
                   onClick={handleAvatarClick}
-                  className="absolute bottom-0 right-0 w-7 h-7 bg-primary text-primary-foreground rounded-full flex items-center justify-center"
+                  disabled={uploadingAvatar}
+                  className="absolute bottom-0 right-0 w-7 h-7 bg-primary text-primary-foreground rounded-full flex items-center justify-center disabled:opacity-60"
                 >
                   <Camera className="w-3.5 h-3.5" />
                 </button>

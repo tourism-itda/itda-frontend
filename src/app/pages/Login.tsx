@@ -26,6 +26,20 @@ export default function Login() {
     }
   };
 
+  const handleKakaoLogin = () => {
+    const clientId = import.meta.env.VITE_KAKAO_CLIENT_ID;
+    const redirectUri = import.meta.env.VITE_KAKAO_REDIRECT_URI;
+    if (!clientId || !redirectUri) {
+      toast("카카오 로그인 설정이 올바르지 않아요.");
+      return;
+    }
+    const authorizeUrl = new URL("https://kauth.kakao.com/oauth/authorize");
+    authorizeUrl.searchParams.set("client_id", clientId);
+    authorizeUrl.searchParams.set("redirect_uri", redirectUri);
+    authorizeUrl.searchParams.set("response_type", "code");
+    window.location.href = authorizeUrl.toString();
+  };
+
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <div className="w-full max-w-sm">
@@ -90,11 +104,11 @@ export default function Login() {
             </div>
           </div>
 
-          {/* 카카오 로그인 — 준비 중(lib/auth.ts 상단 주석 참고: 백엔드 콜백이 프론트로
-              리다이렉트하지 않고 JSON을 그대로 반환해 현재 구조로는 로그인을 끝까지 완료할 수 없다) */}
+          {/* 카카오 로그인: 카카오 인가 페이지로 이동 후 /oauth/kakao/callback에서 code를 받아
+              POST /api/auth/kakao로 로그인을 완료한다(lib/auth.ts loginWithKakao 참고). */}
           <button
             type="button"
-            onClick={() => toast("준비 중인 기능이에요.")}
+            onClick={handleKakaoLogin}
             className="w-full h-11 rounded-xl bg-[#FEE500] hover:bg-[#FDD835] transition-colors flex items-center justify-center gap-2.5"
           >
             <svg className="w-5 h-5 shrink-0" viewBox="0 0 24 24" fill="#000">
