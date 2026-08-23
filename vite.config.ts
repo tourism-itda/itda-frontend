@@ -39,6 +39,13 @@ export default defineConfig({
         target: 'http://localhost:8080',
         changeOrigin: true,
       },
+      // explore(나라별/인물별 탐색) 도메인은 KingdomController/PersonController가
+      // "/api" 없이 "/explore/**"로 매핑돼 있다(다른 도메인과 다른 컨벤션, 실제 소스로 확인함).
+      // 그대로 두면 이 라우트만 프록시가 안 돼 404가 나서 별도 규칙을 추가한다.
+      '/explore': {
+        target: 'http://localhost:8080',
+        changeOrigin: true,
+      },
     },
   },
 

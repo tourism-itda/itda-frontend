@@ -71,3 +71,46 @@ export function saveItinerary(payload: ItinerarySavePayload) {
     body: JSON.stringify(payload),
   });
 }
+
+// ─── "다른 곳 추천" (GET /api/places/alternative) ───
+// 인증 불필요. 슬롯의 place만 바꿔치기하는 용도라 저장(POST /api/itineraries)과는 무관하다.
+// v2: fee 필드 없음. 응답이 { place: {...} } 로 한 번 감싸져 있다(AlternativePlaceResponse).
+//
+// ⚠️ 백엔드 구현(PlaceQueryService.getAlternative)은 "같은 슬롯의 다른 후보"가 아니라
+// "이 콘텐츠에서 recommend_order가 visit_order보다 큰 것 중 exclude_place_id가 아닌 첫 번째"를
+// 반환한다. 즉 클릭할 때마다 항상 "현재 슬롯의 place_id"를 exclude_place_id로 넘기면 콘텐츠의
+// 다음 추천 순번으로 자연스럽게 넘어간다. 더 넘길 후보가 없으면 404("더 이상 추천할 대안
+// 장소가 없습니다")가 온다 — 에러가 아니라 정상적인 "마지막 후보" 신호로 다뤄야 한다.
+
+export interface AlternativePlace {
+  place_id: number;
+  name: string;
+  category: string;
+  description: string;
+  image_url: string | null;
+  opening_hours: string;
+  latitude: number;
+  longitude: number;
+}
+
+export interface AlternativePlaceResult {
+  place: AlternativePlace;
+}
+
+export interface GetAlternativePlaceParams {
+  contentId: number;
+  visitOrder: number;
+  excludePlaceId?: number;
+}
+
+export function getAlternativePlace(params: GetAlternativePlaceParams) {
+  const search = new URLSearchParams();
+  search.set("content_id", String(params.contentId));
+  search.set("visit_order", String(params.visitOrder));
+  if (params.excludePlaceId !== undefined) {
+    search.set("exclude_place_id", String(params.excludePlaceId));
+  }
+  return apiFetch<AlternativePlaceResult>(`/api/places/alternative?${search.toString()}`);
+}
+
+// 내 플래너 목록/상세/수정/삭제(No.29~32)는 lib/itineraries.ts 참고.

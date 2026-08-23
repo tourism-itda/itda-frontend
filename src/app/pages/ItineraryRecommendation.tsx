@@ -1,48 +1,20 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router";
 import { toast } from "sonner";
-import {
-  ArrowLeft,
-  CheckCircle2,
-  Clock,
-  Navigation,
-  Save,
-  X,
-  Bookmark,
-  Info,
-  Loader2,
-  MapPinOff,
-} from "lucide-react";
+import { ArrowLeft, CheckCircle2, Save, X, Loader2, MapPinOff } from "lucide-react";
 import { Button } from "../components/ui/button";
 import { MapView } from "../components/MapView";
-import { isBookmarked, toggleBookmark } from "../lib/bookmarks";
 import { useItineraryRecommendation } from "../lib/useItineraryRecommendation";
-import { ItineraryRecommendPlace, ItinerarySavePlace, saveItinerary } from "../lib/itineraryRecommend";
+import {
+  ItineraryRecommendPlace,
+  ItineraryRecommendSlot,
+  ItinerarySavePlace,
+  getAlternativePlace,
+  saveItinerary,
+} from "../lib/itineraryRecommend";
 import { PlaceSheet, PlaceSheetData } from "../components/PlaceSheet";
+import { PlaceSlotCard } from "../components/PlaceSlotCard";
 import { ApiError } from "../lib/api";
-
-// 슬롯 순서(1부터 시작)에 따라 카테고리 배지 색을 순환시킨다. API가 색상 정보를 내려주지
-// 않으므로, 이전 UI와 비슷하게 시각적으로 구분되도록 순서 기반으로만 정한다.
-const categoryVariantCycle = ["primary", "secondary", "accent", "support"] as const;
-const categoryVariantStyles: Record<(typeof categoryVariantCycle)[number], string> = {
-  primary: "bg-primary/10 text-primary",
-  secondary: "bg-muted text-foreground",
-  accent: "bg-accent/10 text-accent",
-  support: "bg-muted text-foreground",
-};
-function categoryStyleFor(visitOrder: number): string {
-  return categoryVariantStyles[categoryVariantCycle[(visitOrder - 1) % categoryVariantCycle.length]];
-}
-
-function formatDistance(m: number | null): string | null {
-  if (m === null || m === undefined) return null;
-  return m >= 1000 ? `${(m / 1000).toFixed(1)}km` : `${m}m`;
-}
-
-function formatDuration(min: number | null): string | null {
-  if (min === null || min === undefined) return null;
-  return `도보 ${min}분`;
-}
 
 export default function ItineraryRecommendation() {
   const navigate = useNavigate();
@@ -50,7 +22,19 @@ export default function ItineraryRecommendation() {
   const contentId = id !== undefined && !Number.isNaN(Number(id)) ? Number(id) : undefined;
 
   const { status, data } = useItineraryRecommendation(contentId);
-  const slots = data?.slots ?? [];
+  // "다른 곳 추천"으로 바뀐 슬롯은 visit_order를 키로 로컬에서만 덮어쓴다(서버 저장 아님 —
+  // 저장은 기존 "저장하기" 버튼에서). 콘텐츠가 바뀌면(=data 갱신) 초기화한다.
+  const [placeOverrides, setPlaceOverrides] = useState<Record<number, ItineraryRecommendPlace>>({});
+  const [swappingOrders, setSwappingOrders] = useState<Set<number>>(new Set());
+  const slots: ItineraryRecommendSlot[] = (data?.slots ?? []).map((s) => ({
+    visit_order: s.visit_order,
+    place: placeOverrides[s.visit_order] ?? s.place,
+  }));
+
+  useEffect(() => {
+    setPlaceOverrides({});
+    setSwappingOrders(new Set());
+  }, [data]);
 
   const [confirmedIds, setConfirmedIds] = useState<Set<number>>(new Set());
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -87,6 +71,47 @@ export default function ItineraryRecommendation() {
       else next.add(placeId);
       return next;
     });
+  }
+
+  async function handleSwap(slot: ItineraryRecommendSlot) {
+    if (!data || swappingOrders.has(slot.visit_order)) return;
+
+    setSwappingOrders((prev) => new Set(prev).add(slot.visit_order));
+    try {
+      const result = await getAlternativePlace({
+        contentId: data.content_id,
+        visitOrder: slot.visit_order,
+        excludePlaceId: slot.place.place_id,
+      });
+      const alt = result.place;
+      setPlaceOverrides((prev) => ({
+        ...prev,
+        [slot.visit_order]: {
+          place_id: alt.place_id,
+          name: alt.name,
+          category: alt.category,
+          description: alt.description,
+          image_url: alt.image_url ?? "",
+          opening_hours: alt.opening_hours,
+          // 대안 장소는 서버가 다음 슬롯까지의 거리/시간을 다시 계산해주지 않는다 —
+          // 바뀐 위치 기준으로는 더 이상 유효하지 않은 값이라 비워둔다.
+          to_next_distance_m: null,
+          to_next_duration_min: null,
+          latitude: alt.latitude,
+          longitude: alt.longitude,
+        },
+      }));
+    } catch (err) {
+      // 대안이 더 없으면 404("더 이상 추천할 대안 장소가 없습니다") — 에러가 아니라 정상적인
+      // "마지막 후보" 신호이므로 그대로 메시지를 보여준다.
+      toast(err instanceof ApiError ? err.message : "다른 장소를 불러오지 못했어요. 잠시 후 다시 시도해주세요.");
+    } finally {
+      setSwappingOrders((prev) => {
+        const next = new Set(prev);
+        next.delete(slot.visit_order);
+        return next;
+      });
+    }
   }
 
   function openDetail(place: ItineraryRecommendPlace) {
@@ -267,12 +292,15 @@ export default function ItineraryRecommendation() {
                   {indices.map((idx) => (
                     <PlaceSlotCard
                       key={slots[idx].place.place_id}
-                      slot={slots[idx]}
+                      place={slots[idx].place}
+                      visitOrder={slots[idx].visit_order}
                       confirmed={confirmedIds.has(slots[idx].place.place_id)}
                       isSelected={selectedId === String(slots[idx].place.place_id)}
                       onSelect={() => setSelectedId(String(slots[idx].place.place_id))}
                       onConfirm={() => toggleConfirm(slots[idx].place.place_id)}
                       onOpenDetail={() => openDetail(slots[idx].place)}
+                      onSwap={() => handleSwap(slots[idx])}
+                      swapping={swappingOrders.has(slots[idx].visit_order)}
                     />
                   ))}
                 </div>
@@ -302,12 +330,15 @@ export default function ItineraryRecommendation() {
                     {indices.map((idx) => (
                       <PlaceSlotCard
                         key={slots[idx].place.place_id}
-                        slot={slots[idx]}
+                        place={slots[idx].place}
+                        visitOrder={slots[idx].visit_order}
                         confirmed={confirmedIds.has(slots[idx].place.place_id)}
                         isSelected={selectedId === String(slots[idx].place.place_id)}
                         onSelect={() => setSelectedId(String(slots[idx].place.place_id))}
                         onConfirm={() => toggleConfirm(slots[idx].place.place_id)}
                         onOpenDetail={() => openDetail(slots[idx].place)}
+                        onSwap={() => handleSwap(slots[idx])}
+                        swapping={swappingOrders.has(slots[idx].visit_order)}
                       />
                     ))}
                   </div>
@@ -413,134 +444,6 @@ export default function ItineraryRecommendation() {
       )}
 
       <PlaceSheet place={sheetPlace} onClose={() => setSheetPlace(null)} />
-    </div>
-  );
-}
-
-// ─── 장소 슬롯 카드 컴포넌트 ────────────────────────────────────────────────
-
-interface ItineraryRecommendSlotLike {
-  visit_order: number;
-  place: ItineraryRecommendPlace;
-}
-
-interface PlaceSlotCardProps {
-  slot: ItineraryRecommendSlotLike;
-  confirmed: boolean;
-  isSelected: boolean;
-  onSelect: () => void;
-  onConfirm: () => void;
-  onOpenDetail: () => void;
-}
-
-function PlaceSlotCard({ slot, confirmed, isSelected, onSelect, onConfirm, onOpenDetail }: PlaceSlotCardProps) {
-  const { place, visit_order } = slot;
-  const [saved, setSaved] = useState(() => isBookmarked(String(place.place_id)));
-
-  const distance = formatDistance(place.to_next_distance_m);
-  const duration = formatDuration(place.to_next_duration_min);
-
-  return (
-    <div
-      onClick={onSelect}
-      className={`rounded-xl border overflow-hidden transition-all cursor-pointer ${
-        confirmed
-          ? "border-primary/40 bg-primary/[0.03] shadow-sm"
-          : isSelected
-          ? "border-border shadow-sm"
-          : "border-border hover:border-muted-foreground/40"
-      }`}
-    >
-      {/* 확정 상태 배너 */}
-      {confirmed && (
-        <div className="bg-muted/50 px-4 py-1.5">
-          <span className="text-sm text-muted-foreground">확정됨</span>
-        </div>
-      )}
-
-      <div className="flex gap-3 p-4">
-        {/* 순서 번호 */}
-        <div
-          className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold shrink-0 mt-0.5 ${
-            confirmed
-              ? "bg-primary text-primary-foreground"
-              : "bg-muted text-muted-foreground"
-          }`}
-        >
-          {visit_order}
-        </div>
-
-        {/* 이미지 */}
-        <img
-          src={place.image_url}
-          alt={place.name}
-          className="w-20 h-20 rounded-lg object-cover shrink-0"
-        />
-
-        {/* 정보 */}
-        <div className="flex-1 min-w-0">
-          <span
-            className={`inline-block text-xs px-2 py-0.5 rounded-full mb-1.5 ${categoryStyleFor(visit_order)}`}
-          >
-            {place.category}
-          </span>
-          <h3 className="font-medium mb-1 leading-tight">{place.name}</h3>
-          <p className="text-sm text-muted-foreground line-clamp-2 mb-2">{place.description}</p>
-          <div className="flex flex-wrap gap-x-3 gap-y-1 text-sm text-muted-foreground">
-            <span className="flex items-center gap-1">
-              <Clock className="w-3 h-3" />{place.opening_hours}
-            </span>
-          </div>
-        </div>
-      </div>
-
-      {/* 이동 정보 */}
-      {distance && duration && (
-        <div className="px-4 pb-2 flex items-center gap-1.5 text-sm text-muted-foreground">
-          <Navigation className="w-3.5 h-3.5" />
-          다음 장소까지 {distance} · {duration}
-        </div>
-      )}
-
-      {/* 액션 버튼 */}
-      <div
-        className="flex gap-2 px-4 pb-4 pt-2 border-t border-border"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <button
-          onClick={onConfirm}
-          className={`flex-1 flex items-center justify-center gap-1.5 h-9 rounded-lg text-sm font-medium transition-colors ${
-            confirmed
-              ? "bg-muted text-muted-foreground hover:bg-muted/80"
-              : "bg-foreground text-background hover:bg-foreground/90"
-          }`}
-        >
-          {confirmed ? "확정 취소" : "확정"}
-        </button>
-        <button
-          onClick={onOpenDetail}
-          className="flex-1 flex items-center justify-center gap-1.5 h-9 rounded-lg border border-border text-sm hover:bg-muted transition-colors"
-        >
-          <Info className="w-3.5 h-3.5" />
-          상세보기
-        </button>
-        <button
-          onClick={() =>
-            setSaved(
-              toggleBookmark({
-                id: String(place.place_id),
-                name: place.name,
-                category: place.category,
-                image: place.image_url,
-                hours: place.opening_hours,
-              })
-            )
-          }
-          className="w-9 h-9 shrink-0 flex items-center justify-center rounded-lg border border-border hover:bg-muted transition-colors"
-        >
-          <Bookmark className={`w-3.5 h-3.5 ${saved ? "fill-primary text-primary" : "text-muted-foreground"}`} />
-        </button>
-      </div>
     </div>
   );
 }

@@ -6,6 +6,8 @@ import ForgotPassword from "./pages/ForgotPassword";
 import Home from "./pages/Home";
 import ContentDetail from "./pages/ContentDetail";
 import ItineraryRecommendation from "./pages/ItineraryRecommendation";
+import ItineraryDetail from "./pages/ItineraryDetail";
+import RouteBuilder from "./pages/RouteBuilder";
 import Planner from "./pages/Planner";
 import Community from "./pages/Community";
 import MyPage from "./pages/MyPage";
@@ -56,8 +58,16 @@ export const router = createBrowserRouter([
         element: <ItineraryRecommendation />,
       },
       {
+        path: "route-builder/:contentId",
+        element: <RouteBuilder />,
+      },
+      {
         path: "planner",
         element: <Planner />,
+      },
+      {
+        path: "planner/:id",
+        element: <ItineraryDetail />,
       },
       {
         path: "dynasty/:id",

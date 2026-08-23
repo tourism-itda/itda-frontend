@@ -90,10 +90,11 @@ export default function Login() {
             </div>
           </div>
 
-          {/* 카카오 로그인 */}
+          {/* 카카오 로그인 — 준비 중(lib/auth.ts 상단 주석 참고: 백엔드 콜백이 프론트로
+              리다이렉트하지 않고 JSON을 그대로 반환해 현재 구조로는 로그인을 끝까지 완료할 수 없다) */}
           <button
             type="button"
-            onClick={() => navigate("/app")}
+            onClick={() => toast("준비 중인 기능이에요.")}
             className="w-full h-11 rounded-xl bg-[#FEE500] hover:bg-[#FDD835] transition-colors flex items-center justify-center gap-2.5"
           >
             <svg className="w-5 h-5 shrink-0" viewBox="0 0 24 24" fill="#000">

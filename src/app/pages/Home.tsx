@@ -1,10 +1,13 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router";
-import { Calendar, ChevronRight, Footprints, MapPin, MapPinOff, Search } from "lucide-react";
+import { Calendar, ChevronRight, Footprints, LogIn, MapPin, MapPinOff, Search } from "lucide-react";
 import { Input } from "../components/ui/input";
 import { Skeleton } from "../components/ui/skeleton";
+import { Button } from "../components/ui/button";
 import { ContentCard } from "../components/ContentCard";
 import { useContents } from "../lib/useContents";
+import { useKingdoms } from "../lib/useKingdoms";
+import { usePersons } from "../lib/usePersons";
 
 type Category = "콘텐츠 둘러보기" | "나라별" | "인물별";
 
@@ -12,8 +15,10 @@ interface ExploreItem {
   id: string;
   title: string;
   tag: string;
-  date: string;
-  location: string;
+  /** 나라 카드: 없음. 인물 카드: 소속 나라 한글 이름(예: "조선"). */
+  subtitle?: string;
+  /** 인물 카드에서만 쓰는 한 줄 소개(person.description). */
+  description?: string | null;
   image: string;
   href: string;
 }
@@ -26,18 +31,17 @@ const mediaTypeLabel: Record<string, string> = {
   DOCUMENTARY: "다큐",
 };
 
-const dynastyItems: ExploreItem[] = [
-  { id: "1", title: "조선", tag: "시대", date: "1392–1897", location: "한양(서울)", image: "https://images.unsplash.com/photo-1602479185195-32f5cd203559?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=1080", href: "/app/dynasty/1" },
-  { id: "2", title: "고려", tag: "시대", date: "918–1392", location: "개경(개성)", image: "https://images.unsplash.com/photo-1599033769063-fcd3ef816810?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=1080", href: "/app/dynasty/2" },
-  { id: "3", title: "삼국", tag: "시대", date: "기원전 57–668", location: "금성·평양·위례성", image: "https://images.unsplash.com/photo-1591025788510-163f73e9abca?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=1080", href: "/app/dynasty/3" },
-];
-
-const personItems: ExploreItem[] = [
-  { id: "1", title: "세종대왕", tag: "인물", date: "재위 1418–1450", location: "경복궁", image: "https://images.unsplash.com/photo-1766662538511-650430a2fa6b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=1080", href: "/app/person/1" },
-  { id: "2", title: "이순신", tag: "인물", date: "1592–1598", location: "여수 진남관", image: "https://images.unsplash.com/photo-1591025788510-163f73e9abca?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=1080", href: "/app/person/2" },
-  { id: "3", title: "정조", tag: "인물", date: "재위 1776–1800", location: "수원 화성", image: "https://images.unsplash.com/photo-1602479185195-32f5cd203559?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=1080", href: "/app/person/3" },
-  { id: "4", title: "연산군", tag: "인물", date: "재위 1494–1506", location: "창덕궁", image: "https://images.unsplash.com/photo-1703825864792-5880081beaaf?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=1080", href: "/app/person/4" },
-];
+// PersonResponse.type(enum 코드)의 한글 라벨. 백엔드가 라벨을 안 내려주므로 프론트에서
+// mediaTypeLabel과 같은 방식으로 관리한다(explore/enums/PersonType.java 기준).
+const personTypeLabel: Record<string, string> = {
+  KING: "왕",
+  GENERAL: "장군",
+  SCHOLAR: "학자",
+  MONK: "승려",
+  POLITICIAN: "정치가",
+  INVENTOR: "과학자·발명가",
+  INDEPENDENCE_ACTIVIST: "독립운동가",
+};
 
 const upcomingSchedule = [
   { id: "e1", title: "세종대왕 즉위 기념 특별전", date: "2026.09.01", tag: "전시", image: "https://images.unsplash.com/photo-1766662538511-650430a2fa6b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=300" },
@@ -67,21 +71,21 @@ function ExploreCard({ item, onClick }: { item: ExploreItem; onClick: () => void
           <span className="px-2.5 py-1 rounded-full bg-neutral-900/70 backdrop-blur-sm text-white text-xs font-bold tracking-wide">
             {item.tag}
           </span>
-          <span className="px-2.5 py-1 rounded-full bg-white/85 backdrop-blur-sm text-neutral-900 text-xs font-bold tracking-wide">
-            {item.location}
-          </span>
+          {item.subtitle && (
+            <span className="px-2.5 py-1 rounded-full bg-white/85 backdrop-blur-sm text-neutral-900 text-xs font-bold tracking-wide">
+              {item.subtitle}
+            </span>
+          )}
         </div>
       </div>
       <div className="px-5 pt-5 pb-5">
         <p className="font-heading text-[16px] lg:text-[18px] font-black mb-2 line-clamp-1">{item.title}</p>
-        <div className="flex items-center gap-1.5 text-sm text-muted-foreground mb-1">
-          <Calendar className="w-3.5 h-3.5 shrink-0" />
-          <span className="truncate">{item.date}</span>
-        </div>
-        <div className="flex items-center gap-1.5 text-sm text-muted-foreground mb-3">
-          <MapPin className="w-3.5 h-3.5 shrink-0" />
-          <span className="truncate">{item.location}</span>
-        </div>
+        {item.description && (
+          <div className="flex items-start gap-1.5 text-sm text-muted-foreground mb-3">
+            <MapPin className="w-3.5 h-3.5 shrink-0 mt-0.5" />
+            <span className="line-clamp-2">{item.description}</span>
+          </div>
+        )}
         <span className="inline-flex items-center gap-0.5 text-sm text-primary font-bold group-hover:gap-1.5 transition-all">
           상세 정보 보기
           <ChevronRight className="w-3.5 h-3.5" />
@@ -104,13 +108,46 @@ export default function Home() {
   }, [query]);
 
   const popular = useContents({ sort: "popular", limit: 6, q: debouncedQuery || undefined });
+  const kingdoms = useKingdoms();
+  const persons = usePersons();
+
+  const dynastyItems: ExploreItem[] = useMemo(
+    () =>
+      kingdoms.data.map((k) => ({
+        id: k.kingdom,
+        title: k.name,
+        tag: "시대",
+        image: "/images/tiger.png",
+        href: `/app/dynasty/${k.kingdom}`,
+      })),
+    [kingdoms.data]
+  );
+
+  const personItems: ExploreItem[] = useMemo(
+    () =>
+      persons.data.map((p) => ({
+        id: String(p.personId),
+        title: p.name,
+        tag: "인물",
+        subtitle: personTypeLabel[p.type] ?? p.type,
+        description: p.description,
+        image: "/images/tiger.png",
+        href: `/app/person/${p.personId}`,
+      })),
+    [persons.data]
+  );
 
   const activeItems = useMemo(() => {
     if (category === "콘텐츠 둘러보기") return [];
     const source: ExploreItem[] = category === "나라별" ? dynastyItems : personItems;
     if (query === "") return source;
-    return source.filter((item) => item.title.includes(query) || item.location.includes(query));
-  }, [category, query]);
+    return source.filter(
+      (item) => item.title.includes(query) || (item.description ?? "").includes(query)
+    );
+  }, [category, query, dynastyItems, personItems]);
+
+  // 나라별/인물별 탭은 각각 GET /explore/kingdoms(No.21), GET /explore/persons(No.24) 상태를 그대로 쓴다.
+  const activeExploreStatus = category === "나라별" ? kingdoms.status : category === "인물별" ? persons.status : "done";
 
   return (
     <div className="min-h-screen pb-16">
@@ -241,17 +278,54 @@ export default function Home() {
                 </div>
               )}
             </>
-          ) : activeItems.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-              {activeItems.map((item) => (
-                <ExploreCard key={item.id} item={item} onClick={() => navigate(item.href)} />
-              ))}
-            </div>
           ) : (
-            <div className="text-center py-16 text-muted-foreground">
-              <Search className="w-10 h-10 mx-auto mb-3 opacity-30" />
-              <p className="text-sm">검색 결과가 없습니다</p>
-            </div>
+            <>
+              {activeExploreStatus === "loading" && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                  {Array.from({ length: 3 }).map((_, i) => (
+                    <div key={i}>
+                      <Skeleton className="aspect-[470/323] lg:aspect-[4/3] rounded-[28px] mb-2" />
+                      <Skeleton className="h-4 w-3/4 mb-1.5" />
+                      <Skeleton className="h-3 w-1/3" />
+                    </div>
+                  ))}
+                </div>
+              )}
+              {activeExploreStatus === "unauthenticated" && (
+                <div className="text-center py-16 text-muted-foreground">
+                  <LogIn className="w-10 h-10 mx-auto mb-3 opacity-30" />
+                  <p className="text-sm mb-4">로그인이 필요한 기능이에요</p>
+                  <Button onClick={() => navigate("/login")}>로그인하기</Button>
+                </div>
+              )}
+              {activeExploreStatus === "error" && (
+                <div className="text-center py-16 text-muted-foreground">
+                  <MapPinOff className="w-10 h-10 mx-auto mb-3 opacity-30" />
+                  <p className="text-sm">
+                    {category} 목록을 불러오지 못했어요. 잠시 후 다시 시도해주세요.
+                  </p>
+                </div>
+              )}
+              {activeExploreStatus === "done" && activeItems.length === 0 && (
+                <div className="text-center py-16 text-muted-foreground">
+                  <Search className="w-10 h-10 mx-auto mb-3 opacity-30" />
+                  <p className="text-sm">
+                    {query
+                      ? "검색 결과가 없습니다"
+                      : category === "나라별"
+                        ? "아직 등록된 나라 정보가 없습니다"
+                        : "아직 등록된 인물 정보가 없습니다"}
+                  </p>
+                </div>
+              )}
+              {activeExploreStatus === "done" && activeItems.length > 0 && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                  {activeItems.map((item) => (
+                    <ExploreCard key={item.id} item={item} onClick={() => navigate(item.href)} />
+                  ))}
+                </div>
+              )}
+            </>
           )}
         </section>
 
