@@ -52,25 +52,25 @@ export interface Person {
 
 // No.21 — 나라 목록
 export function getKingdoms() {
-  return apiFetch<Kingdom[]>("/explore/kingdoms");
+  return apiFetch<Kingdom[]>("/api/explore/kingdoms");
 }
 
 // No.22 — 나라 상세
 export function getKingdomDetail(kingdom: string) {
-  return apiFetch<Kingdom>(`/explore/kingdoms/${encodeURIComponent(kingdom)}`);
+  return apiFetch<Kingdom>(`/api/explore/kingdoms/${encodeURIComponent(kingdom)}`);
 }
 
 // No.23 — 나라별 인물
 export function getPersonsByKingdom(kingdom: string) {
-  return apiFetch<Person[]>(`/explore/kingdoms/${encodeURIComponent(kingdom)}/persons`);
+  return apiFetch<Person[]>(`/api/explore/kingdoms/${encodeURIComponent(kingdom)}/persons`);
 }
 
 // No.24 — 전체 인물 목록
 export function getPersons() {
-  return apiFetch<Person[]>("/explore/persons");
+  return apiFetch<Person[]>("/api/explore/persons");
 }
 
 // No.25 — 인물 상세
 export function getPersonDetail(personId: number | string) {
-  return apiFetch<Person>(`/explore/persons/${personId}`);
+  return apiFetch<Person>(`/api/explore/persons/${personId}`);
 }
