@@ -1,7 +1,15 @@
 {
   "rewrites": [
     { "source": "/api/:path*", "destination": "http://54.116.7.199:8080/api/:path*" },
+    { "source": "/auth/:path*", "destination": "http://54.116.7.199:8080/auth/:path*" },
+    { "source": "/users/:path*", "destination": "http://54.116.7.199:8080/users/:path*" },
+    { "source": "/contents/:path*", "destination": "http://54.116.7.199:8080/contents/:path*" },
+    { "source": "/bookmarks/:path*", "destination": "http://54.116.7.199:8080/bookmarks/:path*" },
     { "source": "/explore/:path*", "destination": "http://54.116.7.199:8080/explore/:path*" },
+    { "source": "/places/:path*", "destination": "http://54.116.7.199:8080/places/:path*" },
+    { "source": "/itineraries/:path*", "destination": "http://54.116.7.199:8080/itineraries/:path*" },
+    { "source": "/community/:path*", "destination": "http://54.116.7.199:8080/community/:path*" },
+    { "source": "/reviews/:path*", "destination": "http://54.116.7.199:8080/reviews/:path*" },
     { "source": "/(.*)", "destination": "/index.html" }
   ]
 }
