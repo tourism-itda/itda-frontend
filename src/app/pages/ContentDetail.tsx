@@ -117,7 +117,14 @@ export default function ContentDetail() {
   return (
     <div className="min-h-screen">
       {/* 히어로 */}
-      <div className="relative h-64 lg:h-[420px] bg-gradient-to-br from-navy to-navy/70">
+      <div
+        className={`relative h-64 lg:h-[420px] overflow-hidden ${
+          data.thumbnail_url ? "" : "bg-gradient-to-br from-navy to-navy/70"
+        }`}
+      >
+        {data.thumbnail_url && (
+          <img src={data.thumbnail_url} alt="" className="w-full h-full object-cover" />
+        )}
         <div className="absolute inset-0 bg-gradient-to-t from-background via-background/30 to-transparent" />
         <button
           onClick={() => navigate(-1)}
@@ -208,11 +215,11 @@ export default function ContentDetail() {
         </div>
 
         {/* 사실 vs 각색 */}
-        <div className="mb-12">
-          <div className="bg-muted/60 rounded-[28px] p-5">
-            <h2 className="text-[16px] font-extrabold mb-1">사실 vs 각색</h2>
-            <p className="text-sm text-muted-foreground mb-5">드라마가 역사를 어떻게 바꿨는지 확인해보세요</p>
-            {data.fact_checks.length > 0 ? (
+        {data.fact_checks.length > 0 && (
+          <div className="mb-12">
+            <div className="bg-muted/60 rounded-[28px] p-5">
+              <h2 className="text-[16px] font-extrabold mb-1">사실 vs 각색</h2>
+              <p className="text-sm text-muted-foreground mb-5">드라마가 역사를 어떻게 바꿨는지 확인해보세요</p>
               <div className="space-y-6">
                 {data.fact_checks.map((item) => (
                   <div key={item.content_fact_check_id}>
@@ -234,11 +241,9 @@ export default function ContentDetail() {
                   </div>
                 ))}
               </div>
-            ) : (
-              <p className="text-sm text-muted-foreground">사실 vs 각색 정보를 준비 중이에요.</p>
-            )}
+            </div>
           </div>
-        </div>
+        )}
 
         {/* 관련 장소 */}
         {/* place 도메인 PR 병합 전까지 목록이 비어 있거나 null로 올 수 있어, 에러가 아니라

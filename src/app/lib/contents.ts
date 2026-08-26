@@ -52,6 +52,7 @@ export interface ContentDetailRelatedPlace {
 export interface ContentDetail {
   content_id: number;
   title: string;
+  thumbnail_url: string | null;
   // DB에 아직 스토리텔링 데이터가 채워지지 않은 콘텐츠(예: TMDB에서 막 가져온 직후)는
   // null로 내려온다(실제로 확인함, 예: content_id=101 응답 전부 null).
   summary: string | null;
