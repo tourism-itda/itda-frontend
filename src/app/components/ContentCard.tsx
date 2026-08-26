@@ -23,6 +23,8 @@ export function ContentCard({ content }: ContentCardProps) {
           <img
             src={content.image}
             alt={content.title}
+            loading="lazy"
+            decoding="async"
             className="w-full h-full object-cover"
           />
         )}

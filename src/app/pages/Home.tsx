@@ -72,6 +72,8 @@ export function ExploreCard({ item, onClick }: { item: ExploreItem; onClick: () 
           <img
             src={item.image}
             alt={item.title}
+            loading="lazy"
+            decoding="async"
             className={`w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ${
               item.tag === "인물" ? "object-[50%_20%]" : ""
             }`}
