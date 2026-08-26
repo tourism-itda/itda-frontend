@@ -118,12 +118,12 @@ export default function ContentDetail() {
     <div className="min-h-screen">
       {/* 히어로 */}
       <div
-        className={`relative h-64 lg:h-[420px] overflow-hidden ${
+        className={`relative h-72 md:h-96 overflow-hidden ${
           data.thumbnail_url ? "" : "bg-gradient-to-br from-navy to-navy/70"
         }`}
       >
         {data.thumbnail_url && (
-          <img src={data.thumbnail_url} alt="" className="w-full h-full object-cover" />
+          <img src={data.thumbnail_url} alt="" className="w-full h-full object-cover object-top" />
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-background via-background/30 to-transparent" />
         <button
@@ -198,16 +198,9 @@ export default function ContentDetail() {
                 ))}
               </div>
             </div>
-          ) : data.story_intro || data.story_body ? (
+          ) : data.story_body ? (
             <div className="rounded-[28px] bg-card border border-border/60 shadow-[var(--shadow-md)] p-6 sm:p-8">
-              {data.story_intro && (
-                <p className="text-muted-foreground text-xs text-center tracking-widest uppercase mb-7 font-semibold">
-                  {data.story_intro}
-                </p>
-              )}
-              {data.story_body && (
-                <p className="text-foreground/80 text-sm leading-[1.9]">{data.story_body}</p>
-              )}
+              <p className="text-foreground/80 text-sm leading-[1.9]">{data.story_body}</p>
             </div>
           ) : (
             <p className="text-sm text-muted-foreground">역사 이야기를 준비 중이에요.</p>
