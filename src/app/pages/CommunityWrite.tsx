@@ -105,18 +105,18 @@ export default function CommunityWrite() {
     <div className="min-h-screen pb-10">
       {/* 헤더 */}
       <div className="border-b border-border bg-card sticky top-0 lg:top-16 z-40">
-        <div className="max-w-2xl mx-auto px-4 h-14 flex items-center justify-between">
+        <div className="max-w-2xl mx-auto relative h-14 flex items-center px-4">
           <button
             onClick={() => navigate(-1)}
             className="w-11 h-11 -ml-2.5 flex items-center justify-center rounded-full hover:bg-muted/50 transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
           >
             <ArrowLeft className="w-5 h-5" />
           </button>
-          <h1 className="text-[15px] font-medium">루트 공유하기</h1>
+          <h1 className="mx-auto text-[15px] font-medium">루트 공유하기</h1>
           <button
             onClick={handleSubmit}
             disabled={selectedId === null || submitting}
-            className="text-sm font-semibold text-primary disabled:text-muted-foreground/50 transition-colors px-1"
+            className="text-sm font-semibold text-primary disabled:text-muted-foreground/50 transition-colors px-1 shrink-0"
           >
             {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : "공유"}
           </button>
