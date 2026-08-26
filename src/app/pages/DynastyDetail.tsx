@@ -26,11 +26,9 @@ export default function DynastyDetail() {
     <div className="min-h-screen pb-8">
       {/* 히어로 */}
       <div className="relative h-56 md:h-72 overflow-hidden bg-muted">
-        <img
-          src="/images/tiger.png"
-          alt=""
-          className="w-full h-full object-cover opacity-70"
-        />
+        {status === "done" && kingdom?.image_url && (
+          <img src={kingdom.image_url} alt="" className="w-full h-full object-cover opacity-70" />
+        )}
         <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-black/60" />
 
         <button
@@ -41,7 +39,9 @@ export default function DynastyDetail() {
         </button>
 
         <div className="absolute bottom-5 left-5 right-5">
-          <p className="text-ivory/70 text-sm mb-1">시대</p>
+          <p className="text-ivory/70 text-sm mb-1">
+            {status === "done" && kingdom?.time_period ? kingdom.time_period : "시대"}
+          </p>
           <h1 className="text-ivory text-3xl leading-tight">
             {status === "done" && kingdom ? kingdom.name : " "}
           </h1>
@@ -85,10 +85,11 @@ export default function DynastyDetail() {
 
         {status === "done" && kingdom && (
           <>
-            {/* 설명: 백엔드 KingdomDetailResponse에는 시대 설명·연표 필드가 아직 없다(kingdom/name뿐). */}
+            {/* 설명: KingdomDetailResponse.description은 현재 데이터상 항상 채워져 있지만
+                (HistoricalKingdomData가 전체 Kingdom enum을 다 커버), null/미제공 케이스도 방어적으로 다룬다. */}
             <section>
-              <p className="text-sm text-muted-foreground/70">
-                이 시대에 대한 자세한 소개는 준비 중이에요.
+              <p className="text-sm text-foreground/80 leading-relaxed">
+                {kingdom.description || "이 시대에 대한 자세한 소개는 준비 중이에요."}
               </p>
             </section>
 

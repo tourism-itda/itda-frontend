@@ -28,9 +28,13 @@ import { apiFetch } from "./api";
  *    ({"message":"존재하지 않는 인물입니다."})이 온다(PersonService.getPerson이
  *    IllegalArgumentException을 던지고 GlobalExceptionHandler가 400으로 매핑).
  *
- * 6) KingdomDetailResponse는 kingdom/name 두 필드뿐이다. 시대 설명·연도·주요 사실·관련 사극·관련 장소
- *    같은 필드는 백엔드에 아예 없다(디자인 목업에만 있던 데이터). PersonResponse도 name/description
- *    외에 role·연도·업적·관련 사극·관련 장소는 없다. 화면에서 이 값들을 지어내지 않는다.
+ * 6) KingdomDetailResponse는 kingdom/name/time_period/description/image_url을 내려준다
+ *    (2026-08-26 기준 KingdomDetailResponse.java 확인, No.22 "나라 상세 정보" 반영). 값은
+ *    HistoricalKingdomData.KINGDOMS에서 오는데 전체 Kingdom enum이 다 채워져 있어 실제로는
+ *    null이 오지 않지만, DTO 필드 자체가 nullable 아님을 보장하지 않으므로 화면에서는 방어적으로
+ *    다룬다. 주요 사실·관련 사극·관련 장소 같은 필드는 여전히 백엔드에 없다(디자인 목업에만 있던
+ *    데이터). PersonResponse도 name/description 외에 role·연도·업적·관련 사극·관련 장소는 없다.
+ *    화면에서 이 값들을 지어내지 않는다.
  *
  * 7) 로컬 DB의 person 테이블은 현재 0 rows다(HistoricalPersonData.PEOPLE는 시드 러너에 연결돼 있지
  *    않은 죽은 코드). 그래서 GET /explore/persons, GET /explore/kingdoms/{kingdom}/persons는
@@ -40,6 +44,11 @@ import { apiFetch } from "./api";
 export interface Kingdom {
   kingdom: string;
   name: string;
+  // KingdomResponse(목록, No.21)에는 있지만 null은 아니고, KingdomDetailResponse(상세, No.22)에만
+  // 있는 필드는 목록 응답엔 아예 안 온다(undefined) — 그래서 description은 optional로 둔다.
+  time_period: string | null;
+  description?: string | null;
+  image_url: string | null;
 }
 
 export interface Person {

@@ -43,3 +43,10 @@ export function deleteBookmark(bookmarkId: number) {
     method: "DELETE",
   });
 }
+
+// 서버가 장소 상세/목록 응답에 bookmark_id를 내려주지 않는 경우가 있어(is_bookmarked만 옴),
+// 해제하려면 내 북마크 목록에서 place_id로 역으로 찾아야 한다.
+export async function findBookmarkId(placeId: number): Promise<number | undefined> {
+  const mine = await getMyBookmarks();
+  return mine.find((b) => b.place_id === placeId)?.bookmark_id;
+}

@@ -1,6 +1,9 @@
 import { useState } from "react";
+import { useNavigate } from "react-router";
+import { toast } from "sonner";
 import { Bookmark, Clock, Info, Loader2, Navigation, Shuffle } from "lucide-react";
-import { isBookmarked, toggleBookmark } from "../lib/bookmarks";
+import { ApiError } from "../lib/api";
+import { createBookmark, deleteBookmark, findBookmarkId } from "../lib/bookmarksApi";
 
 /**
  * ItineraryRecommendation(추천 미리보기)과 ItineraryDetail(저장된 일정 상세)이 함께 쓰는
@@ -70,11 +73,51 @@ export function PlaceSlotCard({
   swapping,
   statusLabel,
 }: PlaceSlotCardProps) {
-  const [saved, setSaved] = useState(() => isBookmarked(String(place.place_id)));
+  const navigate = useNavigate();
+  const [saved, setSaved] = useState(false);
+  const [bookmarkId, setBookmarkId] = useState<number | undefined>(undefined);
+  const [bookmarkPending, setBookmarkPending] = useState(false);
 
   const distance = formatDistance(place.to_next_distance_m);
   const duration = formatDuration(place.to_next_duration_min);
   const showConfirmToggle = onConfirm !== undefined;
+
+  async function handleToggleBookmark() {
+    if (bookmarkPending) return;
+    const placeId = place.place_id;
+    const wasSaved = saved;
+
+    setBookmarkPending(true);
+    setSaved(!wasSaved);
+    try {
+      if (wasSaved) {
+        let id = bookmarkId;
+        if (id === undefined) {
+          id = await findBookmarkId(placeId);
+        }
+        if (id !== undefined) {
+          await deleteBookmark(id);
+        }
+        setBookmarkId(undefined);
+      } else {
+        const result = await createBookmark(placeId);
+        setBookmarkId(result.bookmark_id);
+      }
+    } catch (err) {
+      // 실패했으니 낙관적으로 바꿨던 상태를 되돌린다.
+      setSaved(wasSaved);
+      // itda-backend는 인증 필요 라우트에 토큰이 없으면 401이 아니라 403(Forbidden)을 반환할 수 있다
+      // (Spring Security 기본 동작, ItineraryRecommendation.tsx와 동일한 처리).
+      if (err instanceof ApiError && (err.status === 401 || err.status === 403)) {
+        toast("로그인이 필요한 기능이에요. 로그인 후 다시 시도해주세요.");
+        navigate("/login");
+      } else {
+        toast(err instanceof ApiError ? err.message : "북마크 처리에 실패했어요. 잠시 후 다시 시도해주세요.");
+      }
+    } finally {
+      setBookmarkPending(false);
+    }
+  }
 
   return (
     <div
@@ -186,18 +229,9 @@ export function PlaceSlotCard({
           </button>
         )}
         <button
-          onClick={() =>
-            setSaved(
-              toggleBookmark({
-                id: String(place.place_id),
-                name: place.name ?? "",
-                category: place.category ?? "",
-                image: place.image_url ?? "",
-                hours: place.opening_hours ?? "",
-              })
-            )
-          }
-          className="w-9 h-9 shrink-0 flex items-center justify-center rounded-lg border border-border hover:bg-muted transition-colors"
+          onClick={handleToggleBookmark}
+          disabled={bookmarkPending}
+          className="w-9 h-9 shrink-0 flex items-center justify-center rounded-lg border border-border hover:bg-muted transition-colors disabled:opacity-50"
         >
           <Bookmark className={`w-3.5 h-3.5 ${saved ? "fill-primary text-primary" : "text-muted-foreground"}`} />
         </button>

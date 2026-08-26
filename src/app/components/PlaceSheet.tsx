@@ -1,6 +1,9 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router";
+import { toast } from "sonner";
 import { X, MapPin, Clock, Navigation, Bookmark, Loader2 } from "lucide-react";
-import { isBookmarked, toggleBookmark } from "../lib/bookmarks";
+import { ApiError } from "../lib/api";
+import { createBookmark, deleteBookmark, findBookmarkId } from "../lib/bookmarksApi";
 import { usePlaceLookup } from "../lib/usePlaceLookup";
 import { usePlaceDetail } from "../lib/usePlaceDetail";
 
@@ -23,7 +26,10 @@ interface PlaceSheetProps {
 }
 
 export function PlaceSheet({ place, onClose }: PlaceSheetProps) {
+  const navigate = useNavigate();
   const [saved, setSaved] = useState(false);
+  const [bookmarkId, setBookmarkId] = useState<number | undefined>(undefined);
+  const [bookmarkPending, setBookmarkPending] = useState(false);
   // place는 큐레이션된 시드 데이터(이름/카테고리 등)이고, 실제 주소·운영시간·이미지·설명은
   // placeId가 있으면 장소 상세 API로, 없으면 이름으로 관광정보 API를 조회해 보강한다.
   // 조회 실패 시 시드 데이터로 자연스럽게 대체된다.
@@ -34,16 +40,53 @@ export function PlaceSheet({ place, onClose }: PlaceSheetProps) {
     detail.data?.images.find((img) => img.is_primary) ?? detail.data?.images[0];
 
   useEffect(() => {
-    setSaved(place ? isBookmarked(place.id) : false);
+    setSaved(false);
+    setBookmarkId(undefined);
   }, [place?.id]);
 
-  // is_bookmarked는 로그인 시에만 개인화되어 내려오므로, 이미 로컬에 저장된 상태는 유지하고
-  // 서버가 true를 알려주는 경우에만 반영한다.
+  // is_bookmarked는 로그인 시에만 개인화되어 내려오므로, 서버가 true를 알려주는 경우에만 반영한다.
   useEffect(() => {
     if (detail.data?.is_bookmarked) setSaved(true);
   }, [detail.data]);
 
   if (!place) return null;
+
+  async function handleToggleBookmark() {
+    const placeId = place!.placeId;
+    if (placeId === undefined || bookmarkPending) return;
+    const wasSaved = saved;
+
+    setBookmarkPending(true);
+    setSaved(!wasSaved);
+    try {
+      if (wasSaved) {
+        let id = bookmarkId;
+        if (id === undefined) {
+          id = await findBookmarkId(placeId);
+        }
+        if (id !== undefined) {
+          await deleteBookmark(id);
+        }
+        setBookmarkId(undefined);
+      } else {
+        const result = await createBookmark(placeId);
+        setBookmarkId(result.bookmark_id);
+      }
+    } catch (err) {
+      // 실패했으니 낙관적으로 바꿨던 상태를 되돌린다.
+      setSaved(wasSaved);
+      // itda-backend는 인증 필요 라우트에 토큰이 없으면 401이 아니라 403(Forbidden)을 반환할 수 있다
+      // (Spring Security 기본 동작, ItineraryRecommendation.tsx와 동일한 처리).
+      if (err instanceof ApiError && (err.status === 401 || err.status === 403)) {
+        toast("로그인이 필요한 기능이에요. 로그인 후 다시 시도해주세요.");
+        navigate("/login");
+      } else {
+        toast(err instanceof ApiError ? err.message : "북마크 처리에 실패했어요. 잠시 후 다시 시도해주세요.");
+      }
+    } finally {
+      setBookmarkPending(false);
+    }
+  }
 
   const address = detail.data?.address ?? lookup.data?.address ?? place.address;
   const hours = detail.data?.opening_hours ?? lookup.data?.hours ?? place.hours;
@@ -67,19 +110,9 @@ export function PlaceSheet({ place, onClose }: PlaceSheetProps) {
         {/* 북마크 + 닫기 */}
         <div className="absolute top-4 right-4 flex items-center gap-2">
           <button
-            onClick={() =>
-              setSaved(
-                toggleBookmark({
-                  id: place.id,
-                  name: place.name,
-                  category,
-                  image,
-                  address,
-                  hours,
-                })
-              )
-            }
-            className="w-8 h-8 rounded-full bg-muted flex items-center justify-center"
+            onClick={handleToggleBookmark}
+            disabled={place.placeId === undefined || bookmarkPending}
+            className="w-8 h-8 rounded-full bg-muted flex items-center justify-center disabled:opacity-40"
           >
             <Bookmark className={`w-4 h-4 ${saved ? "fill-primary text-primary" : "text-muted-foreground"}`} />
           </button>

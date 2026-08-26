@@ -12,13 +12,11 @@ import {
   X,
   MapPin,
   Navigation,
-  Bookmark,
   Loader2,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
-import { isBookmarked, toggleBookmark } from "../lib/bookmarks";
 import { usePlaceLookup } from "../lib/usePlaceLookup";
 import { ApiError } from "../lib/api";
 import { CommunityPostDetail, CommunityStop, getCommunityPostDetail, importItinerary } from "../lib/community";
@@ -95,7 +93,6 @@ export default function CommunityDetail() {
   const [selectedStop, setSelectedStop] = useState<RouteStop | null>(null);
   const [showImportModal, setShowImportModal] = useState(false);
   const [importing, setImporting] = useState(false);
-  const [stopSaved, setStopSaved] = useState(false);
 
   useEffect(() => {
     if (!id) return;
@@ -141,14 +138,9 @@ export default function CommunityDetail() {
 
   const stops = post ? toRouteStops(post.stops) : [];
 
-  const stopBookmarkId = selectedStop ? `${id}-stop-${selectedStop.order}` : null;
   // selectedStop은 큐레이션된 루트 데이터(이름/카테고리/순서)이고, 실제 주소·운영시간·이미지·
   // 설명은 이름으로 관광정보 API를 조회해 보강한다. 조회 실패 시 큐레이션 데이터로 대체된다.
   const { status: stopLookupStatus, data: stopDetail } = usePlaceLookup(selectedStop?.name);
-
-  useEffect(() => {
-    setStopSaved(stopBookmarkId ? isBookmarked(stopBookmarkId) : false);
-  }, [stopBookmarkId]);
 
   async function handleToggleLike(reviewId: number) {
     if (likingIds.has(reviewId)) return;
@@ -575,26 +567,10 @@ export default function CommunityDetail() {
               <div className="w-10 h-1 rounded-full bg-border" />
             </div>
 
-            {/* 북마크 + 닫기 */}
+            {/* 닫기 */}
+            {/* 북마크 버튼은 뺐다 — 이 stop 응답엔 place_id가 없어서 실제 /api/bookmarks 연동이
+                불가능하다(백엔드 확인 대기 중). */}
             <div className="absolute top-4 right-4 flex items-center gap-2">
-              <button
-                onClick={() => {
-                  if (!selectedStop || !stopBookmarkId) return;
-                  setStopSaved(
-                    toggleBookmark({
-                      id: stopBookmarkId,
-                      name: selectedStop.name,
-                      category: selectedStop.category,
-                      image: stopDetail?.image ?? selectedStop.image,
-                      address: stopDetail?.address ?? selectedStop.address,
-                      hours: stopDetail?.hours ?? selectedStop.hours,
-                    })
-                  );
-                }}
-                className="w-11 h-11 rounded-full bg-muted flex items-center justify-center outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-              >
-                <Bookmark className={`w-4 h-4 ${stopSaved ? "fill-primary text-primary" : "text-muted-foreground"}`} />
-              </button>
               <button
                 onClick={() => setSelectedStop(null)}
                 className="w-11 h-11 rounded-full bg-muted flex items-center justify-center outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"

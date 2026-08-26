@@ -27,7 +27,6 @@ export default function PersonDetail() {
     <div className="min-h-screen pb-8">
       {/* 히어로 */}
       <div className="relative h-56 md:h-72 overflow-hidden bg-muted">
-        <img src="/images/tiger.png" alt="" className="w-full h-full object-cover opacity-70" />
         <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-black/60" />
 
         <button

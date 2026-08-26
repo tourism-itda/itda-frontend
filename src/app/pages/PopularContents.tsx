@@ -202,11 +202,13 @@ export default function PopularContents() {
                       className="relative cursor-pointer group rounded-xl overflow-hidden"
                     >
                       <div className="aspect-[3/4] overflow-hidden bg-muted">
-                        <img
-                          src={c.thumbnail_url ?? "/images/tiger.png"}
-                          alt={c.title}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                        />
+                        {c.thumbnail_url && (
+                          <img
+                            src={c.thumbnail_url}
+                            alt={c.title}
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                          />
+                        )}
                       </div>
                       <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
                       <div className="absolute bottom-2 left-2 right-2">
@@ -237,7 +239,7 @@ export default function PopularContents() {
                     title: content.title,
                     genre: content.media ? mediaTypeLabel[content.media.type] ?? content.media.type : "",
                     era: content.media?.release_year ? String(content.media.release_year) : "",
-                    image: content.thumbnail_url ?? "/images/tiger.png",
+                    image: content.thumbnail_url,
                   }}
                 />
               ))}

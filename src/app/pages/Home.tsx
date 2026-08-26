@@ -19,7 +19,8 @@ interface ExploreItem {
   subtitle?: string;
   /** 인물 카드에서만 쓰는 한 줄 소개(person.description). */
   description?: string | null;
-  image: string;
+  /** 나라 카드: kingdom.image_url. 인물 카드: 백엔드에 이미지 필드가 없어 항상 없음. */
+  image?: string | null;
   href: string;
 }
 
@@ -61,12 +62,14 @@ function ExploreCard({ item, onClick }: { item: ExploreItem; onClick: () => void
       onClick={onClick}
       className="group text-left bg-card rounded-[28px] border border-border shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 overflow-hidden"
     >
-      <div className="relative aspect-[470/323] lg:aspect-[4/3] overflow-hidden">
-        <img
-          src={item.image}
-          alt={item.title}
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-        />
+      <div className="relative aspect-[470/323] lg:aspect-[4/3] overflow-hidden bg-muted">
+        {item.image && (
+          <img
+            src={item.image}
+            alt={item.title}
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+          />
+        )}
         <div className="absolute left-3 bottom-3 flex items-center gap-1.5">
           <span className="px-2.5 py-1 rounded-full bg-neutral-900/70 backdrop-blur-sm text-white text-xs font-bold tracking-wide">
             {item.tag}
@@ -117,7 +120,7 @@ export default function Home() {
         id: k.kingdom,
         title: k.name,
         tag: "시대",
-        image: "/images/tiger.png",
+        image: k.image_url,
         href: `/app/dynasty/${k.kingdom}`,
       })),
     [kingdoms.data]
@@ -131,7 +134,6 @@ export default function Home() {
         tag: "인물",
         subtitle: personTypeLabel[p.type] ?? p.type,
         description: p.description,
-        image: "/images/tiger.png",
         href: `/app/person/${p.personId}`,
       })),
     [persons.data]
@@ -155,7 +157,7 @@ export default function Home() {
 
         {/* 히어로 섹션 */}
         <section className="pt-10 lg:pt-16 pb-8">
-          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-8">
+          <div className="flex flex-col gap-8">
             <div className="flex-1 min-w-0">
               <p className="text-xs tracking-[0.2em] text-primary font-bold uppercase mb-3">Discover Korean History</p>
               <h1 className="font-heading text-[34px] leading-[38.08px] tracking-[-0.04em] lg:text-[64px] lg:leading-[71.68px] mb-3 lg:max-w-[764px]">
@@ -181,15 +183,6 @@ export default function Home() {
                   className="border-0 shadow-none bg-transparent h-9 px-1 text-[16px] font-semibold focus-visible:ring-0"
                 />
               </div>
-            </div>
-
-            {/* 마스코트 이미지 — 우측, 텍스트 쪽으로 당겨서 배치 */}
-            <div className="shrink-0 flex justify-center lg:justify-end lg:-ml-[160px] xl:-ml-[190px]">
-              <img
-                src="/images/tiger.png"
-                alt="잇다 마스코트 호랑이"
-                className="w-72 sm:w-80 lg:w-[26rem] xl:w-[32rem] h-auto drop-shadow-xl select-none pointer-events-none"
-              />
             </div>
           </div>
         </section>
@@ -271,7 +264,7 @@ export default function Home() {
                         title: item.title,
                         genre: item.media ? mediaTypeLabel[item.media.type] ?? item.media.type : "",
                         era: item.media?.release_year ? String(item.media.release_year) : "",
-                        image: item.thumbnail_url ?? "/images/tiger.png",
+                        image: item.thumbnail_url,
                       }}
                     />
                   ))}
