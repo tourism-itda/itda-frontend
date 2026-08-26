@@ -5,7 +5,7 @@ import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
 import { Checkbox } from "../components/ui/checkbox";
-import { BrandMark } from "../components/BrandMark";
+import { AuthLayout } from "../components/AuthLayout";
 import { login } from "../lib/auth";
 import { ApiError } from "../lib/api";
 
@@ -41,20 +41,13 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4">
-      <div className="w-full max-w-sm">
-        <div className="bg-card rounded-2xl border border-border/60 p-8 shadow-[var(--shadow-lg)]">
+    <AuthLayout>
+      <div className="mb-7">
+        <h2 className="font-heading text-2xl font-black mb-1.5">다시 만나 반가워요</h2>
+        <p className="text-muted-foreground text-sm">계정 정보를 입력하고 로그인해주세요</p>
+      </div>
 
-          {/* 로고: 아이콘 + 앱명 한 줄 / 부제목 별도 줄 */}
-          <div className="flex flex-col items-center mb-9">
-            <div className="flex items-center gap-2.5 mb-2">
-              <BrandMark className="w-10 h-10 text-lg" />
-              <span className="font-heading text-2xl font-black text-primary">잇다 관광</span>
-            </div>
-            <p className="text-muted-foreground text-sm">사극 속 이야기를 따라 떠나는 여행</p>
-          </div>
-
-          {/* 폼 */}
+      {/* 폼 */}
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-1.5">
               <Label htmlFor="username" className="text-sm font-medium">아이디</Label>
@@ -130,8 +123,6 @@ export default function Login() {
               회원가입
             </Link>
           </div>
-        </div>
-      </div>
-    </div>
+    </AuthLayout>
   );
 }

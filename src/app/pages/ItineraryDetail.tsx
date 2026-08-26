@@ -235,7 +235,7 @@ export default function ItineraryDetail() {
           </div>
 
           {/* 데스크탑 2분할 */}
-          <div className="hidden lg:flex h-[calc(100vh-105px)]">
+          <div className="hidden lg:flex h-[calc(100vh-101px)]">
             <div className="w-[520px] border-r border-border overflow-y-auto flex flex-col">
               <div className="flex-1 p-5 space-y-5">{renderPlaceList()}</div>
             </div>

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
-import { Loader2, Search, Star, PenLine } from "lucide-react";
+import { Loader2, Search, Star, PenLine, MapPinned } from "lucide-react";
 import { Input } from "../components/ui/input";
 import { PageTitle } from "../components/PageTitle";
 import { CommunityPostSummary, getCommunityPosts } from "../lib/community";
@@ -92,7 +92,7 @@ export default function Community() {
             <PageTitle eyebrow="Community" title="커뮤니티" />
             <button
               onClick={() => navigate("/app/community/write")}
-              className="flex items-center gap-1.5 h-11 px-5 rounded-full bg-foreground text-background text-sm font-black hover:bg-foreground/90 transition-colors"
+              className="flex items-center gap-1.5 h-11 px-5 rounded-full bg-primary text-primary-foreground text-sm font-black hover:bg-primary/90 transition-colors"
             >
               <PenLine className="w-4 h-4" />
               공유하기
@@ -127,6 +127,7 @@ export default function Community() {
 
         {status === "done" && posts.length === 0 && (
           <div className="flex flex-col items-center justify-center py-24 text-center">
+            <MapPinned className="w-10 h-10 mx-auto mb-4 text-muted-foreground/40" />
             <p className="text-muted-foreground mb-6">등록된 루트가 없습니다</p>
             <button
               onClick={() => navigate("/app/community/write")}

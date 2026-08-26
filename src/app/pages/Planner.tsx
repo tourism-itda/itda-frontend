@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
-import { Loader2, LogIn, MapPin, Share2, Trash2 } from "lucide-react";
+import { CalendarX, Loader2, LogIn, MapPin, Share2, Trash2 } from "lucide-react";
 import { Button } from "../components/ui/button";
 import { PageTitle } from "../components/PageTitle";
 import { ConfirmDeleteModal } from "../components/ConfirmDeleteModal";
@@ -156,6 +156,7 @@ export default function Planner() {
 
         {status === "done" && itineraries.length === 0 && (
           <div className="flex flex-col items-center justify-center py-24 text-center">
+            <CalendarX className="w-10 h-10 mx-auto mb-4 text-muted-foreground/40" />
             <p className="text-muted-foreground mb-6">저장된 일정이 없습니다</p>
             <Button variant="outline" onClick={() => navigate("/app")}>탐색하기</Button>
           </div>

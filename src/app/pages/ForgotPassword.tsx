@@ -5,6 +5,7 @@ import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
 import { ArrowLeft } from "lucide-react";
+import { AuthLayout } from "../components/AuthLayout";
 import { requestPasswordReset, verifyPasswordResetCode, resetPassword } from "../lib/auth";
 import { ApiError } from "../lib/api";
 
@@ -71,14 +72,12 @@ export default function ForgotPassword() {
   };
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4">
-      <div className="w-full max-w-sm">
-        <div className="bg-card rounded-2xl border border-border/60 p-8 shadow-[var(--shadow-lg)]">
-          <Link to="/login" className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground mb-6">
-            <ArrowLeft className="w-4 h-4" />
-            <span className="text-sm">로그인으로 돌아가기</span>
-          </Link>
-          <h1 className="text-xl mb-6">비밀번호 찾기</h1>
+    <AuthLayout>
+      <Link to="/login" className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground mb-6">
+        <ArrowLeft className="w-4 h-4" />
+        <span className="text-sm">로그인으로 돌아가기</span>
+      </Link>
+      <h1 className="font-heading text-xl font-black mb-6">비밀번호 찾기</h1>
 
           {step === "request" && (
             <form onSubmit={handleRequest} className="space-y-4">
@@ -157,8 +156,6 @@ export default function ForgotPassword() {
               </Button>
             </form>
           )}
-        </div>
-      </div>
-    </div>
+    </AuthLayout>
   );
 }

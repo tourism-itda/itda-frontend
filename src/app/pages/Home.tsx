@@ -19,7 +19,7 @@ interface ExploreItem {
   subtitle?: string;
   /** 인물 카드에서만 쓰는 한 줄 소개(person.description). */
   description?: string | null;
-  /** 나라 카드: kingdom.image_url. 인물 카드: 백엔드에 이미지 필드가 없어 항상 없음. */
+  /** 나라 카드: kingdom.image_url. 인물 카드: person.image_url. */
   image?: string | null;
   href: string;
 }
@@ -129,12 +129,13 @@ export default function Home() {
   const personItems: ExploreItem[] = useMemo(
     () =>
       persons.data.map((p) => ({
-        id: String(p.personId),
+        id: String(p.person_id),
         title: p.name,
         tag: "인물",
         subtitle: personTypeLabel[p.type] ?? p.type,
         description: p.description,
-        href: `/app/person/${p.personId}`,
+        image: p.image_url,
+        href: `/app/person/${p.person_id}`,
       })),
     [persons.data]
   );

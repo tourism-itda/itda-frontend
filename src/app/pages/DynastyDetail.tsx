@@ -1,5 +1,5 @@
 import { useParams, useNavigate } from "react-router";
-import { ArrowLeft, LogIn, Loader2, ShieldAlert, Users } from "lucide-react";
+import { ArrowLeft, LogIn, MapPinOff, ShieldAlert, Users } from "lucide-react";
 import { Button } from "../components/ui/button";
 import { Skeleton } from "../components/ui/skeleton";
 import { useDynastyDetail } from "../lib/useDynastyDetail";
@@ -77,7 +77,7 @@ export default function DynastyDetail() {
 
         {status === "error" && (
           <div className="flex flex-col items-center justify-center py-24 text-center">
-            <Loader2 className="w-10 h-10 text-muted-foreground/40 mb-4" />
+            <MapPinOff className="w-10 h-10 text-muted-foreground/40 mb-4" />
             <p className="text-muted-foreground mb-1">시대 정보를 불러오지 못했어요</p>
             <p className="text-sm text-muted-foreground/70">잠시 후 다시 시도해주세요</p>
           </div>
@@ -105,8 +105,8 @@ export default function DynastyDetail() {
                 <div className="divide-y divide-border border-t border-b border-border">
                   {persons.map((person) => (
                     <button
-                      key={person.personId}
-                      onClick={() => navigate(`/app/person/${person.personId}`)}
+                      key={person.person_id}
+                      onClick={() => navigate(`/app/person/${person.person_id}`)}
                       className="w-full flex items-center justify-between gap-4 py-4 px-1 text-left group transition-colors hover:bg-muted/40 rounded-xl"
                     >
                       <div className="min-w-0">

@@ -74,7 +74,7 @@ export default function PopularContents() {
     <div className="min-h-screen pb-8">
       {/* 상단 헤더 */}
       <div className="sticky top-0 lg:top-16 z-40 bg-background/95 backdrop-blur-sm hanji-noise border-b border-border">
-        <div className="max-w-3xl mx-auto px-4 py-4">
+        <div className="max-w-[1280px] mx-auto px-4 lg:px-8 py-4">
           <div className="flex items-center gap-3 mb-3">
             <button
               onClick={() => navigate(-1)}
@@ -89,7 +89,7 @@ export default function PopularContents() {
           </div>
 
           {/* 검색바 */}
-          <div className="flex gap-2">
+          <div className="flex gap-2 lg:max-w-md">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input
@@ -138,7 +138,7 @@ export default function PopularContents() {
         </div>
       </div>
 
-      <div className="max-w-3xl mx-auto px-4 mt-5">
+      <div className="max-w-[1280px] mx-auto px-4 lg:px-8 mt-5">
         {/* 정렬 + 결과 수 */}
         <div className="flex items-center justify-between mb-4">
           <p className="text-sm text-muted-foreground">
@@ -160,7 +160,7 @@ export default function PopularContents() {
         </div>
 
         {status === "loading" && page === 0 && (
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 lg:gap-5">
             {Array.from({ length: 9 }).map((_, i) => (
               <div key={i}>
                 <Skeleton className="aspect-[3/4] rounded-xl mb-2" />
@@ -230,7 +230,7 @@ export default function PopularContents() {
             )}
 
             {/* 전체 그리드 */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 lg:gap-5">
               {items.map((content) => (
                 <ContentCard
                   key={content.content_id}

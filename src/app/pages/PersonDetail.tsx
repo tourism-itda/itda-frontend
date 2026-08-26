@@ -1,5 +1,5 @@
 import { useParams, useNavigate } from "react-router";
-import { ArrowLeft, LogIn, Loader2, ShieldAlert } from "lucide-react";
+import { ArrowLeft, LogIn, MapPinOff, ShieldAlert, ScrollText } from "lucide-react";
 import { Button } from "../components/ui/button";
 import { Skeleton } from "../components/ui/skeleton";
 import { usePersonDetail } from "../lib/usePersonDetail";
@@ -25,9 +25,17 @@ export default function PersonDetail() {
 
   return (
     <div className="min-h-screen pb-8">
-      {/* 히어로 */}
-      <div className="relative h-56 md:h-72 overflow-hidden bg-muted">
-        <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-black/60" />
+      {/* 히어로: 인물 이미지가 있으면 사진, 없으면 브랜드 그라디언트 + 장식 아이콘으로 대체 */}
+      <div
+        className="relative h-56 md:h-72 overflow-hidden hanji-noise"
+        style={person?.image_url ? undefined : { background: "linear-gradient(135deg, var(--primary-700), var(--primary-500))" }}
+      >
+        {person?.image_url ? (
+          <img src={person.image_url} alt="" className="w-full h-full object-cover" />
+        ) : (
+          <ScrollText className="absolute -right-6 -bottom-8 w-44 h-44 text-white/10 rotate-[-8deg]" />
+        )}
+        <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-transparent to-black/50" />
 
         <button
           onClick={() => navigate(-1)}
@@ -71,7 +79,7 @@ export default function PersonDetail() {
 
         {status === "error" && (
           <div className="flex flex-col items-center justify-center py-24 text-center">
-            <Loader2 className="w-10 h-10 text-muted-foreground/40 mb-4" />
+            <MapPinOff className="w-10 h-10 text-muted-foreground/40 mb-4" />
             <p className="text-muted-foreground mb-1">인물 정보를 불러오지 못했어요</p>
             <p className="text-sm text-muted-foreground/70">잠시 후 다시 시도해주세요</p>
           </div>

@@ -199,7 +199,7 @@ export default function ContentDetail() {
                     <p className="font-medium text-sm mb-3">{item.topic}</p>
                     <div className="grid grid-cols-2 gap-2">
                       <div className="bg-card rounded-xl p-3">
-                        <p className="text-xs font-semibold text-green-700 dark:text-green-400 mb-1.5 uppercase tracking-wide">
+                        <p className="text-xs font-semibold text-success mb-1.5 uppercase tracking-wide">
                           사실
                         </p>
                         <p className="text-sm leading-relaxed text-foreground/80">{item.fact}</p>

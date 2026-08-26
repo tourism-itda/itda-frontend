@@ -10,9 +10,9 @@ import { apiFetch } from "./api";
  *    (KingdomController.java:14, PersonController.java:11 실제 확인). vite.config.ts에
  *    "/explore" 프록시를 별도로 추가해야 로컬에서 호출이 된다.
  *
- * 2) 응답 필드가 camelCase다. 다른 도메인(ContentDetailResponse 등)은 @JsonProperty로 snake_case를
- *    명시하지만 KingdomResponse/PersonResponse는 그런 어노테이션이 없어 Jackson 기본 규칙대로
- *    personId/kingdom/type이 camelCase 그대로 나간다.
+ * 2) 응답 필드는 대부분 camelCase다(Jackson 기본 규칙, @JsonProperty 없음). 다만 PersonResponse의
+ *    id 필드만은 예외로, 실제로는 person_id로 내려온다(2026-08-26 실제 응답으로 확인 — 프론트가
+ *    이전에 personId로 잘못 가정해서 목록/상세 이동 링크가 "/app/person/undefined"로 깨졌었다).
  *
  * 3) 인증이 필요하다(비로그인 시 403). SecurityConfig.filterChain()의 requestMatchers가 전부
  *    "/api/..." 패턴이라 "/explore/**"는 어떤 permitAll 규칙에도 안 걸리고 anyRequest().authenticated()로
@@ -52,11 +52,14 @@ export interface Kingdom {
 }
 
 export interface Person {
-  personId: number;
+  person_id: number;
   name: string;
   description: string | null;
   kingdom: string;
   type: string;
+  // 상세(GET /explore/persons/{id})는 항상 채워 주지만, 목록 응답에서는 아직 비어있는 경우가
+  // 있어 방어적으로 optional로 둔다.
+  image_url?: string | null;
 }
 
 // No.21 — 나라 목록

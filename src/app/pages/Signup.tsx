@@ -6,6 +6,7 @@ import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
 import { Checkbox } from "../components/ui/checkbox";
 import { ArrowLeft } from "lucide-react";
+import { AuthLayout } from "../components/AuthLayout";
 import { signup, checkLoginIdAvailable, checkNicknameAvailable } from "../lib/auth";
 import { ApiError } from "../lib/api";
 
@@ -120,23 +121,20 @@ export default function Signup() {
   };
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4">
-      {/* 데스크탑: 중앙 카드형 폼 */}
-      <div className="w-full max-w-md">
-        <div className="bg-card rounded-xl border border-border p-8 shadow-sm">
-          {/* 헤더 */}
-          <div className="mb-8">
-            <Link to="/login" className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground mb-4">
-              <ArrowLeft className="w-4 h-4" />
-              <span className="text-sm">돌아가기</span>
-            </Link>
-            <h1 className="text-2xl mb-2">회원가입</h1>
-            <p className="text-muted-foreground text-sm">
-              잇다 관광과 함께 사극 속 장소를 탐험해보세요
-            </p>
-          </div>
+    <AuthLayout size="md">
+      {/* 헤더 */}
+      <div className="mb-7">
+        <Link to="/login" className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground mb-4">
+          <ArrowLeft className="w-4 h-4" />
+          <span className="text-sm">돌아가기</span>
+        </Link>
+        <h1 className="font-heading text-2xl font-black mb-1.5">회원가입</h1>
+        <p className="text-muted-foreground text-sm">
+          잇다 관광과 함께 사극 속 장소를 탐험해보세요
+        </p>
+      </div>
 
-          {/* 폼 */}
+      {/* 폼 */}
           <form onSubmit={handleSubmit} className="space-y-5">
             <div className="space-y-2">
               <Label htmlFor="name">이름</Label>
@@ -289,8 +287,6 @@ export default function Signup() {
               가입하기
             </Button>
           </form>
-        </div>
-      </div>
-    </div>
+    </AuthLayout>
   );
 }

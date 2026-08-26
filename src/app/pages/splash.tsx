@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { useNavigate } from "react-router";
 import { motion } from "motion/react";
 import { getSession } from "../lib/auth";
+import { BrandMark } from "../components/BrandMark";
 
 export default function Splash() {
   const navigate = useNavigate();
@@ -26,24 +27,32 @@ export default function Splash() {
   }, [navigate]);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-terracotta">
+    <div
+      className="min-h-screen flex items-center justify-center hanji-noise relative overflow-hidden"
+      style={{ background: "linear-gradient(160deg, var(--primary-700), var(--primary-500))" }}
+    >
+      {/* 은은한 배경 장식 (자개 톤 원형 광원) */}
+      <div className="absolute -top-24 -right-24 w-72 h-72 rounded-full bg-white/10 blur-3xl pointer-events-none" />
+      <div className="absolute -bottom-32 -left-16 w-80 h-80 rounded-full bg-white/5 blur-3xl pointer-events-none" />
+
       <motion.div
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.5 }}
-        className="text-center"
+        className="text-center relative"
       >
-        <h1 className="font-heading text-4xl md:text-5xl text-gold mb-4">
-          사극 여행 플래너
+        <BrandMark className="w-16 h-16 mx-auto mb-5 shadow-lg" />
+        <h1 className="font-heading text-4xl md:text-5xl text-white mb-3">
+          잇다 관광
         </h1>
-        <p className="text-ivory/60">역사를 여행하다</p>
+        <p className="text-white/70">사극 속 이야기를 여행으로 이어보세요</p>
 
         {/* Loading indicator */}
         <div className="flex items-center justify-center gap-2 mt-8">
           {[0, 1, 2].map((i) => (
             <motion.div
               key={i}
-              className="w-2 h-2 rounded-full bg-gold"
+              className="w-2 h-2 rounded-full bg-white"
               animate={{
                 scale: [1, 1.2, 1],
                 opacity: [0.5, 1, 0.5],
