@@ -11,7 +11,7 @@ import { usePersons } from "../lib/usePersons";
 
 type Category = "콘텐츠 둘러보기" | "나라별" | "인물별";
 
-interface ExploreItem {
+export interface ExploreItem {
   id: string;
   title: string;
   tag: string;
@@ -21,10 +21,15 @@ interface ExploreItem {
   description?: string | null;
   /** 나라 카드: kingdom.image_url. 인물 카드: person.image_url. */
   image?: string | null;
+  /** 인물 카드에서만 쓰는 소속 나라 enum 코드(예: "GORYEO"). 나라별 그룹핑에 쓴다. */
+  kingdomCode?: string;
   href: string;
 }
 
 const categories: Category[] = ["콘텐츠 둘러보기", "나라별", "인물별"];
+
+// 인물별 탭에서 나라 그룹당 홈 화면에 보여줄 카드 수. 넘으면 "전체보기"로 유도한다.
+const PERSON_GROUP_LIMIT = 8;
 
 const mediaTypeLabel: Record<string, string> = {
   MOVIE: "영화",
@@ -34,7 +39,7 @@ const mediaTypeLabel: Record<string, string> = {
 
 // PersonResponse.type(enum 코드)의 한글 라벨. 백엔드가 라벨을 안 내려주므로 프론트에서
 // mediaTypeLabel과 같은 방식으로 관리한다(explore/enums/PersonType.java 기준).
-const personTypeLabel: Record<string, string> = {
+export const personTypeLabel: Record<string, string> = {
   KING: "왕",
   GENERAL: "장군",
   SCHOLAR: "학자",
@@ -56,42 +61,44 @@ const categoryEyebrow: Record<Category, string> = {
   "인물별": "Figures",
 };
 
-function ExploreCard({ item, onClick }: { item: ExploreItem; onClick: () => void }) {
+export function ExploreCard({ item, onClick }: { item: ExploreItem; onClick: () => void }) {
   return (
     <button
       onClick={onClick}
-      className="group text-left bg-card rounded-[28px] border border-border shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 overflow-hidden"
+      className="group text-left bg-card rounded-2xl border border-border shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 overflow-hidden"
     >
-      <div className="relative aspect-[470/323] lg:aspect-[4/3] overflow-hidden bg-muted">
+      <div className="relative aspect-square overflow-hidden bg-muted">
         {item.image && (
           <img
             src={item.image}
             alt={item.title}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+            className={`w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ${
+              item.tag === "인물" ? "object-[50%_20%]" : ""
+            }`}
           />
         )}
-        <div className="absolute left-3 bottom-3 flex items-center gap-1.5">
-          <span className="px-2.5 py-1 rounded-full bg-neutral-900/70 backdrop-blur-sm text-white text-xs font-bold tracking-wide">
+        <div className="absolute left-2 bottom-2 flex items-center gap-1">
+          <span className="px-2 py-0.5 rounded-full bg-neutral-900/70 backdrop-blur-sm text-white text-[10px] font-bold tracking-wide">
             {item.tag}
           </span>
           {item.subtitle && (
-            <span className="px-2.5 py-1 rounded-full bg-white/85 backdrop-blur-sm text-neutral-900 text-xs font-bold tracking-wide">
+            <span className="px-2 py-0.5 rounded-full bg-white/85 backdrop-blur-sm text-neutral-900 text-[10px] font-bold tracking-wide">
               {item.subtitle}
             </span>
           )}
         </div>
       </div>
-      <div className="px-5 pt-5 pb-5">
-        <p className="font-heading text-[16px] lg:text-[18px] font-black mb-2 line-clamp-1">{item.title}</p>
+      <div className="px-3 pt-3 pb-3">
+        <p className="font-heading text-[14px] font-black mb-1 line-clamp-1">{item.title}</p>
         {item.description && (
-          <div className="flex items-start gap-1.5 text-sm text-muted-foreground mb-3">
-            <MapPin className="w-3.5 h-3.5 shrink-0 mt-0.5" />
+          <div className="flex items-start gap-1 text-xs text-muted-foreground mb-2">
+            <MapPin className="w-3 h-3 shrink-0 mt-0.5" />
             <span className="line-clamp-2">{item.description}</span>
           </div>
         )}
-        <span className="inline-flex items-center gap-0.5 text-sm text-primary font-bold group-hover:gap-1.5 transition-all">
+        <span className="inline-flex items-center gap-0.5 text-xs text-primary font-bold group-hover:gap-1.5 transition-all">
           상세 정보 보기
-          <ChevronRight className="w-3.5 h-3.5" />
+          <ChevronRight className="w-3 h-3" />
         </span>
       </div>
     </button>
@@ -135,6 +142,7 @@ export default function Home() {
         subtitle: personTypeLabel[p.type] ?? p.type,
         description: p.description,
         image: p.image_url,
+        kingdomCode: p.kingdom,
         href: `/app/person/${p.person_id}`,
       })),
     [persons.data]
@@ -148,6 +156,42 @@ export default function Home() {
       (item) => item.title.includes(query) || (item.description ?? "").includes(query)
     );
   }, [category, query, dynastyItems, personItems]);
+
+  // 인물별 탭 전용: 나라(kingdom) 코드 -> 한글 이름. 전체보기 진입 경로(/app/dynasty/:code/persons)의
+  // 표시 이름도 이 맵을 그대로 쓴다.
+  const kingdomNameByCode = useMemo(() => {
+    const map: Record<string, string> = {};
+    kingdoms.data.forEach((k) => {
+      map[k.kingdom] = k.name;
+    });
+    return map;
+  }, [kingdoms.data]);
+
+  // 인물별 탭에서만 쓰는, 나라별로 묶은 인물 카드 그룹. 그룹 순서는 나라별 탭(kingdoms.data)과
+  // 동일하게 시대 순으로 맞춘다.
+  const personGroups = useMemo(() => {
+    if (category !== "인물별") return [];
+    const order = kingdoms.data.map((k) => k.kingdom);
+    const byCode = new Map<string, ExploreItem[]>();
+    activeItems.forEach((item) => {
+      const code = item.kingdomCode ?? "UNKNOWN";
+      if (!byCode.has(code)) byCode.set(code, []);
+      byCode.get(code)!.push(item);
+    });
+    const codes = Array.from(byCode.keys()).sort((a, b) => {
+      const ai = order.indexOf(a);
+      const bi = order.indexOf(b);
+      if (ai === -1 && bi === -1) return 0;
+      if (ai === -1) return 1;
+      if (bi === -1) return -1;
+      return ai - bi;
+    });
+    return codes.map((code) => ({
+      code,
+      name: kingdomNameByCode[code] ?? code,
+      items: byCode.get(code)!,
+    }));
+  }, [category, activeItems, kingdoms.data, kingdomNameByCode]);
 
   // 나라별/인물별 탭은 각각 GET /explore/kingdoms(No.21), GET /explore/persons(No.24) 상태를 그대로 쓴다.
   const activeExploreStatus = category === "나라별" ? kingdoms.status : category === "인물별" ? persons.status : "done";
@@ -275,10 +319,10 @@ export default function Home() {
           ) : (
             <>
               {activeExploreStatus === "loading" && (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-                  {Array.from({ length: 3 }).map((_, i) => (
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+                  {Array.from({ length: 4 }).map((_, i) => (
                     <div key={i}>
-                      <Skeleton className="aspect-[470/323] lg:aspect-[4/3] rounded-[28px] mb-2" />
+                      <Skeleton className="aspect-square rounded-2xl mb-2" />
                       <Skeleton className="h-4 w-3/4 mb-1.5" />
                       <Skeleton className="h-3 w-1/3" />
                     </div>
@@ -312,8 +356,36 @@ export default function Home() {
                   </p>
                 </div>
               )}
-              {activeExploreStatus === "done" && activeItems.length > 0 && (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+              {activeExploreStatus === "done" && activeItems.length > 0 && category === "인물별" && (
+                <div className="space-y-10">
+                  {personGroups.map((group) => (
+                    <div key={group.code}>
+                      <div className="flex items-end justify-between mb-4">
+                        <div className="flex items-baseline gap-2">
+                          <h3 className="font-heading text-lg font-black">{group.name}</h3>
+                          <span className="text-sm text-muted-foreground">총 {group.items.length}개</span>
+                        </div>
+                        {group.items.length > PERSON_GROUP_LIMIT && (
+                          <button
+                            onClick={() => navigate(`/app/dynasty/${group.code}/persons`)}
+                            className="text-sm text-primary font-bold hover:underline flex items-center gap-0.5 shrink-0"
+                          >
+                            전체보기
+                            <ChevronRight className="w-4 h-4" />
+                          </button>
+                        )}
+                      </div>
+                      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+                        {group.items.slice(0, PERSON_GROUP_LIMIT).map((item) => (
+                          <ExploreCard key={item.id} item={item} onClick={() => navigate(item.href)} />
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+              {activeExploreStatus === "done" && activeItems.length > 0 && category === "나라별" && (
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
                   {activeItems.map((item) => (
                     <ExploreCard key={item.id} item={item} onClick={() => navigate(item.href)} />
                   ))}

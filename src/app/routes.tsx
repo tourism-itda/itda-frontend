@@ -14,6 +14,7 @@ import Community from "./pages/Community";
 import MyPage from "./pages/MyPage";
 import Layout from "./components/Layout";
 import DynastyDetail from "./pages/DynastyDetail";
+import DynastyPersons from "./pages/DynastyPersons";
 import PopularContents from "./pages/PopularContents";
 import CommunityDetail from "./pages/CommunityDetail";
 import CommunityWrite from "./pages/CommunityWrite";
@@ -77,6 +78,10 @@ export const router = createBrowserRouter([
       {
         path: "dynasty/:id",
         element: <DynastyDetail />,
+      },
+      {
+        path: "dynasty/:id/persons",
+        element: <DynastyPersons />,
       },
       {
         path: "popular",
