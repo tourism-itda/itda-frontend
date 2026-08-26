@@ -125,6 +125,9 @@ export interface ContentListItem {
   // name은 category 도메인 완성 전까지 항상 "미분류" placeholder.
   category: { category_id: number; name: string } | null;
   view_count: number;
+  // 2026-08-26 기준 백엔드 ContentListItemResponse에는 아직 없는 필드(요청함, PersonResponse의
+  // description과 동일한 역할). 백엔드가 내려주기 시작하면 카드에 자동으로 노출된다.
+  summary?: string | null;
 }
 
 export interface ContentListResponse {

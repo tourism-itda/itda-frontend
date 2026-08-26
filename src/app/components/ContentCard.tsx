@@ -7,6 +7,9 @@ interface ContentCardProps {
     genre: string;
     era: string;
     image?: string | null;
+    // 인물 카드(ExploreCard)의 description과 동일한 역할의 한 줄 소개. 백엔드가 아직 안 내려주면
+    // undefined/null이라 자연히 숨겨진다.
+    summary?: string | null;
   };
 }
 
@@ -31,6 +34,9 @@ export function ContentCard({ content }: ContentCardProps) {
       </div>
       <p className="font-heading text-sm leading-tight mb-0.5 line-clamp-1 group-hover:underline underline-offset-2">{content.title}</p>
       <p className="text-sm text-muted-foreground">{content.era}</p>
+      {content.summary && (
+        <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{content.summary}</p>
+      )}
     </button>
   );
 }

@@ -312,6 +312,7 @@ export default function Home() {
                         genre: item.media ? mediaTypeLabel[item.media.type] ?? item.media.type : "",
                         era: item.media?.release_year ? String(item.media.release_year) : "",
                         image: item.thumbnail_url,
+                        summary: item.summary,
                       }}
                     />
                   ))}

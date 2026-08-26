@@ -143,9 +143,12 @@ export default function ContentDetail() {
         </div>
 
         {/* 등장인물 */}
-        {data.characters.length > 0 && (
-          <div className="mb-10">
-            <h2 className="text-[16px] font-extrabold mb-4">등장인물</h2>
+        {/* 콘텐츠 스토리텔링 데이터(캐릭터·역사 이야기·사실 vs 각색)가 아직 채워지지 않은 경우가 많아
+            (예: TMDB에서 막 가져온 콘텐츠), 섹션 자체를 숨기지 않고 관련 장소 섹션과 동일하게
+            "준비중" 안내를 보여준다. */}
+        <div className="mb-10">
+          <h2 className="text-[16px] font-extrabold mb-4">등장인물</h2>
+          {data.characters.length > 0 ? (
             <div className="space-y-0">
               {data.characters.map((c) => (
                 <div
@@ -160,13 +163,17 @@ export default function ContentDetail() {
                 </div>
               ))}
             </div>
-          </div>
-        )}
+          ) : (
+            <p className="text-sm text-muted-foreground">등장인물 정보를 준비 중이에요.</p>
+          )}
+        </div>
 
         {/* 역사 스토리텔링 */}
-        {data.story_sections.length > 0 && (
-          <div className="mb-10">
-            <h2 className="text-[16px] font-extrabold mb-4">역사 이야기</h2>
+        {/* story_sections(구조화된 절)이 비어 있어도 story_intro/story_body(원문 프롬프트 그대로의
+            생성 텍스트)는 채워져 있는 콘텐츠가 있어, 그 경우 원문 텍스트를 대신 보여준다. */}
+        <div className="mb-10">
+          <h2 className="text-[16px] font-extrabold mb-4">역사 이야기</h2>
+          {data.story_sections.length > 0 ? (
             <div className="rounded-[28px] bg-card border border-border/60 shadow-[var(--shadow-md)] p-6 sm:p-8">
               <p className="text-muted-foreground text-xs text-center tracking-widest uppercase mb-7 font-semibold">
                 {data.story_intro}
@@ -184,15 +191,28 @@ export default function ContentDetail() {
                 ))}
               </div>
             </div>
-          </div>
-        )}
+          ) : data.story_intro || data.story_body ? (
+            <div className="rounded-[28px] bg-card border border-border/60 shadow-[var(--shadow-md)] p-6 sm:p-8">
+              {data.story_intro && (
+                <p className="text-muted-foreground text-xs text-center tracking-widest uppercase mb-7 font-semibold">
+                  {data.story_intro}
+                </p>
+              )}
+              {data.story_body && (
+                <p className="text-foreground/80 text-sm leading-[1.9]">{data.story_body}</p>
+              )}
+            </div>
+          ) : (
+            <p className="text-sm text-muted-foreground">역사 이야기를 준비 중이에요.</p>
+          )}
+        </div>
 
         {/* 사실 vs 각색 */}
-        {data.fact_checks.length > 0 && (
-          <div className="mb-12">
-            <div className="bg-muted/60 rounded-[28px] p-5">
-              <h2 className="text-[16px] font-extrabold mb-1">사실 vs 각색</h2>
-              <p className="text-sm text-muted-foreground mb-5">드라마가 역사를 어떻게 바꿨는지 확인해보세요</p>
+        <div className="mb-12">
+          <div className="bg-muted/60 rounded-[28px] p-5">
+            <h2 className="text-[16px] font-extrabold mb-1">사실 vs 각색</h2>
+            <p className="text-sm text-muted-foreground mb-5">드라마가 역사를 어떻게 바꿨는지 확인해보세요</p>
+            {data.fact_checks.length > 0 ? (
               <div className="space-y-6">
                 {data.fact_checks.map((item) => (
                   <div key={item.content_fact_check_id}>
@@ -214,9 +234,11 @@ export default function ContentDetail() {
                   </div>
                 ))}
               </div>
-            </div>
+            ) : (
+              <p className="text-sm text-muted-foreground">사실 vs 각색 정보를 준비 중이에요.</p>
+            )}
           </div>
-        )}
+        </div>
 
         {/* 관련 장소 */}
         {/* place 도메인 PR 병합 전까지 목록이 비어 있거나 null로 올 수 있어, 에러가 아니라

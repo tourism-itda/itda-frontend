@@ -240,6 +240,7 @@ export default function PopularContents() {
                     genre: content.media ? mediaTypeLabel[content.media.type] ?? content.media.type : "",
                     era: content.media?.release_year ? String(content.media.release_year) : "",
                     image: content.thumbnail_url,
+                    summary: content.summary,
                   }}
                 />
               ))}
