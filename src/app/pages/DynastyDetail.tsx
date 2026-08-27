@@ -88,7 +88,7 @@ export default function DynastyDetail() {
             {/* 설명: KingdomDetailResponse.description은 현재 데이터상 항상 채워져 있지만
                 (HistoricalKingdomData가 전체 Kingdom enum을 다 커버), null/미제공 케이스도 방어적으로 다룬다. */}
             <section>
-              <p className="text-sm text-foreground/80 leading-relaxed">
+              <p className="text-lg text-foreground/80 leading-relaxed">
                 {kingdom.description || "이 시대에 대한 자세한 소개는 준비 중이에요."}
               </p>
             </section>
@@ -102,26 +102,33 @@ export default function DynastyDetail() {
                   <p className="text-sm">아직 등록된 인물이 없습니다</p>
                 </div>
               ) : (
-                <div className="divide-y divide-border border-t border-b border-border">
+                <div className="divide-y-2 divide-neutral-400 border-t-2 border-b-2 border-neutral-400">
                   {persons.map((person) => (
                     <button
                       key={person.person_id}
                       onClick={() => navigate(`/app/person/${person.person_id}`)}
-                      className="w-full flex items-center justify-between gap-4 py-4 px-1 text-left group transition-colors hover:bg-muted/40 rounded-xl"
+                      className="w-full flex items-center justify-between gap-4 py-4 px-4 text-left group transition-colors hover:bg-muted/40 rounded-xl"
                     >
                       <div className="min-w-0">
                         <p className="font-heading mb-1 group-hover:text-primary transition-colors">
                           {person.name}
                         </p>
-                        {person.description && (
+                        {(person.summary ?? person.description) && (
                           <p className="text-sm text-muted-foreground line-clamp-1">
-                            {person.description}
+                            {person.summary ?? person.description}
                           </p>
                         )}
                       </div>
-                      <span className="shrink-0 px-2.5 py-1 rounded-full bg-muted text-muted-foreground text-xs font-medium">
-                        {personTypeLabel[person.type] ?? person.type}
-                      </span>
+                      <div className="shrink-0 flex flex-col items-end gap-1">
+                        <span className="px-2.5 py-1 rounded-full bg-muted text-muted-foreground text-xs font-medium">
+                          {personTypeLabel[person.type] ?? person.type}
+                        </span>
+                        {/* 인물별 매핑 테이블 없이, 이 페이지가 이미 들고 있는 단일 kingdom.time_period를
+                            그대로 재사용한다(관련 인물은 전부 이 kingdom 소속이라 매칭이 항상 1:1). */}
+                        {kingdom.time_period && (
+                          <span className="text-[11px] text-muted-foreground/70">{kingdom.time_period}</span>
+                        )}
+                      </div>
                     </button>
                   ))}
                 </div>

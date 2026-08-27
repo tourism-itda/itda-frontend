@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router";
-import { Calendar, ChevronRight, Footprints, LogIn, MapPin, MapPinOff, Search } from "lucide-react";
+import { Calendar, ChevronRight, Footprints, LogIn, MapPin, MapPinOff, Search, User } from "lucide-react";
 import { Input } from "../components/ui/input";
 import { Skeleton } from "../components/ui/skeleton";
 import { Button } from "../components/ui/button";
@@ -8,6 +8,7 @@ import { ContentCard } from "../components/ContentCard";
 import { useContents } from "../lib/useContents";
 import { useKingdoms } from "../lib/useKingdoms";
 import { usePersons } from "../lib/usePersons";
+import { getKingdomEra } from "../lib/kingdomEra";
 
 type Category = "콘텐츠 둘러보기" | "나라별" | "인물별";
 
@@ -17,8 +18,11 @@ export interface ExploreItem {
   tag: string;
   /** 나라 카드: 없음. 인물 카드: 소속 나라 한글 이름(예: "조선"). */
   subtitle?: string;
-  /** 인물 카드에서만 쓰는 한 줄 소개(person.description). */
+  /** 인물 카드에서만 쓰는 한 줄 소개(person.summary, 없으면 person.description으로 폴백). */
   description?: string | null;
+  /** 인물 카드에서만 쓰는 시대 텍스트(예: "918년 ~ 1392년"). kingdoms 목록의 time_period를
+   *  재사용해서 채운다 — 매칭되는 나라가 없으면 undefined로 두고 카드에서 생략한다. */
+  era?: string;
   /** 나라 카드: kingdom.image_url. 인물 카드: person.image_url. */
   image?: string | null;
   /** 인물 카드에서만 쓰는 소속 나라 enum 코드(예: "GORYEO"). 나라별 그룹핑에 쓴다. */
@@ -92,9 +96,18 @@ export function ExploreCard({ item, onClick }: { item: ExploreItem; onClick: () 
       </div>
       <div className="px-3 pt-3 pb-3">
         <p className="font-heading text-[14px] font-black mb-1 line-clamp-1">{item.title}</p>
+        {(item.subtitle || item.era) && item.tag === "인물" && (
+          <p className="text-[11px] text-muted-foreground/80 font-semibold mb-1 truncate">
+            {[item.subtitle, item.era].filter(Boolean).join(" · ")}
+          </p>
+        )}
         {item.description && (
           <div className="flex items-start gap-1 text-xs text-muted-foreground mb-2">
-            <MapPin className="w-3 h-3 shrink-0 mt-0.5" />
+            {item.tag === "인물" ? (
+              <User className="w-3 h-3 shrink-0 mt-0.5" />
+            ) : (
+              <MapPin className="w-3 h-3 shrink-0 mt-0.5" />
+            )}
             <span className="line-clamp-2">{item.description}</span>
           </div>
         )}
@@ -142,12 +155,13 @@ export default function Home() {
         title: p.name,
         tag: "인물",
         subtitle: personTypeLabel[p.type] ?? p.type,
-        description: p.description,
+        description: p.summary ?? p.description,
+        era: getKingdomEra(kingdoms.data, p.kingdom),
         image: p.image_url,
         kingdomCode: p.kingdom,
         href: `/app/person/${p.person_id}`,
       })),
-    [persons.data]
+    [persons.data, kingdoms.data]
   );
 
   const activeItems = useMemo(() => {

@@ -55,6 +55,9 @@ export interface Person {
   person_id: number;
   name: string;
   description: string | null;
+  // 카드용 1~2줄 짧은 소개(PersonResponse.summary, 2026-08-27 백엔드에 추가됨). 구버전 캐시 등
+  // 아직 값이 없는 응답을 대비해 optional로 두고, 카드에서는 summary ?? description으로 폴백한다.
+  summary?: string | null;
   kingdom: string;
   type: string;
   // 상세(GET /explore/persons/{id})는 항상 채워 주지만, 목록 응답에서는 아직 비어있는 경우가

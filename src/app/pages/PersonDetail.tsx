@@ -89,7 +89,7 @@ export default function PersonDetail() {
           <>
             {/* 설명 */}
             <section>
-              <p className="text-foreground leading-relaxed">
+              <p className="text-lg text-foreground leading-relaxed">
                 {person.description ?? "이 인물에 대한 자세한 소개는 준비 중이에요."}
               </p>
             </section>

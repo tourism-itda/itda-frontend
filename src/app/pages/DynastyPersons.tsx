@@ -13,12 +13,15 @@ export default function DynastyPersons() {
   const navigate = useNavigate();
   const { status, kingdom, persons } = useDynastyDetail(kingdomCode);
 
+  // 이 페이지는 단일 나라(kingdomCode) 안의 인물만 다루므로, 매핑 테이블 없이
+  // useDynastyDetail이 이미 받아온 kingdom.time_period를 모든 카드에 그대로 재사용한다.
   const items: ExploreItem[] = persons.map((p) => ({
     id: String(p.person_id),
     title: p.name,
     tag: "인물",
     subtitle: personTypeLabel[p.type] ?? p.type,
-    description: p.description,
+    description: p.summary ?? p.description,
+    era: kingdom?.time_period ?? undefined,
     image: p.image_url,
     kingdomCode: p.kingdom,
     href: `/app/person/${p.person_id}`,
