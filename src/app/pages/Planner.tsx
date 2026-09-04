@@ -120,7 +120,6 @@ export default function Planner() {
       <div className="border-b border-border bg-card sticky top-0 lg:top-16 z-40">
         <div className="max-w-7xl mx-auto px-5 py-4">
           <PageTitle
-            eyebrow="Planner"
             title="내 플래너"
             suffix={
               status === "done" ? (

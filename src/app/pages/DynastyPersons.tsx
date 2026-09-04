@@ -84,7 +84,6 @@ export default function DynastyPersons() {
         {status === "done" && kingdom && (
           <>
             <div className="mb-6">
-              <p className="text-xs tracking-[0.2em] text-primary font-bold uppercase mb-2">Figures</p>
               <div className="flex items-baseline gap-2">
                 <h1 className="font-heading text-2xl font-black">{kingdom.name} 인물</h1>
                 <span className="text-sm text-muted-foreground">총 {items.length}개</span>

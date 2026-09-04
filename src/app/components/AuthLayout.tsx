@@ -34,7 +34,6 @@ export function AuthLayout({ children, size = "sm" }: { children: ReactNode; siz
         </div>
 
         <div className="relative">
-          <p className="text-xs tracking-[0.2em] text-white/70 font-bold uppercase mb-3">Discover Korean History</p>
           <h1 className="font-heading text-white text-[40px] leading-[1.15] font-black mb-4">
             사극 속 이야기를
             <br />

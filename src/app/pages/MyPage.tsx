@@ -247,7 +247,6 @@ export default function MyPage() {
       />
       <div className="border-b border-border bg-card sticky top-0 lg:top-16 z-40">
         <div className="max-w-7xl mx-auto px-5 py-4">
-          <p className="text-xs tracking-[0.2em] text-gold font-medium uppercase mb-1">My Page</p>
           <h1 className="font-heading text-xl">마이페이지</h1>
         </div>
       </div>

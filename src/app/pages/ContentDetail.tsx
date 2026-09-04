@@ -183,7 +183,7 @@ export default function ContentDetail() {
           <h2 className="text-[16px] font-extrabold mb-4">역사 이야기</h2>
           {data.story_sections.length > 0 ? (
             <div className="rounded-[28px] bg-card border border-border/60 shadow-[var(--shadow-md)] p-6 sm:p-8">
-              <p className="text-muted-foreground text-xs text-center tracking-widest uppercase mb-7 font-semibold">
+              <p className="text-muted-foreground text-sm text-center mb-7 font-semibold">
                 {data.story_intro}
               </p>
 

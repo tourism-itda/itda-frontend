@@ -73,12 +73,6 @@ const upcomingSchedule = [
   { id: "e3", title: "정조대왕 능행차 재현", date: "2026.10.03", tag: "축제", image: "https://images.unsplash.com/photo-1602479185195-32f5cd203559?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=300" },
 ];
 
-const categoryEyebrow: Record<Category, string> = {
-  "콘텐츠 둘러보기": "Popular",
-  "나라별": "Dynasty",
-  "인물별": "Figures",
-};
-
 export function ExploreCard({ item, onClick }: { item: ExploreItem; onClick: () => void }) {
   return (
     <button
@@ -236,7 +230,6 @@ export default function Home() {
         <section className="pt-10 lg:pt-16 pb-8">
           <div className="flex flex-col gap-8">
             <div className="flex-1 min-w-0">
-              <p className="text-xs tracking-[0.2em] text-primary font-bold uppercase mb-3">Discover Korean History</p>
               <h1 className="font-heading text-[34px] leading-[38.08px] tracking-[-0.04em] lg:text-[64px] lg:leading-[71.68px] mb-3 lg:max-w-[764px]">
                 역사 속 이야기를
                 <br />
@@ -285,9 +278,6 @@ export default function Home() {
         <section className="mb-20">
           <div className="flex items-end justify-between mb-6">
             <div>
-              <p className="text-xs tracking-[0.2em] text-primary font-bold uppercase mb-2">
-                {categoryEyebrow[category]}
-              </p>
               <div className="flex items-baseline gap-2">
                 <h2 className="font-heading text-[24px] font-black">{category}</h2>
                 <span className="text-sm text-muted-foreground">

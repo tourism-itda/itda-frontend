@@ -89,7 +89,7 @@ export default function Community() {
       <div className="border-b border-border bg-card sticky top-0 lg:top-16 z-40">
         <div className="max-w-[1280px] mx-auto px-4 lg:px-8 py-6">
           <div className="flex items-center justify-between mb-5">
-            <PageTitle eyebrow="Community" title="커뮤니티" />
+            <PageTitle title="커뮤니티" />
             <button
               onClick={() => navigate("/app/community/write")}
               className="flex items-center gap-1.5 h-11 px-5 rounded-full bg-primary text-primary-foreground text-sm font-black hover:bg-primary/90 transition-colors"
