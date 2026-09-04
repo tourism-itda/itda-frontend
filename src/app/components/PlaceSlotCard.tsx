@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router";
+import { useLocation, useNavigate } from "react-router";
 import { toast } from "sonner";
 import { Bookmark, Clock, Info, Loader2, Navigation, Shuffle } from "lucide-react";
 import { ApiError } from "../lib/api";
@@ -74,6 +74,7 @@ export function PlaceSlotCard({
   statusLabel,
 }: PlaceSlotCardProps) {
   const navigate = useNavigate();
+  const location = useLocation();
   const [saved, setSaved] = useState(false);
   const [bookmarkId, setBookmarkId] = useState<number | undefined>(undefined);
   const [bookmarkPending, setBookmarkPending] = useState(false);
@@ -110,7 +111,7 @@ export function PlaceSlotCard({
       // (Spring Security 기본 동작, ItineraryRecommendation.tsx와 동일한 처리).
       if (err instanceof ApiError && (err.status === 401 || err.status === 403)) {
         toast("로그인이 필요한 기능이에요. 로그인 후 다시 시도해주세요.");
-        navigate("/login");
+        navigate("/login", { replace: true, state: { from: location.pathname + location.search } });
       } else {
         toast(err instanceof ApiError ? err.message : "북마크 처리에 실패했어요. 잠시 후 다시 시도해주세요.");
       }

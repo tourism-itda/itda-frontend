@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router";
+import { useNavigate, useSearchParams } from "react-router";
 import { Calendar, ChevronRight, Footprints, LogIn, MapPin, MapPinOff, Search, User } from "lucide-react";
 import { Input } from "../components/ui/input";
 import { Skeleton } from "../components/ui/skeleton";
@@ -31,6 +31,20 @@ export interface ExploreItem {
 }
 
 const categories: Category[] = ["콘텐츠 둘러보기", "나라별", "인물별"];
+
+// 탭 상태를 URL search param(?tab=...)으로 노출할 때 쓰는 영문 슬러그.
+// 한글을 그대로 쓰면 URL 인코딩이 지저분해지므로 이 매핑을 거친다.
+const CATEGORY_SLUG: Record<Category, string> = {
+  "콘텐츠 둘러보기": "content",
+  "나라별": "kingdom",
+  "인물별": "person",
+};
+
+const SLUG_TO_CATEGORY: Record<string, Category> = {
+  content: "콘텐츠 둘러보기",
+  kingdom: "나라별",
+  person: "인물별",
+};
 
 // 인물별 탭에서 나라 그룹당 홈 화면에 보여줄 카드 수. 넘으면 "전체보기"로 유도한다.
 const PERSON_GROUP_LIMIT = 8;
@@ -123,7 +137,9 @@ export function ExploreCard({ item, onClick }: { item: ExploreItem; onClick: () 
 export default function Home() {
   const navigate = useNavigate();
   const [query, setQuery] = useState("");
-  const [category, setCategory] = useState<Category>("콘텐츠 둘러보기");
+  const [searchParams, setSearchParams] = useSearchParams();
+  // 알 수 없는/누락된 tab 값은 기본 탭("콘텐츠 둘러보기")으로 폴백한다.
+  const category: Category = SLUG_TO_CATEGORY[searchParams.get("tab") ?? ""] ?? "콘텐츠 둘러보기";
 
   // 콘텐츠 둘러보기 탭은 검색어를 API 쿼리(q)로 보내므로, 매 타이핑마다 요청하지 않도록 디바운스한다.
   const [debouncedQuery, setDebouncedQuery] = useState("");
@@ -253,7 +269,7 @@ export default function Home() {
           {categories.map((c) => (
             <button
               key={c}
-              onClick={() => setCategory(c)}
+              onClick={() => setSearchParams({ tab: CATEGORY_SLUG[c] })}
               className={`flex items-center h-[38px] px-4 py-2 rounded-full text-sm font-bold whitespace-nowrap border transition-colors ${
                 category === c
                   ? "bg-primary-75 border-primary text-primary"

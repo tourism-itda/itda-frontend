@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router";
+import { useNavigate, useParams, useLocation } from "react-router";
 import { toast } from "sonner";
 import { ArrowLeft, Bookmark, Loader2, MapPinOff } from "lucide-react";
 import { Button } from "../components/ui/button";
@@ -16,6 +16,7 @@ const mediaTypeLabel: Record<string, string> = {
 
 export default function ContentDetail() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { id } = useParams<{ id: string }>();
   const contentId = id !== undefined && !Number.isNaN(Number(id)) ? Number(id) : undefined;
 
@@ -77,7 +78,7 @@ export default function ContentDetail() {
       // (Spring Security 기본 동작, ItineraryRecommendation.tsx와 동일한 처리).
       if (err instanceof ApiError && (err.status === 401 || err.status === 403)) {
         toast("로그인이 필요한 기능이에요. 로그인 후 다시 시도해주세요.");
-        navigate("/login");
+        navigate("/login", { replace: true, state: { from: location.pathname + location.search } });
       } else {
         toast(err instanceof ApiError ? err.message : "북마크 처리에 실패했어요. 잠시 후 다시 시도해주세요.");
       }

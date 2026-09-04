@@ -1,8 +1,10 @@
-import { useParams, useNavigate } from "react-router";
+import { useParams, useNavigate, useLocation } from "react-router";
 import { ArrowLeft, LogIn, MapPinOff, ShieldAlert, ScrollText } from "lucide-react";
 import { Button } from "../components/ui/button";
 import { Skeleton } from "../components/ui/skeleton";
+import { ContentCard } from "../components/ContentCard";
 import { usePersonDetail } from "../lib/usePersonDetail";
+import { usePersonContents } from "../lib/usePersonContents";
 
 // PersonResponse.type(enum 코드)의 한글 라벨(explore/enums/PersonType.java 기준).
 const personTypeLabel: Record<string, string> = {
@@ -15,10 +17,19 @@ const personTypeLabel: Record<string, string> = {
   INDEPENDENCE_ACTIVIST: "독립운동가",
 };
 
+// KingdomContentResponse.mediaType(TMDB 값, PopularContents.tsx/Home.tsx와 동일 매핑)의 한글 라벨.
+const mediaTypeLabel: Record<string, string> = {
+  MOVIE: "영화",
+  DRAMA: "드라마",
+  DOCUMENTARY: "다큐",
+};
+
 export default function PersonDetail() {
   const { id: personId } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
   const { status, person, kingdomName } = usePersonDetail(personId);
+  const { status: contentsStatus, contents } = usePersonContents(personId);
 
   const role =
     person && [personTypeLabel[person.type] ?? person.type, kingdomName].filter(Boolean).join(" · ");
@@ -63,7 +74,7 @@ export default function PersonDetail() {
             <LogIn className="w-10 h-10 text-muted-foreground/40 mb-4" />
             <p className="text-muted-foreground mb-1">로그인이 필요한 기능이에요</p>
             <p className="text-sm text-muted-foreground/70 mb-5">로그인하고 인물 이야기를 확인해보세요</p>
-            <Button onClick={() => navigate("/login")}>로그인하기</Button>
+            <Button onClick={() => navigate("/login", { replace: true, state: { from: location.pathname + location.search } })}>로그인하기</Button>
           </div>
         )}
 
@@ -92,6 +103,46 @@ export default function PersonDetail() {
               <p className="text-lg text-foreground leading-relaxed">
                 {person.description ?? "이 인물에 대한 자세한 소개는 준비 중이에요."}
               </p>
+            </section>
+
+            {/* 관련 콘텐츠 */}
+            {/* GET /explore/persons/{id}/contents는 관련 콘텐츠가 없는 인물이면 빈 배열을 내려준다.
+                ContentDetail.tsx의 "관련 장소" 등 다른 하위 섹션과 동일하게, 섹션 자체는 유지하고
+                내용만 "준비 중" 안내로 바꾼다. */}
+            <section>
+              <h2 className="text-[16px] font-extrabold mb-4">관련 콘텐츠</h2>
+              {contentsStatus === "loading" && (
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                  {Array.from({ length: 3 }).map((_, i) => (
+                    <div key={i}>
+                      <Skeleton className="aspect-[3/4] rounded-xl mb-2" />
+                      <Skeleton className="h-4 w-3/4" />
+                    </div>
+                  ))}
+                </div>
+              )}
+              {contentsStatus === "error" && (
+                <p className="text-sm text-muted-foreground">관련 콘텐츠를 불러오지 못했어요.</p>
+              )}
+              {contentsStatus === "done" && contents.length === 0 && (
+                <p className="text-sm text-muted-foreground">관련 콘텐츠가 없습니다.</p>
+              )}
+              {contentsStatus === "done" && contents.length > 0 && (
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                  {contents.map((c) => (
+                    <ContentCard
+                      key={c.contentId}
+                      content={{
+                        id: String(c.contentId),
+                        title: c.title,
+                        genre: c.mediaType ? mediaTypeLabel[c.mediaType] ?? c.mediaType : "",
+                        era: c.releaseYear ? String(c.releaseYear) : "",
+                        image: c.posterUrl,
+                      }}
+                    />
+                  ))}
+                </div>
+              )}
             </section>
 
             {/* CTA */}

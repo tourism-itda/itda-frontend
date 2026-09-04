@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate, Link } from "react-router";
+import { useLocation, useNavigate, Link } from "react-router";
 import { toast } from "sonner";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
@@ -11,6 +11,7 @@ import { ApiError } from "../lib/api";
 
 export default function Login() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
@@ -20,7 +21,9 @@ export default function Login() {
     if (!username || !password) return;
     try {
       await login(username, password);
-      navigate("/app");
+      // 401/403으로 /login에 리다이렉트된 경우 원래 보려던 화면(state.from)으로 돌아간다.
+      const from = (location.state as { from?: string } | null)?.from ?? "/app";
+      navigate(from, { replace: true });
     } catch (err) {
       toast(err instanceof ApiError ? err.message : "로그인에 실패했습니다.");
     }

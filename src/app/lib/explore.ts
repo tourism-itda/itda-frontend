@@ -89,3 +89,22 @@ export function getPersons() {
 export function getPersonDetail(personId: number | string) {
   return apiFetch<Person>(`/api/explore/persons/${personId}`);
 }
+
+// 인물 관련 콘텐츠 — GET /explore/persons/{personId}/contents.
+// 명세서/작업 지시서는 응답을 { content_id, title, thumbnail_url, view_count }(snake_case)로
+// 안내하지만, 실제 PersonController.getContentsByPerson()이 반환하는 KingdomContentResponse는
+// @JsonProperty 지정이 없는 record라(2026-08-28 기준 PersonController.java:33-38,
+// KingdomContentResponse.java 실제 확인) camelCase 필드 이름 그대로 내려오고, view_count 자체가
+// 없다(썸네일은 posterUrl, 대신 releaseYear/mediaType/overview가 있다). 실제 응답 기준으로 타입을 둔다.
+export interface PersonContent {
+  contentId: number;
+  title: string;
+  releaseYear: number | null;
+  mediaType: string | null;
+  posterUrl: string | null;
+  overview: string | null;
+}
+
+export function getPersonContents(personId: number | string) {
+  return apiFetch<PersonContent[]>(`/api/explore/persons/${personId}/contents`);
+}

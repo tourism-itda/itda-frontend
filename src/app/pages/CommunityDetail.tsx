@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router";
+import { useParams, useNavigate, useLocation } from "react-router";
 import {
   ArrowLeft,
   Star,
@@ -77,6 +77,7 @@ type ReviewStatus = "loading" | "done" | "error";
 export default function CommunityDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const [postStatus, setPostStatus] = useState<PostStatus>("loading");
   const [post, setPost] = useState<CommunityPostDetail | null>(null);
@@ -171,7 +172,7 @@ export default function CommunityDetail() {
       );
       if (err instanceof ApiError && (err.status === 401 || err.status === 403)) {
         toast("로그인이 필요한 기능이에요. 로그인 후 다시 시도해주세요.");
-        navigate("/login");
+        navigate("/login", { replace: true, state: { from: location.pathname + location.search } });
       } else {
         toast(err instanceof ApiError ? err.message : "좋아요 처리에 실패했어요.");
       }
@@ -195,7 +196,7 @@ export default function CommunityDetail() {
     } catch (err) {
       if (err instanceof ApiError && (err.status === 401 || err.status === 403)) {
         toast("로그인이 필요한 기능이에요. 로그인 후 다시 시도해주세요.");
-        navigate("/login");
+        navigate("/login", { replace: true, state: { from: location.pathname + location.search } });
       } else {
         toast(err instanceof ApiError ? err.message : "리뷰 등록에 실패했어요.");
       }
@@ -212,7 +213,7 @@ export default function CommunityDetail() {
       .catch((err) => {
         if (err instanceof ApiError && (err.status === 401 || err.status === 403)) {
           toast("로그인이 필요한 기능이에요. 로그인 후 다시 시도해주세요.");
-          navigate("/login");
+          navigate("/login", { replace: true, state: { from: location.pathname + location.search } });
         } else {
           toast(err instanceof ApiError ? err.message : "가져오기에 실패했어요.");
         }

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router";
+import { useLocation, useNavigate, useParams } from "react-router";
 import { toast } from "sonner";
 import {
   ArrowLeft,
@@ -281,6 +281,7 @@ function CandidateSheet({
 
 export default function RouteBuilder() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { contentId: contentIdParam } = useParams<{ contentId: string }>();
   const contentId =
     contentIdParam !== undefined && !Number.isNaN(Number(contentIdParam)) ? Number(contentIdParam) : undefined;
@@ -490,7 +491,7 @@ export default function RouteBuilder() {
       // (Spring Security 기본 동작, ItineraryRecommendation.tsx와 동일한 처리).
       if (err instanceof ApiError && (err.status === 401 || err.status === 403)) {
         toast("로그인이 필요한 기능이에요. 로그인 후 다시 시도해주세요.");
-        navigate("/login");
+        navigate("/login", { replace: true, state: { from: location.pathname + location.search } });
       } else {
         toast(err instanceof ApiError ? err.message : "일정을 저장하지 못했어요. 잠시 후 다시 시도해주세요.");
       }

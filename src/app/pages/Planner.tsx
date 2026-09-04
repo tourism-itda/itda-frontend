@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router";
+import { useLocation, useNavigate } from "react-router";
 import { toast } from "sonner";
 import { CalendarX, Loader2, LogIn, MapPin, Share2, Trash2 } from "lucide-react";
 import { Button } from "../components/ui/button";
@@ -13,6 +13,7 @@ type Status = "loading" | "done" | "unauthenticated" | "error";
 
 export default function Planner() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [status, setStatus] = useState<Status>("loading");
   const [itineraries, setItineraries] = useState<ItinerarySummary[]>([]);
   const [pendingShareIds, setPendingShareIds] = useState<Set<number>>(new Set());
@@ -75,7 +76,7 @@ export default function Planner() {
       );
       if (err instanceof ApiError && (err.status === 401 || err.status === 403)) {
         toast("로그인이 필요한 기능이에요. 로그인 후 다시 시도해주세요.");
-        navigate("/login");
+        navigate("/login", { replace: true, state: { from: location.pathname + location.search } });
       } else {
         toast(err instanceof ApiError ? err.message : "공유 처리에 실패했어요. 잠시 후 다시 시도해주세요.");
       }
@@ -104,7 +105,7 @@ export default function Planner() {
     } catch (err) {
       if (err instanceof ApiError && (err.status === 401 || err.status === 403)) {
         toast("로그인이 필요한 기능이에요. 로그인 후 다시 시도해주세요.");
-        navigate("/login");
+        navigate("/login", { replace: true, state: { from: location.pathname + location.search } });
       } else {
         toast(err instanceof ApiError ? err.message : "삭제에 실패했어요. 잠시 후 다시 시도해주세요.");
       }
@@ -143,7 +144,7 @@ export default function Planner() {
             <LogIn className="w-10 h-10 text-muted-foreground/40 mb-4" />
             <p className="text-muted-foreground mb-1">로그인이 필요한 기능이에요</p>
             <p className="text-sm text-muted-foreground/70 mb-5">로그인하고 저장한 일정을 확인해보세요</p>
-            <Button onClick={() => navigate("/login")}>로그인하기</Button>
+            <Button onClick={() => navigate("/login", { replace: true, state: { from: location.pathname + location.search } })}>로그인하기</Button>
           </div>
         )}
 

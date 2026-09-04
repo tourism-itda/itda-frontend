@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router";
+import { useLocation, useNavigate, useParams } from "react-router";
 import { toast } from "sonner";
 import { ArrowLeft, Loader2, LogIn, MapPinOff, Pencil, Save, X } from "lucide-react";
 import { Button } from "../components/ui/button";
@@ -37,6 +37,7 @@ const statusLabels: Record<ItineraryPlaceStatus, string> = {
 export default function ItineraryDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const [status, setStatus] = useState<Status>("loading");
   const [detail, setDetail] = useState<ItineraryDetailData | null>(null);
@@ -100,7 +101,7 @@ export default function ItineraryDetail() {
     } catch (err) {
       if (err instanceof ApiError && (err.status === 401 || err.status === 403)) {
         toast("로그인이 필요한 기능이에요. 로그인 후 다시 시도해주세요.");
-        navigate("/login");
+        navigate("/login", { replace: true, state: { from: location.pathname + location.search } });
       } else {
         toast(err instanceof ApiError ? err.message : "일정을 수정하지 못했어요. 잠시 후 다시 시도해주세요.");
       }
@@ -205,7 +206,7 @@ export default function ItineraryDetail() {
           <LogIn className="w-10 h-10 text-muted-foreground/40 mb-4" />
           <p className="text-muted-foreground mb-1">로그인이 필요한 기능이에요</p>
           <p className="text-sm text-muted-foreground/70 mb-5">로그인하고 저장한 일정을 확인해보세요</p>
-          <Button onClick={() => navigate("/login")}>로그인하기</Button>
+          <Button onClick={() => navigate("/login", { replace: true, state: { from: location.pathname + location.search } })}>로그인하기</Button>
         </div>
       )}
 

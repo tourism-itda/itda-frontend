@@ -114,7 +114,7 @@ export default function Signup() {
         birthDate: formData.birthdate,
         agreedToTerms,
       });
-      navigate("/app");
+      navigate("/app", { replace: true });
     } catch (err) {
       toast(err instanceof ApiError ? err.message : "회원가입에 실패했습니다.");
     }

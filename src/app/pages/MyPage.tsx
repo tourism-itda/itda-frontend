@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { useNavigate } from "react-router";
+import { useLocation, useNavigate } from "react-router";
 import { toast } from "sonner";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
@@ -32,6 +32,7 @@ import { ApiError } from "../lib/api";
 
 export default function MyPage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [profile, setProfile] = useState<UserProfileResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
@@ -55,7 +56,7 @@ export default function MyPage() {
       .catch((err) => {
         if (cancelled) return;
         if (err instanceof ApiError && (err.status === 401 || err.status === 403)) {
-          navigate("/login");
+          navigate("/login", { replace: true, state: { from: location.pathname + location.search } });
         } else {
           toast(err instanceof ApiError ? err.message : "내 정보를 불러오지 못했어요.");
         }
@@ -84,7 +85,7 @@ export default function MyPage() {
       toast("프로필이 저장되었습니다.");
     } catch (err) {
       if (err instanceof ApiError && (err.status === 401 || err.status === 403)) {
-        navigate("/login");
+        navigate("/login", { replace: true, state: { from: location.pathname + location.search } });
       } else {
         toast(err instanceof ApiError ? err.message : "프로필 저장에 실패했어요.");
       }
@@ -117,7 +118,7 @@ export default function MyPage() {
       toast("프로필 사진이 변경되었습니다.");
     } catch (err) {
       if (err instanceof ApiError && (err.status === 401 || err.status === 403)) {
-        navigate("/login");
+        navigate("/login", { replace: true, state: { from: location.pathname + location.search } });
       } else {
         toast(err instanceof ApiError ? err.message : "프로필 사진 업로드에 실패했어요.");
       }
@@ -137,7 +138,7 @@ export default function MyPage() {
       document.documentElement.classList.toggle("dark", !checked);
       setProfile((prev) => (prev ? { ...prev, darkMode: !checked } : prev));
       if (err instanceof ApiError && (err.status === 401 || err.status === 403)) {
-        navigate("/login");
+        navigate("/login", { replace: true, state: { from: location.pathname + location.search } });
       } else {
         toast(err instanceof ApiError ? err.message : "다크 모드 설정을 저장하지 못했어요.");
       }
@@ -148,7 +149,7 @@ export default function MyPage() {
     try {
       await logout();
     } finally {
-      navigate("/login");
+      navigate("/login", { replace: true });
     }
   };
 
@@ -157,11 +158,11 @@ export default function MyPage() {
     try {
       await deleteMyAccount();
       setShowWithdrawConfirm(false);
-      navigate("/login");
+      navigate("/login", { replace: true });
     } catch (err) {
       if (err instanceof ApiError && (err.status === 401 || err.status === 403)) {
         setShowWithdrawConfirm(false);
-        navigate("/login");
+        navigate("/login", { replace: true });
       } else {
         toast(err instanceof ApiError ? err.message : "회원 탈퇴에 실패했어요.");
       }
