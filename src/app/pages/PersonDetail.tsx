@@ -1,10 +1,11 @@
 import { useParams, useNavigate, useLocation } from "react-router";
-import { ArrowLeft, LogIn, MapPinOff, ShieldAlert, ScrollText } from "lucide-react";
+import { ArrowLeft, LogIn, MapPin, MapPinOff, ShieldAlert, ScrollText } from "lucide-react";
 import { Button } from "../components/ui/button";
 import { Skeleton } from "../components/ui/skeleton";
 import { ContentCard } from "../components/ContentCard";
 import { usePersonDetail } from "../lib/usePersonDetail";
 import { usePersonContents } from "../lib/usePersonContents";
+import { usePersonPlaces } from "../lib/usePersonPlaces";
 
 // PersonResponse.type(enum 코드)의 한글 라벨(explore/enums/PersonType.java 기준).
 const personTypeLabel: Record<string, string> = {
@@ -30,6 +31,7 @@ export default function PersonDetail() {
   const location = useLocation();
   const { status, person, kingdomName } = usePersonDetail(personId);
   const { status: contentsStatus, contents } = usePersonContents(personId);
+  const { status: placesStatus, places } = usePersonPlaces(personId);
 
   const role =
     person && [personTypeLabel[person.type] ?? person.type, kingdomName].filter(Boolean).join(" · ");
@@ -140,6 +142,45 @@ export default function PersonDetail() {
                         image: c.posterUrl,
                       }}
                     />
+                  ))}
+                </div>
+              )}
+            </section>
+
+            {/* 관련 장소 (GET /explore/persons/{id}/places) */}
+            <section>
+              <h2 className="text-[16px] font-extrabold mb-4">관련 장소</h2>
+              {placesStatus === "loading" && (
+                <div className="space-y-3">
+                  <Skeleton className="h-16 w-full rounded-xl" />
+                  <Skeleton className="h-16 w-full rounded-xl" />
+                </div>
+              )}
+              {placesStatus === "error" && (
+                <p className="text-sm text-muted-foreground">관련 장소를 불러오지 못했어요.</p>
+              )}
+              {placesStatus === "done" && places.length === 0 && (
+                <div className="text-center py-12 text-muted-foreground">
+                  <MapPin className="w-8 h-8 mx-auto mb-3 opacity-30" />
+                  <p className="text-sm">아직 등록된 장소가 없습니다</p>
+                </div>
+              )}
+              {placesStatus === "done" && places.length > 0 && (
+                <div className="divide-y divide-border border-t border-border">
+                  {places.map((place) => (
+                    <div key={place.place_id} className="flex items-start justify-between gap-4 py-4">
+                      <div className="min-w-0">
+                        <p className="font-heading mb-1">{place.name}</p>
+                        {place.address && (
+                          <p className="text-sm text-muted-foreground line-clamp-1">{place.address}</p>
+                        )}
+                      </div>
+                      {place.category && (
+                        <span className="shrink-0 px-2.5 py-1 rounded-full bg-muted text-muted-foreground text-xs font-medium">
+                          {place.category}
+                        </span>
+                      )}
+                    </div>
                   ))}
                 </div>
               )}

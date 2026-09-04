@@ -80,6 +80,34 @@ export function getPersonsByKingdom(kingdom: string) {
   return apiFetch<Person[]>(`/api/explore/kingdoms/${encodeURIComponent(kingdom)}/persons`);
 }
 
+// 나라별 관련 콘텐츠 — GET /explore/kingdoms/{kingdom}/contents. KingdomController.getContentsByKingdom가
+// 반환하는 KingdomContentResponse는 인물별 관련 콘텐츠(getPersonContents)와 완전히 동일한 DTO다
+// (explore/dto/KingdomContentResponse.java 실제 확인 — @JsonProperty 없는 record라 camelCase 그대로
+// 내려온다). 그래서 별도 타입을 만들지 않고 PersonContent를 그대로 재사용한다.
+export function getKingdomContents(kingdom: string) {
+  return apiFetch<PersonContent[]>(`/api/explore/kingdoms/${encodeURIComponent(kingdom)}/contents`);
+}
+
+// RelatedPlaceResponse(explore/dto/RelatedPlaceResponse.java) 실제 확인: place_id만
+// @JsonProperty("place_id")로 snake_case이고, 나머지는 필드명이 전부 한 단어라 camelCase/snake_case
+// 표기가 같아 보일 뿐 별도 매핑이 없다(name/category/description/latitude/longitude/address/region).
+// description은 Place.ofTourApi()가 값을 채우지 않는 경로가 있어 null이 내려올 수 있다.
+export interface RelatedPlace {
+  place_id: number;
+  name: string;
+  category: string;
+  description: string | null;
+  latitude: number;
+  longitude: number;
+  address: string;
+  region: string;
+}
+
+// 나라별 관련 장소 — GET /explore/kingdoms/{kingdom}/places.
+export function getKingdomPlaces(kingdom: string) {
+  return apiFetch<RelatedPlace[]>(`/api/explore/kingdoms/${encodeURIComponent(kingdom)}/places`);
+}
+
 // No.24 — 전체 인물 목록
 export function getPersons() {
   return apiFetch<Person[]>("/api/explore/persons");
@@ -107,4 +135,11 @@ export interface PersonContent {
 
 export function getPersonContents(personId: number | string) {
   return apiFetch<PersonContent[]>(`/api/explore/persons/${personId}/contents`);
+}
+
+// 인물 관련 장소 — GET /explore/persons/{personId}/places. 나라별 관련 장소(getKingdomPlaces)와
+// 동일한 RelatedPlaceResponse를 반환하므로(PersonController.java:40-45 실제 확인) RelatedPlace
+// 타입을 그대로 재사용한다.
+export function getPersonPlaces(personId: number | string) {
+  return apiFetch<RelatedPlace[]>(`/api/explore/persons/${personId}/places`);
 }
