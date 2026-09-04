@@ -1,4 +1,4 @@
-import { apiFetch, ApiError } from "./api";
+import { apiFetch, ApiError, saveToken, clearToken, isTokenRemembered } from "./api";
 
 // itda-backend(참고용) 실제 DTO는 요청/응답 모두 camelCase이며 Jackson 네이밍 전략 변경이 없다.
 // (LoginRequest, SignupRequest, UpdateProfileRequest 등 전부 camelCase 필드명의 record)
@@ -62,47 +62,57 @@ export interface PresignedUrlResponse {
   publicUrl: string;
 }
 
-const ACCESS_TOKEN_KEY = "accessToken";
 const USER_KEY = "user";
 
-function persistAuth(auth: AuthResponse) {
-  localStorage.setItem(ACCESS_TOKEN_KEY, auth.accessToken);
-  localStorage.setItem(USER_KEY, JSON.stringify(auth.user));
+// user 캐시는 토큰과 같은 storage에 함께 둔다. 토큰이 sessionStorage에 있는데 user만
+// localStorage에 남으면, 탭을 닫아도 로그인 정보 일부가 계속 남는 문제가 생긴다.
+function saveUser(user: UserResponse, rememberMe: boolean) {
+  localStorage.removeItem(USER_KEY);
+  sessionStorage.removeItem(USER_KEY);
+  (rememberMe ? localStorage : sessionStorage).setItem(USER_KEY, JSON.stringify(user));
+}
+
+function persistAuth(auth: AuthResponse, rememberMe: boolean) {
+  saveToken(auth.accessToken, rememberMe);
+  saveUser(auth.user, rememberMe);
 }
 
 function clearAuth() {
-  localStorage.removeItem(ACCESS_TOKEN_KEY);
+  clearToken();
   localStorage.removeItem(USER_KEY);
+  sessionStorage.removeItem(USER_KEY);
 }
 
 // 앱 진입 시 자동 로그인 분기용. user가 null이면(토큰 없음/만료) 로컬에 남은 인증 정보를 정리한다.
 export async function getSession(): Promise<SessionResponse> {
   const session = await apiFetch<SessionResponse>("/api/auth/session");
   if (session.user) {
-    localStorage.setItem(USER_KEY, JSON.stringify(session.user));
+    // user 캐시를 토큰이 실제로 들어있는 storage(자동 로그인 여부)에 맞춰 갱신한다.
+    saveUser(session.user, isTokenRemembered());
   } else {
     clearAuth();
   }
   return session;
 }
 
-export async function login(loginId: string, password: string): Promise<AuthResponse> {
+export async function login(loginId: string, password: string, rememberMe: boolean): Promise<AuthResponse> {
   const auth = await apiFetch<AuthResponse>("/api/auth/login", {
     method: "POST",
     body: JSON.stringify({ loginId, password }),
   });
-  persistAuth(auth);
+  persistAuth(auth, rememberMe);
   return auth;
 }
 
 // 카카오 로그인: 백엔드가 POST /api/auth/kakao({ code }) 방식으로 확정했다(AuthController.kakaoLogin,
 // 실제 소스로 재검증함). 응답은 일반 로그인과 동일한 LoginResponse({accessToken, user})라 저장 로직도 동일하게 재사용한다.
+// 카카오 로그인 화면엔 "자동 로그인" 체크박스가 없어, 기존 동작 그대로 항상 localStorage에 저장한다.
 export async function loginWithKakao(code: string): Promise<AuthResponse> {
   const auth = await apiFetch<AuthResponse>("/api/auth/kakao", {
     method: "POST",
     body: JSON.stringify({ code }),
   });
-  persistAuth(auth);
+  persistAuth(auth, true);
   return auth;
 }
 
@@ -127,7 +137,7 @@ export async function signup(data: SignupRequest): Promise<AuthResponse> {
     method: "POST",
     body: JSON.stringify(data),
   });
-  persistAuth(auth);
+  persistAuth(auth, true);
   return auth;
 }
 
@@ -181,7 +191,7 @@ export async function deleteMyAccount(): Promise<SuccessResponse> {
 }
 
 export function getCurrentUser(): UserResponse | null {
-  const raw = localStorage.getItem(USER_KEY);
+  const raw = localStorage.getItem(USER_KEY) ?? sessionStorage.getItem(USER_KEY);
   if (!raw) return null;
   try {
     return JSON.parse(raw) as UserResponse;

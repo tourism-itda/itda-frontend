@@ -20,7 +20,7 @@ export default function Login() {
     e.preventDefault();
     if (!username || !password) return;
     try {
-      await login(username, password);
+      await login(username, password, rememberMe);
       // 401/403으로 /login에 리다이렉트된 경우 원래 보려던 화면(state.from)으로 돌아간다.
       const from = (location.state as { from?: string } | null)?.from ?? "/app";
       navigate(from, { replace: true });
