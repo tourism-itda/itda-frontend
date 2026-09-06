@@ -39,3 +39,10 @@ Thumbs.db
 # Cache
 .cache/
 .eslintcache
+.vercel
+.env*
+
+# 나무위키 → Vercel Blob 이관 스크립트 산출물 (scripts/migrate-*.mjs, scripts/find-*.mjs)
+# 스크립트 코드는 커밋 대상이지만, 실행할 때마다 나오는 결과 데이터는 커밋하지 않는다.
+/migration-*.json
+/migration-update.sql

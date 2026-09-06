@@ -5,7 +5,9 @@
   "type": "module",
   "scripts": {
     "build": "vite build",
-    "dev": "vite"
+    "dev": "vite",
+    "migrate:namuwiki": "node --env-file=.env.local scripts/migrate-namuwiki-images.mjs",
+    "migrate:namuwiki:refs": "node scripts/find-namuwiki-source-refs.mjs"
   },
   "dependencies": {
     "@emotion/react": "11.14.0",
@@ -66,7 +68,9 @@
   },
   "devDependencies": {
     "@tailwindcss/vite": "4.1.12",
+    "@vercel/blob": "^2.8.0",
     "@vitejs/plugin-react": "4.7.0",
+    "pg": "^8.23.0",
     "tailwindcss": "4.1.12",
     "vite": "6.3.5"
   },
