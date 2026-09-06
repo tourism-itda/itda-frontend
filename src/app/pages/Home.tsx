@@ -9,6 +9,7 @@ import { useContents } from "../lib/useContents";
 import { useKingdoms } from "../lib/useKingdoms";
 import { usePersons } from "../lib/usePersons";
 import { getKingdomEra } from "../lib/kingdomEra";
+import { getUpcomingEvents, EventSummary } from "../lib/events";
 
 type Category = "콘텐츠 둘러보기" | "나라별" | "인물별";
 
@@ -66,12 +67,6 @@ export const personTypeLabel: Record<string, string> = {
   INVENTOR: "과학자·발명가",
   INDEPENDENCE_ACTIVIST: "독립운동가",
 };
-
-const upcomingSchedule = [
-  { id: "e1", title: "세종대왕 즉위 기념 특별전", date: "2026.09.01", tag: "전시", image: "https://images.unsplash.com/photo-1766662538511-650430a2fa6b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=300" },
-  { id: "e2", title: "이순신 장군 탄신 기념행사", date: "2026.09.15", tag: "행사", image: "https://images.unsplash.com/photo-1591025788510-163f73e9abca?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=300" },
-  { id: "e3", title: "정조대왕 능행차 재현", date: "2026.10.03", tag: "축제", image: "https://images.unsplash.com/photo-1602479185195-32f5cd203559?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=300" },
-];
 
 export function ExploreCard({ item, onClick }: { item: ExploreItem; onClick: () => void }) {
   return (
@@ -145,6 +140,28 @@ export default function Home() {
   const popular = useContents({ sort: "popular", limit: 6, q: debouncedQuery || undefined });
   const kingdoms = useKingdoms();
   const persons = usePersons();
+
+  const [upcomingStatus, setUpcomingStatus] = useState<"loading" | "done" | "error">("loading");
+  const [upcomingEvents, setUpcomingEvents] = useState<EventSummary[]>([]);
+
+  useEffect(() => {
+    let cancelled = false;
+    setUpcomingStatus("loading");
+
+    getUpcomingEvents(3)
+      .then((result) => {
+        if (cancelled) return;
+        setUpcomingEvents(result);
+        setUpcomingStatus("done");
+      })
+      .catch(() => {
+        if (!cancelled) setUpcomingStatus("error");
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const dynastyItems: ExploreItem[] = useMemo(
     () =>
@@ -421,25 +438,60 @@ export default function Home() {
         <section className="grid lg:grid-cols-3 gap-5 mb-10">
           <div className="lg:col-span-2 bg-card rounded-[28px] border border-border shadow-sm p-6">
             <h3 className="font-heading text-lg font-black mb-4">다가오는 일정</h3>
-            <div className="divide-y divide-border">
-              {upcomingSchedule.map((ev) => (
-                <div key={ev.id} className="flex items-center gap-4 py-3 first:pt-0 last:pb-0">
-                  <div className="w-16 h-16 shrink-0 rounded-sm overflow-hidden">
-                    <img src={ev.image} alt={ev.title} className="w-full h-full object-cover" />
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="font-medium text-sm truncate">{ev.title}</p>
-                    <div className="flex items-center gap-1.5 text-sm text-muted-foreground mt-1">
-                      <Calendar className="w-3 h-3 shrink-0" />
-                      <span>{ev.date}</span>
+
+            {upcomingStatus === "loading" && (
+              <div className="space-y-3">
+                {[0, 1].map((i) => (
+                  <div key={i} className="flex items-center gap-4 py-1">
+                    <Skeleton className="w-16 h-16 rounded-sm shrink-0" />
+                    <div className="flex-1 space-y-2">
+                      <Skeleton className="h-4 w-2/3" />
+                      <Skeleton className="h-3 w-1/3" />
                     </div>
                   </div>
-                  <span className="shrink-0 px-2.5 py-1 rounded-full bg-muted text-muted-foreground text-xs font-medium">
-                    {ev.tag}
-                  </span>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
+
+            {upcomingStatus === "error" && (
+              <div className="text-center py-8 text-muted-foreground">
+                <p className="text-sm">행사 정보를 불러오지 못했어요. 잠시 후 다시 시도해주세요.</p>
+              </div>
+            )}
+
+            {upcomingStatus === "done" && upcomingEvents.length === 0 && (
+              <div className="text-center py-8 text-muted-foreground">
+                <p className="text-sm">예정된 행사가 없어요</p>
+              </div>
+            )}
+
+            {upcomingStatus === "done" && upcomingEvents.length > 0 && (
+              <div className="divide-y divide-border">
+                {upcomingEvents.map((item) => (
+                  <div key={item.content_id} className="flex items-center gap-4 py-3 first:pt-0 last:pb-0">
+                    <div className="w-16 h-16 shrink-0 rounded-sm overflow-hidden bg-muted flex items-center justify-center">
+                      {item.image_url ? (
+                        <img src={item.image_url} alt={item.title} className="w-full h-full object-cover" />
+                      ) : (
+                        <Calendar className="w-5 h-5 text-muted-foreground/40" />
+                      )}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="font-medium text-sm truncate">{item.title}</p>
+                      <div className="flex items-center gap-1.5 text-sm text-muted-foreground mt-1">
+                        <Calendar className="w-3 h-3 shrink-0" />
+                        <span>{item.event_start_date.replaceAll("-", ".")}</span>
+                      </div>
+                    </div>
+                    {item.address && (
+                      <span className="shrink-0 px-2.5 py-1 rounded-full bg-muted text-muted-foreground text-xs font-medium">
+                        {item.address.split(" ")[0]}
+                      </span>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
           <div
