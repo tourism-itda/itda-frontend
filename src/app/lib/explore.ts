@@ -5,30 +5,24 @@ import { apiFetch } from "./api";
  *
  * 2026-08-22 dev 브랜치 기준, 로컬 백엔드에 curl로 직접 확인한 실제 동작(명세서와 다른 점):
  *
- * 1) 경로에 "/api" 프리픽스가 없다. 다른 도메인은 전부 @RequestMapping("/api/...")인데
- *    KingdomController/PersonController만 "/explore/kingdoms", "/explore/persons"로 매핑돼 있다
- *    (KingdomController.java:14, PersonController.java:11 실제 확인). vite.config.ts에
- *    "/explore" 프록시를 별도로 추가해야 로컬에서 호출이 된다.
- *
- * 2) 응답 필드는 대부분 camelCase다(Jackson 기본 규칙, @JsonProperty 없음). 다만 PersonResponse의
+ * 1) 응답 필드는 대부분 camelCase다(Jackson 기본 규칙, @JsonProperty 없음). 다만 PersonResponse의
  *    id 필드만은 예외로, 실제로는 person_id로 내려온다(2026-08-26 실제 응답으로 확인 — 프론트가
  *    이전에 personId로 잘못 가정해서 목록/상세 이동 링크가 "/app/person/undefined"로 깨졌었다).
  *
- * 3) 인증이 필요하다(비로그인 시 403). SecurityConfig.filterChain()의 requestMatchers가 전부
- *    "/api/..." 패턴이라 "/explore/**"는 어떤 permitAll 규칙에도 안 걸리고 anyRequest().authenticated()로
- *    떨어진다. 나라별/인물별 "둘러보기"라는 기능 성격상 의도된 동작인지는 불명확하고, 백엔드 팀 확인이
- *    필요해 보인다(SecurityConfig에 "/explore/**" permitAll 추가 여부). 프론트는 우선 401/403을
- *    "로그인 필요" 상태로 처리한다.
+ * 2) explore 도메인은 permitAll이 최종 정책으로 확정됐다(SecurityConfig.java의
+ *    "/api/explore/**" permitAll 규칙, KingdomController/PersonController 둘 다
+ *    @RequestMapping("api/explore/...")로 매핑돼 있음을 2026-09-06 재확인) — 비로그인도
+ *    200이 오므로 401/403을 "로그인 필요"로 분기하지 않는다.
  *
- * 4) GET /explore/kingdoms/{kingdom}의 {kingdom}은 Kingdom enum 값 그대로(대문자, 예: GORYEO)를
+ * 3) GET /api/explore/kingdoms/{kingdom}의 {kingdom}은 Kingdom enum 값 그대로(대문자, 예: GORYEO)를
  *    요구한다. 소문자 등 매칭 안 되는 값을 주면 404가 아니라 400
  *    ({"message":"No enum constant ..."})이 온다.
  *
- * 5) GET /explore/persons/{personId}도 존재하지 않는 id면 404가 아니라 400
+ * 4) GET /api/explore/persons/{personId}도 존재하지 않는 id면 404가 아니라 400
  *    ({"message":"존재하지 않는 인물입니다."})이 온다(PersonService.getPerson이
  *    IllegalArgumentException을 던지고 GlobalExceptionHandler가 400으로 매핑).
  *
- * 6) KingdomDetailResponse는 kingdom/name/time_period/description/image_url을 내려준다
+ * 5) KingdomDetailResponse는 kingdom/name/time_period/description/image_url을 내려준다
  *    (2026-08-26 기준 KingdomDetailResponse.java 확인, No.22 "나라 상세 정보" 반영). 값은
  *    HistoricalKingdomData.KINGDOMS에서 오는데 전체 Kingdom enum이 다 채워져 있어 실제로는
  *    null이 오지 않지만, DTO 필드 자체가 nullable 아님을 보장하지 않으므로 화면에서는 방어적으로
@@ -36,7 +30,7 @@ import { apiFetch } from "./api";
  *    데이터). PersonResponse도 name/description 외에 role·연도·업적·관련 사극·관련 장소는 없다.
  *    화면에서 이 값들을 지어내지 않는다.
  *
- * 7) 로컬 DB의 person 테이블은 현재 0 rows다(HistoricalPersonData.PEOPLE는 시드 러너에 연결돼 있지
+ * 6) 로컬 DB의 person 테이블은 현재 0 rows다(HistoricalPersonData.PEOPLE는 시드 러너에 연결돼 있지
  *    않은 죽은 코드). 그래서 GET /explore/persons, GET /explore/kingdoms/{kingdom}/persons는
  *    지금 항상 빈 배열을 반환한다 — 화면에서 반드시 빈 상태 UI를 갖춰야 한다.
  */

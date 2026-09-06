@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { ApiError } from "./api";
 import { getKingdomDetail, getPersonsByKingdom, Kingdom, Person } from "./explore";
 
-export type DynastyDetailStatus = "loading" | "done" | "unauthenticated" | "not-found" | "error";
+export type DynastyDetailStatus = "loading" | "done" | "not-found" | "error";
 
 export interface DynastyDetailResult {
   status: DynastyDetailStatus;
@@ -13,7 +13,8 @@ export interface DynastyDetailResult {
 /**
  * GET /explore/kingdoms/{kingdom}(No.22)와 GET /explore/kingdoms/{kingdom}/persons(No.23)를
  * 함께 조회하는 훅. kingdomCode는 Kingdom enum 값 그대로(대문자, 예: "GORYEO")여야 하고, 존재하지
- * 않는 값이면 400이 오는데 이 훅은 그 경우도 "not-found"로 묶어서 다룬다.
+ * 않는 값이면 400이 오는데 이 훅은 그 경우도 "not-found"로 묶어서 다룬다. explore 도메인은
+ * SecurityConfig에서 이미 permitAll로 공개돼 있어(비로그인도 200) 401/403 분기는 두지 않는다.
  */
 export function useDynastyDetail(kingdomCode: string | undefined): DynastyDetailResult {
   const [status, setStatus] = useState<DynastyDetailStatus>("loading");
@@ -40,9 +41,7 @@ export function useDynastyDetail(kingdomCode: string | undefined): DynastyDetail
       })
       .catch((err) => {
         if (cancelled) return;
-        if (err instanceof ApiError && (err.status === 401 || err.status === 403)) {
-          setStatus("unauthenticated");
-        } else if (err instanceof ApiError && err.status === 400) {
+        if (err instanceof ApiError && err.status === 400) {
           setStatus("not-found");
         } else {
           setStatus("error");

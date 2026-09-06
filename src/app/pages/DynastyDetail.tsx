@@ -1,5 +1,5 @@
-import { useParams, useNavigate, useLocation } from "react-router";
-import { ArrowLeft, LogIn, MapPin, MapPinOff, ShieldAlert, Users } from "lucide-react";
+import { useParams, useNavigate } from "react-router";
+import { ArrowLeft, MapPin, MapPinOff, ShieldAlert, Users } from "lucide-react";
 import { Button } from "../components/ui/button";
 import { Skeleton } from "../components/ui/skeleton";
 import { ContentCard } from "../components/ContentCard";
@@ -30,7 +30,6 @@ export default function DynastyDetail() {
   // route param 이름은 :id지만 실제 값은 Kingdom enum 코드(예: "GORYEO")여야 한다.
   const { id: kingdomCode } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const location = useLocation();
   const { status, kingdom, persons } = useDynastyDetail(kingdomCode);
   const { status: contentsStatus, contents } = useKingdomContents(kingdomCode);
   const { status: placesStatus, places } = useKingdomPlaces(kingdomCode);
@@ -66,15 +65,6 @@ export default function DynastyDetail() {
           <div className="space-y-3 py-8">
             <Skeleton className="h-4 w-full" />
             <Skeleton className="h-4 w-2/3" />
-          </div>
-        )}
-
-        {status === "unauthenticated" && (
-          <div className="flex flex-col items-center justify-center py-24 text-center">
-            <LogIn className="w-10 h-10 text-muted-foreground/40 mb-4" />
-            <p className="text-muted-foreground mb-1">로그인이 필요한 기능이에요</p>
-            <p className="text-sm text-muted-foreground/70 mb-5">로그인하고 시대별 이야기를 확인해보세요</p>
-            <Button onClick={() => navigate("/login", { replace: true, state: { from: location.pathname + location.search } })}>로그인하기</Button>
           </div>
         )}
 

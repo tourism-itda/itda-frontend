@@ -1,15 +1,17 @@
 import { useEffect, useState } from "react";
-import { ApiError } from "./api";
 import { getKingdoms, Kingdom } from "./explore";
 
-export type KingdomsStatus = "loading" | "done" | "unauthenticated" | "error";
+export type KingdomsStatus = "loading" | "done" | "error";
 
 export interface KingdomsResult {
   status: KingdomsStatus;
   data: Kingdom[];
 }
 
-/** GET /explore/kingdoms(No.21)로 나라 목록을 조회하는 훅. 비로그인 시 403이 나는 실제 동작을 반영한다. */
+/**
+ * GET /explore/kingdoms(No.21)로 나라 목록을 조회하는 훅. explore 도메인은 SecurityConfig에서
+ * 이미 permitAll로 공개돼 있어(비로그인도 200) 401/403 분기는 두지 않는다.
+ */
 export function useKingdoms(): KingdomsResult {
   const [status, setStatus] = useState<KingdomsStatus>("loading");
   const [data, setData] = useState<Kingdom[]>([]);
@@ -24,13 +26,8 @@ export function useKingdoms(): KingdomsResult {
         setData(result);
         setStatus("done");
       })
-      .catch((err) => {
-        if (cancelled) return;
-        if (err instanceof ApiError && (err.status === 401 || err.status === 403)) {
-          setStatus("unauthenticated");
-        } else {
-          setStatus("error");
-        }
+      .catch(() => {
+        if (!cancelled) setStatus("error");
       });
 
     return () => {

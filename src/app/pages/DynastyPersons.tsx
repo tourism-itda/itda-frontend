@@ -1,5 +1,5 @@
-import { useParams, useNavigate, useLocation } from "react-router";
-import { ArrowLeft, LogIn, MapPinOff, ShieldAlert, Users } from "lucide-react";
+import { useParams, useNavigate } from "react-router";
+import { ArrowLeft, MapPinOff, ShieldAlert, Users } from "lucide-react";
 import { Button } from "../components/ui/button";
 import { Skeleton } from "../components/ui/skeleton";
 import { useDynastyDetail } from "../lib/useDynastyDetail";
@@ -11,7 +11,6 @@ import { ExploreCard, ExploreItem, personTypeLabel } from "./Home";
 export default function DynastyPersons() {
   const { id: kingdomCode } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const location = useLocation();
   const { status, kingdom, persons } = useDynastyDetail(kingdomCode);
 
   // 이 페이지는 단일 나라(kingdomCode) 안의 인물만 다루므로, 매핑 테이블 없이
@@ -52,15 +51,6 @@ export default function DynastyPersons() {
               ))}
             </div>
           </>
-        )}
-
-        {status === "unauthenticated" && (
-          <div className="flex flex-col items-center justify-center py-24 text-center">
-            <LogIn className="w-10 h-10 text-muted-foreground/40 mb-4" />
-            <p className="text-muted-foreground mb-1">로그인이 필요한 기능이에요</p>
-            <p className="text-sm text-muted-foreground/70 mb-5">로그인하고 인물 목록을 확인해보세요</p>
-            <Button onClick={() => navigate("/login", { replace: true, state: { from: location.pathname + location.search } })}>로그인하기</Button>
-          </div>
         )}
 
         {status === "not-found" && (
