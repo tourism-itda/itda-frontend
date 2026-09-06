@@ -5,6 +5,7 @@ import { ArrowLeft, Bookmark, Loader2, LogIn, MapPin } from "lucide-react";
 import { Button } from "../components/ui/button";
 import { ApiError } from "../lib/api";
 import { BookmarkListItem, deleteBookmark, getMyBookmarks } from "../lib/bookmarksApi";
+import { getProxiedImageUrl } from "../lib/imageProxy";
 
 type Status = "loading" | "done" | "unauthenticated" | "error";
 
@@ -120,7 +121,7 @@ export default function Bookmarks() {
               <div key={place.bookmark_id} className="flex gap-3 py-4">
                 {place.image_url ? (
                   <img
-                    src={place.image_url}
+                    src={getProxiedImageUrl(place.image_url)}
                     alt={place.name}
                     referrerPolicy="no-referrer"
                     className="w-20 h-20 rounded-sm object-cover border border-border shrink-0"

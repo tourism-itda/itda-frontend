@@ -8,6 +8,7 @@ import { ConfirmDeleteModal } from "../components/ConfirmDeleteModal";
 import { ApiError } from "../lib/api";
 import { ItinerarySummary, deleteItinerary, getMyItineraries } from "../lib/itineraries";
 import { shareItinerary, unshareItinerary } from "../lib/community";
+import { getProxiedImageUrl } from "../lib/imageProxy";
 
 type Status = "loading" | "done" | "unauthenticated" | "error";
 
@@ -174,7 +175,7 @@ export default function Planner() {
                 <div className="aspect-[4/3] rounded-sm border border-border overflow-hidden relative mb-3">
                   {item.thumbnail_url ? (
                     <img
-                      src={item.thumbnail_url}
+                      src={getProxiedImageUrl(item.thumbnail_url)}
                       alt={item.title}
                       referrerPolicy="no-referrer"
                       className="w-full h-full object-cover"

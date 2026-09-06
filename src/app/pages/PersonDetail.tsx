@@ -6,6 +6,7 @@ import { ContentCard } from "../components/ContentCard";
 import { usePersonDetail } from "../lib/usePersonDetail";
 import { usePersonContents } from "../lib/usePersonContents";
 import { usePersonPlaces } from "../lib/usePersonPlaces";
+import { getProxiedImageUrl } from "../lib/imageProxy";
 
 // PersonResponse.type(enum 코드)의 한글 라벨(explore/enums/PersonType.java 기준).
 const personTypeLabel: Record<string, string> = {
@@ -43,7 +44,7 @@ export default function PersonDetail() {
         style={person?.image_url ? undefined : { background: "linear-gradient(135deg, var(--primary-700), var(--primary-500))" }}
       >
         {person?.image_url ? (
-          <img src={person.image_url} alt="" referrerPolicy="no-referrer" className="w-full h-full object-cover" />
+          <img src={getProxiedImageUrl(person.image_url)} alt="" referrerPolicy="no-referrer" className="w-full h-full object-cover" />
         ) : (
           <ScrollText className="absolute -right-6 -bottom-8 w-44 h-44 text-white/10 rotate-[-8deg]" />
         )}

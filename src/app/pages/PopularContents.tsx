@@ -6,6 +6,7 @@ import { ContentCard } from "../components/ContentCard";
 import { Skeleton } from "../components/ui/skeleton";
 import { useContents } from "../lib/useContents";
 import { ContentListItem, ContentMediaType, ContentSort } from "../lib/contents";
+import { getProxiedImageUrl } from "../lib/imageProxy";
 
 type Genre = "전체" | "드라마" | "영화" | "다큐";
 type Sort = "인기순" | "최신순";
@@ -204,7 +205,7 @@ export default function PopularContents() {
                       <div className="aspect-[3/4] overflow-hidden bg-muted">
                         {c.thumbnail_url && (
                           <img
-                            src={c.thumbnail_url}
+                            src={getProxiedImageUrl(c.thumbnail_url)}
                             alt={c.title}
                             referrerPolicy="no-referrer"
                             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"

@@ -4,6 +4,7 @@ import { Loader2, Search, Star, PenLine, MapPinned } from "lucide-react";
 import { Input } from "../components/ui/input";
 import { PageTitle } from "../components/PageTitle";
 import { CommunityPostSummary, getCommunityPosts } from "../lib/community";
+import { getProxiedImageUrl } from "../lib/imageProxy";
 
 type Status = "loading" | "done" | "error";
 
@@ -14,7 +15,7 @@ function RouteCard({ post, onOpen }: { post: CommunityPostSummary; onOpen: () =>
       <div className="relative aspect-[4/3] overflow-hidden bg-muted">
         {post.thumbnail_url && (
           <img
-            src={post.thumbnail_url}
+            src={getProxiedImageUrl(post.thumbnail_url)}
             alt={post.title}
             referrerPolicy="no-referrer"
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
@@ -40,7 +41,7 @@ function RouteCard({ post, onOpen }: { post: CommunityPostSummary; onOpen: () =>
         <p className="font-heading text-[18px] font-black mb-3 line-clamp-2 leading-snug">{post.title}</p>
         <div className="flex items-center gap-2 mb-2">
           {post.author_profile_url && (
-            <img src={post.author_profile_url} referrerPolicy="no-referrer" className="w-6 h-6 rounded-full shrink-0" />
+            <img src={getProxiedImageUrl(post.author_profile_url)} referrerPolicy="no-referrer" className="w-6 h-6 rounded-full shrink-0" />
           )}
           <span className="text-sm font-semibold text-foreground truncate">{post.author_nickname ?? "알 수 없음"}</span>
         </div>

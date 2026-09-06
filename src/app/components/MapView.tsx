@@ -1,4 +1,5 @@
 import { Check, MapPin } from "lucide-react";
+import { getProxiedImageUrl } from "../lib/imageProxy";
 
 interface Place {
   id: string;
@@ -96,7 +97,7 @@ export function MapView({ places, selectedPlace }: MapViewProps) {
               {selectedPlace === place.id && (
                 <div className="absolute top-12 left-1/2 -translate-x-1/2 w-48 bg-card border border-border rounded-lg shadow-xl p-3 z-10">
                   <img
-                    src={place.image}
+                    src={getProxiedImageUrl(place.image)}
                     alt={place.name}
                     referrerPolicy="no-referrer"
                     className="w-full h-24 object-cover rounded mb-2"

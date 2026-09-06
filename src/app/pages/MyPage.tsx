@@ -29,6 +29,7 @@ import {
   UserProfileResponse,
 } from "../lib/auth";
 import { ApiError } from "../lib/api";
+import { getProxiedImageUrl } from "../lib/imageProxy";
 
 export default function MyPage() {
   const navigate = useNavigate();
@@ -259,7 +260,7 @@ export default function MyPage() {
           <div className="bg-card border border-border rounded-2xl p-6">
             <div className="flex flex-col items-center mb-7">
               <div className="relative">
-                <img src={avatarUrl} alt={profile.nickname} referrerPolicy="no-referrer" className="w-20 h-20 rounded-full border-2 border-border" />
+                <img src={getProxiedImageUrl(avatarUrl)} alt={profile.nickname} referrerPolicy="no-referrer" className="w-20 h-20 rounded-full border-2 border-border" />
                 <button
                   onClick={handleAvatarClick}
                   disabled={uploadingAvatar}
@@ -344,7 +345,7 @@ export default function MyPage() {
             <div className="bg-card border border-border rounded-2xl p-6 h-fit sticky top-24">
               <div className="flex flex-col items-center mb-7">
                 <div className="relative">
-                  <img src={avatarUrl} alt={profile.nickname} referrerPolicy="no-referrer" className="w-20 h-20 rounded-full border-2 border-gold" />
+                  <img src={getProxiedImageUrl(avatarUrl)} alt={profile.nickname} referrerPolicy="no-referrer" className="w-20 h-20 rounded-full border-2 border-gold" />
                   <button
                     onClick={handleAvatarClick}
                     className="absolute bottom-0 right-0 w-7 h-7 bg-primary text-primary-foreground rounded-full flex items-center justify-center"

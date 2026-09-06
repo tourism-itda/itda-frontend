@@ -6,6 +6,7 @@ import { ContentCard } from "../components/ContentCard";
 import { useDynastyDetail } from "../lib/useDynastyDetail";
 import { useKingdomContents } from "../lib/useKingdomContents";
 import { useKingdomPlaces } from "../lib/useKingdomPlaces";
+import { getProxiedImageUrl } from "../lib/imageProxy";
 
 // PersonResponse.type(enum 코드)의 한글 라벨. Home.tsx의 personTypeLabel과 동일한 값을 쓴다
 // (explore/enums/PersonType.java 기준 — 백엔드가 라벨을 안 내려주므로 프론트에서 관리).
@@ -39,7 +40,7 @@ export default function DynastyDetail() {
       {/* 히어로 */}
       <div className="relative h-56 md:h-72 overflow-hidden bg-muted">
         {status === "done" && kingdom?.image_url && (
-          <img src={kingdom.image_url} alt="" referrerPolicy="no-referrer" className="w-full h-full object-cover opacity-70" />
+          <img src={getProxiedImageUrl(kingdom.image_url)} alt="" referrerPolicy="no-referrer" className="w-full h-full object-cover opacity-70" />
         )}
         <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-black/60" />
 

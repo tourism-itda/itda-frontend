@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { Bookmark, Clock, Info, Loader2, Navigation, Shuffle } from "lucide-react";
 import { ApiError } from "../lib/api";
 import { createBookmark, deleteBookmark, findBookmarkId } from "../lib/bookmarksApi";
+import { getProxiedImageUrl } from "../lib/imageProxy";
 
 /**
  * ItineraryRecommendation(추천 미리보기)과 ItineraryDetail(저장된 일정 상세)이 함께 쓰는
@@ -156,7 +157,7 @@ export function PlaceSlotCard({
         {/* 이미지 */}
         {place.image_url ? (
           <img
-            src={place.image_url}
+            src={getProxiedImageUrl(place.image_url)}
             alt={place.name ?? ""}
             referrerPolicy="no-referrer"
             className="w-20 h-20 rounded-lg object-cover shrink-0"

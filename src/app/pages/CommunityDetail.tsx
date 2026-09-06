@@ -21,6 +21,7 @@ import { usePlaceLookup } from "../lib/usePlaceLookup";
 import { ApiError } from "../lib/api";
 import { CommunityPostDetail, CommunityStop, getCommunityPostDetail, importItinerary } from "../lib/community";
 import { Review, createReview, getReviews, toggleReviewLike } from "../lib/reviews";
+import { getProxiedImageUrl } from "../lib/imageProxy";
 
 /**
  * itda-backend CommunityController(No.41)/ReviewController(No.43,44)/ReviewLikeController(No.45),
@@ -261,7 +262,7 @@ export default function CommunityDetail() {
       {/* 히어로 */}
       <div className="relative h-52 md:h-64 lg:h-80 overflow-hidden bg-muted">
         {post.thumbnail_url && (
-          <img src={post.thumbnail_url} alt={post.title} referrerPolicy="no-referrer" className="w-full h-full object-cover" />
+          <img src={getProxiedImageUrl(post.thumbnail_url)} alt={post.title} referrerPolicy="no-referrer" className="w-full h-full object-cover" />
         )}
         <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-black/65" />
         <button
@@ -294,7 +295,7 @@ export default function CommunityDetail() {
               <div className="flex items-center justify-between gap-3">
                 <div className="flex items-center gap-3 min-w-0">
                   {post.author.profile_url ? (
-                    <img src={post.author.profile_url} alt="" referrerPolicy="no-referrer" className="w-10 h-10 rounded-full bg-muted shrink-0" />
+                    <img src={getProxiedImageUrl(post.author.profile_url)} alt="" referrerPolicy="no-referrer" className="w-10 h-10 rounded-full bg-muted shrink-0" />
                   ) : (
                     <div className="w-10 h-10 rounded-full bg-muted shrink-0" />
                   )}
@@ -356,7 +357,7 @@ export default function CommunityDetail() {
                         className="w-full bg-card border border-border rounded-[24px] overflow-hidden flex gap-4 p-5 text-left hover:bg-muted/30 hover:shadow-sm transition-all"
                       >
                         {stop.image ? (
-                          <img src={stop.image} alt={stop.name} referrerPolicy="no-referrer" className="w-20 h-20 rounded-2xl object-cover shrink-0" />
+                          <img src={getProxiedImageUrl(stop.image)} alt={stop.name} referrerPolicy="no-referrer" className="w-20 h-20 rounded-2xl object-cover shrink-0" />
                         ) : (
                           <div className="w-20 h-20 rounded-2xl bg-muted shrink-0" />
                         )}
@@ -484,7 +485,7 @@ export default function CommunityDetail() {
                         <div className="flex items-center gap-2.5 mb-3">
                           {review.author_profile_url ? (
                             <img
-                              src={review.author_profile_url}
+                              src={getProxiedImageUrl(review.author_profile_url)}
                               alt=""
                               referrerPolicy="no-referrer"
                               className="w-9 h-9 rounded-full bg-muted shrink-0"
@@ -524,7 +525,7 @@ export default function CommunityDetail() {
             <div className="bg-card border border-border rounded-[28px] p-6">
               <div className="flex items-center gap-3 pb-5 mb-5 border-b border-border">
                 {post.author.profile_url ? (
-                  <img src={post.author.profile_url} alt="" referrerPolicy="no-referrer" className="w-12 h-12 rounded-full bg-muted shrink-0" />
+                  <img src={getProxiedImageUrl(post.author.profile_url)} alt="" referrerPolicy="no-referrer" className="w-12 h-12 rounded-full bg-muted shrink-0" />
                 ) : (
                   <div className="w-12 h-12 rounded-full bg-muted shrink-0" />
                 )}

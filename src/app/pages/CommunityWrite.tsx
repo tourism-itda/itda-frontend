@@ -6,6 +6,7 @@ import { Button } from "../components/ui/button";
 import { ApiError } from "../lib/api";
 import { ItinerarySummary, getMyItineraries } from "../lib/itineraries";
 import { shareItinerary } from "../lib/community";
+import { getProxiedImageUrl } from "../lib/imageProxy";
 
 /**
  * itda-backend에는 "글 자유 작성" API가 없다 — 커뮤니티 공유는 항상 "이미 내 플래너에 있는 일정을
@@ -172,7 +173,7 @@ export default function CommunityWrite() {
                   >
                     {item.thumbnail_url ? (
                       <img
-                        src={item.thumbnail_url}
+                        src={getProxiedImageUrl(item.thumbnail_url)}
                         alt={item.title}
                         referrerPolicy="no-referrer"
                         className="w-14 h-14 rounded-lg object-cover shrink-0"

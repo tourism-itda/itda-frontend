@@ -1,5 +1,6 @@
 import { ChevronRight } from "lucide-react";
 import { useNavigate } from "react-router";
+import { getProxiedImageUrl } from "../lib/imageProxy";
 
 interface ContentCardProps {
   content: {
@@ -22,7 +23,7 @@ export function ContentCard({ content }: ContentCardProps) {
       <div className="relative aspect-[3/4] overflow-hidden bg-muted">
         {content.image && (
           <img
-            src={content.image}
+            src={getProxiedImageUrl(content.image)}
             alt={content.title}
             loading="lazy"
             decoding="async"
