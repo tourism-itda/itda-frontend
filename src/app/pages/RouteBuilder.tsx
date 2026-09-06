@@ -102,7 +102,7 @@ function RouteSlotCard({ slot, onOpenCandidates }: { slot: RouteSlot; onOpenCand
 
       <div className="flex gap-3 p-4">
         {place.image_url ? (
-          <img src={place.image_url} alt={place.name} className="w-20 h-20 rounded-lg object-cover shrink-0" />
+          <img src={place.image_url} alt={place.name} referrerPolicy="no-referrer" className="w-20 h-20 rounded-lg object-cover shrink-0" />
         ) : (
           <div className="w-20 h-20 rounded-lg bg-muted shrink-0" />
         )}
@@ -245,7 +245,7 @@ function CandidateSheet({
                   className="w-full flex items-center gap-3 p-3 rounded-xl border border-border text-left hover:bg-muted/30 transition-colors disabled:opacity-60"
                 >
                   {candidate.image_url ? (
-                    <img src={candidate.image_url} alt={candidate.name} className="w-16 h-16 rounded-lg object-cover shrink-0" />
+                    <img src={candidate.image_url} alt={candidate.name} referrerPolicy="no-referrer" className="w-16 h-16 rounded-lg object-cover shrink-0" />
                   ) : (
                     <div className="w-16 h-16 rounded-lg bg-muted shrink-0" />
                   )}
@@ -585,7 +585,7 @@ export default function RouteBuilder() {
                       )}
                       <div className="aspect-[4/3] bg-muted">
                         {place.image_url && (
-                          <img src={place.image_url} alt={place.name} className="w-full h-full object-cover" />
+                          <img src={place.image_url} alt={place.name} referrerPolicy="no-referrer" className="w-full h-full object-cover" />
                         )}
                       </div>
                       <div className="p-3">

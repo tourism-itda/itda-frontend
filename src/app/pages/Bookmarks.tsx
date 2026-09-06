@@ -122,6 +122,7 @@ export default function Bookmarks() {
                   <img
                     src={place.image_url}
                     alt={place.name}
+                    referrerPolicy="no-referrer"
                     className="w-20 h-20 rounded-sm object-cover border border-border shrink-0"
                   />
                 ) : (

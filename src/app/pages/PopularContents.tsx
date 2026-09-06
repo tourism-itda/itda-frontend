@@ -206,6 +206,7 @@ export default function PopularContents() {
                           <img
                             src={c.thumbnail_url}
                             alt={c.title}
+                            referrerPolicy="no-referrer"
                             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                           />
                         )}

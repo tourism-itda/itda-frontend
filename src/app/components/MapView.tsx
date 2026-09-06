@@ -98,6 +98,7 @@ export function MapView({ places, selectedPlace }: MapViewProps) {
                   <img
                     src={place.image}
                     alt={place.name}
+                    referrerPolicy="no-referrer"
                     className="w-full h-24 object-cover rounded mb-2"
                   />
                   <p className="text-sm font-medium">{place.name}</p>

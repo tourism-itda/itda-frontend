@@ -43,7 +43,7 @@ export default function PersonDetail() {
         style={person?.image_url ? undefined : { background: "linear-gradient(135deg, var(--primary-700), var(--primary-500))" }}
       >
         {person?.image_url ? (
-          <img src={person.image_url} alt="" className="w-full h-full object-cover" />
+          <img src={person.image_url} alt="" referrerPolicy="no-referrer" className="w-full h-full object-cover" />
         ) : (
           <ScrollText className="absolute -right-6 -bottom-8 w-44 h-44 text-white/10 rotate-[-8deg]" />
         )}

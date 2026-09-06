@@ -39,7 +39,7 @@ export default function DynastyDetail() {
       {/* 히어로 */}
       <div className="relative h-56 md:h-72 overflow-hidden bg-muted">
         {status === "done" && kingdom?.image_url && (
-          <img src={kingdom.image_url} alt="" className="w-full h-full object-cover opacity-70" />
+          <img src={kingdom.image_url} alt="" referrerPolicy="no-referrer" className="w-full h-full object-cover opacity-70" />
         )}
         <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-black/60" />
 

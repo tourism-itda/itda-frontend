@@ -81,6 +81,7 @@ export function ExploreCard({ item, onClick }: { item: ExploreItem; onClick: () 
             alt={item.title}
             loading="lazy"
             decoding="async"
+            referrerPolicy="no-referrer"
             className={`w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ${
               item.tag === "인물" ? "object-[50%_20%]" : ""
             }`}
@@ -471,7 +472,7 @@ export default function Home() {
                   <div key={item.content_id} className="flex items-center gap-4 py-3 first:pt-0 last:pb-0">
                     <div className="w-16 h-16 shrink-0 rounded-sm overflow-hidden bg-muted flex items-center justify-center">
                       {item.image_url ? (
-                        <img src={item.image_url} alt={item.title} className="w-full h-full object-cover" />
+                        <img src={item.image_url} alt={item.title} referrerPolicy="no-referrer" className="w-full h-full object-cover" />
                       ) : (
                         <Calendar className="w-5 h-5 text-muted-foreground/40" />
                       )}

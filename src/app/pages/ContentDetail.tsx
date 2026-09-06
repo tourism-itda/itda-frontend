@@ -124,7 +124,7 @@ export default function ContentDetail() {
         }`}
       >
         {data.thumbnail_url && (
-          <img src={data.thumbnail_url} alt="" className="w-full h-full object-cover object-top" />
+          <img src={data.thumbnail_url} alt="" referrerPolicy="no-referrer" className="w-full h-full object-cover object-top" />
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-background via-background/30 to-transparent" />
         <button

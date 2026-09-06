@@ -176,6 +176,7 @@ export default function Planner() {
                     <img
                       src={item.thumbnail_url}
                       alt={item.title}
+                      referrerPolicy="no-referrer"
                       className="w-full h-full object-cover"
                     />
                   ) : (

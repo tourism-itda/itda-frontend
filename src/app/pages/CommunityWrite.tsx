@@ -174,6 +174,7 @@ export default function CommunityWrite() {
                       <img
                         src={item.thumbnail_url}
                         alt={item.title}
+                        referrerPolicy="no-referrer"
                         className="w-14 h-14 rounded-lg object-cover shrink-0"
                       />
                     ) : (
