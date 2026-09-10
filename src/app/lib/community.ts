@@ -55,6 +55,10 @@ export function getCommunityPosts(params: CommunityPostListParams = {}) {
 
 export interface CommunityStop {
   itinerary_place_id: number;
+  // itinerary_place_id와 다른 ID다. 앞은 이 일정 안에서의 한 칸, 이쪽은 장소 자체(place.place_id)라
+  // 북마크(/api/bookmarks)와 장소 상세(/api/places/:place_id)는 place_id를 써야 한다.
+  // 응답이 @JsonInclude(NON_NULL)이라 값이 없으면 키가 통째로 빠진다 → 옵셔널.
+  place_id?: number;
   visit_order: number;
   name: string | null;
   category: string | null;

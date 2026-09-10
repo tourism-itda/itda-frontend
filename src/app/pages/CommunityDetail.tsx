@@ -12,6 +12,7 @@ import {
   X,
   MapPin,
   Navigation,
+  Bookmark,
   Loader2,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -19,6 +20,7 @@ import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { usePlaceLookup } from "../lib/usePlaceLookup";
 import { ApiError } from "../lib/api";
+import { createBookmark, deleteBookmark, findBookmarkId } from "../lib/bookmarksApi";
 import { CommunityPostDetail, CommunityStop, getCommunityPostDetail, importItinerary } from "../lib/community";
 import { Review, createReview, getReviews, toggleReviewLike } from "../lib/reviews";
 import { getProxiedImageUrl } from "../lib/imageProxy";
@@ -34,6 +36,8 @@ import { getProxiedImageUrl } from "../lib/imageProxy";
 
 interface RouteStop {
   order: number;
+  // 백엔드 장소 PK. 북마크 연동에 쓴다. 오래된 배포 서버는 이 필드를 안 내려줄 수 있어 옵셔널이다.
+  placeId?: number;
   name: string;
   category: string;
   image: string;
@@ -47,6 +51,7 @@ interface RouteStop {
 function toRouteStops(stops: CommunityStop[]): RouteStop[] {
   return stops.map((s) => ({
     order: s.visit_order,
+    placeId: s.place_id,
     name: s.name ?? "이름 미상",
     category: s.category ?? "",
     image: s.image_url ?? "",
@@ -96,6 +101,10 @@ export default function CommunityDetail() {
   const [showImportModal, setShowImportModal] = useState(false);
   const [importing, setImporting] = useState(false);
 
+  const [stopSaved, setStopSaved] = useState(false);
+  const [stopBookmarkId, setStopBookmarkId] = useState<number | undefined>(undefined);
+  const [stopBookmarkPending, setStopBookmarkPending] = useState(false);
+
   useEffect(() => {
     if (!id) return;
     let cancelled = false;
@@ -143,6 +152,50 @@ export default function CommunityDetail() {
   // selectedStop은 큐레이션된 루트 데이터(이름/카테고리/순서)이고, 실제 주소·운영시간·이미지·
   // 설명은 이름으로 관광정보 API를 조회해 보강한다. 조회 실패 시 큐레이션 데이터로 대체된다.
   const { status: stopLookupStatus, data: stopDetail } = usePlaceLookup(selectedStop?.name);
+
+  // 커뮤니티 상세(No.41) 응답엔 is_bookmarked가 없어서 초기 상태는 항상 false로 시작한다.
+  // 다른 stop을 열면 이전 stop의 북마크 상태가 남지 않도록 초기화한다.
+  useEffect(() => {
+    setStopSaved(false);
+    setStopBookmarkId(undefined);
+  }, [selectedStop?.placeId]);
+
+  async function handleToggleStopBookmark() {
+    const placeId = selectedStop?.placeId;
+    if (placeId === undefined || stopBookmarkPending) return;
+    const wasSaved = stopSaved;
+
+    setStopBookmarkPending(true);
+    setStopSaved(!wasSaved);
+    try {
+      if (wasSaved) {
+        let id = stopBookmarkId;
+        if (id === undefined) {
+          id = await findBookmarkId(placeId);
+        }
+        if (id !== undefined) {
+          await deleteBookmark(id);
+        }
+        setStopBookmarkId(undefined);
+      } else {
+        const result = await createBookmark(placeId);
+        setStopBookmarkId(result.bookmark_id);
+      }
+    } catch (err) {
+      // 실패했으니 낙관적으로 바꿨던 상태를 되돌린다.
+      setStopSaved(wasSaved);
+      // itda-backend는 인증 필요 라우트에 토큰이 없으면 401이 아니라 403(Forbidden)을 반환할 수 있다
+      // (Spring Security 기본 동작, PlaceSheet.tsx/PlaceSlotCard.tsx와 동일한 처리).
+      if (err instanceof ApiError && (err.status === 401 || err.status === 403)) {
+        toast("로그인이 필요한 기능이에요. 로그인 후 다시 시도해주세요.");
+        navigate("/login", { replace: true, state: { from: location.pathname + location.search } });
+      } else {
+        toast(err instanceof ApiError ? err.message : "북마크 처리에 실패했어요. 잠시 후 다시 시도해주세요.");
+      }
+    } finally {
+      setStopBookmarkPending(false);
+    }
+  }
 
   async function handleToggleLike(reviewId: number) {
     if (likingIds.has(reviewId)) return;
@@ -570,10 +623,20 @@ export default function CommunityDetail() {
               <div className="w-10 h-1 rounded-full bg-border" />
             </div>
 
-            {/* 닫기 */}
-            {/* 북마크 버튼은 뺐다 — 이 stop 응답엔 place_id가 없어서 실제 /api/bookmarks 연동이
-                불가능하다(백엔드 확인 대기 중). */}
+            {/* 북마크 + 닫기 */}
+            {/* place_id는 백엔드가 stops[]에 내려주는 장소 PK다. 구버전 서버는 안 내려줄 수 있어
+                그때는 버튼을 비활성화한다(PlaceSheet.tsx의 placeId 미보유 처리와 동일). */}
             <div className="absolute top-4 right-4 flex items-center gap-2">
+              <button
+                onClick={handleToggleStopBookmark}
+                disabled={selectedStop.placeId === undefined || stopBookmarkPending}
+                aria-label={stopSaved ? "북마크 해제" : "북마크"}
+                className="w-11 h-11 rounded-full bg-muted flex items-center justify-center disabled:opacity-40 outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              >
+                <Bookmark
+                  className={`w-4 h-4 ${stopSaved ? "fill-primary text-primary" : "text-muted-foreground"}`}
+                />
+              </button>
               <button
                 onClick={() => setSelectedStop(null)}
                 className="w-11 h-11 rounded-full bg-muted flex items-center justify-center outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
