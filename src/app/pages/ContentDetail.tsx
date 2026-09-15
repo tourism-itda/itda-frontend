@@ -7,6 +7,7 @@ import { ApiError } from "../lib/api";
 import { useContentDetail } from "../lib/useContentDetail";
 import { useContentPlaces } from "../lib/useContentPlaces";
 import { createBookmark, deleteBookmark, getMyBookmarks } from "../lib/bookmarksApi";
+import { getProxiedImageUrl } from "../lib/imageProxy";
 
 const mediaTypeLabel: Record<string, string> = {
   MOVIE: "영화",
@@ -118,7 +119,14 @@ export default function ContentDetail() {
   return (
     <div className="min-h-screen">
       {/* 히어로 */}
-      <div className="relative h-72 md:h-96 overflow-hidden bg-gradient-to-br from-navy to-navy/70">
+      <div
+        className={`relative h-72 md:h-96 overflow-hidden ${
+          data.thumbnail_url ? "" : "bg-gradient-to-br from-navy to-navy/70"
+        }`}
+      >
+        {data.thumbnail_url && (
+          <img src={getProxiedImageUrl(data.thumbnail_url)} alt="" referrerPolicy="no-referrer" className="w-full h-full object-cover object-top" />
+        )}
         <div className="absolute inset-0 bg-gradient-to-t from-background via-background/30 to-transparent" />
         <button
           onClick={() => navigate(-1)}
