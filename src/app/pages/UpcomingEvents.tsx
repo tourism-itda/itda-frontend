@@ -9,9 +9,9 @@ import { getProxiedImageUrl } from "../lib/imageProxy";
 // 캐시에 없는 건 못 받아오므로 사실상 이게 상한이다.
 const FETCH_LIMIT = 100;
 
-// "앞으로 4개월"까지만 보여준다(요청 사항). 화면에서 오늘 날짜 기준으로 자른다 —
+// "앞으로 한 달"까지만 보여준다(요청 사항). 화면에서 오늘 날짜 기준으로 자른다 —
 // 백엔드는 limit 개수 기준으로만 잘라 주고 기간 필터는 없어서 프론트에서 처리한다.
-const MONTHS_AHEAD = 4;
+const MONTHS_AHEAD = 1;
 
 function addMonthsToToday(months: number): Date {
   const d = new Date();
@@ -89,7 +89,7 @@ export default function UpcomingEvents() {
             </button>
             <div>
               <h1 className="leading-tight">다가오는 일정</h1>
-              <p className="text-sm text-muted-foreground">앞으로 {MONTHS_AHEAD}개월 안에 예정된 축제·공연·행사</p>
+              <p className="text-sm text-muted-foreground">예정된 축제·공연·행사</p>
             </div>
           </div>
         </div>
@@ -120,7 +120,7 @@ export default function UpcomingEvents() {
         {status === "done" && visibleEvents.length === 0 && (
           <div className="text-center py-16 text-muted-foreground">
             <Calendar className="w-10 h-10 mx-auto mb-3 opacity-30" />
-            <p className="text-sm">앞으로 {MONTHS_AHEAD}개월 안에 예정된 행사가 없어요</p>
+            <p className="text-sm">예정된 행사가 없어요</p>
           </div>
         )}
 
