@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { ApiError } from "./api";
-import { getKingdomDetail, getPersonDetail, Person } from "./explore";
+import { getKingdomDetail, getPersonDetail, isPreGoryeoKingdom, Person } from "./explore";
 
 export type PersonDetailStatus = "loading" | "done" | "not-found" | "error";
 
@@ -37,6 +37,11 @@ export function usePersonDetail(personId: string | undefined): PersonDetailResul
     getPersonDetail(personId)
       .then((result) => {
         if (cancelled) return;
+        // 918년(고려 건국) 이전 인물은 서비스 대상에서 제외한다(팀 결정, isPreGoryeoKingdom 참고).
+        if (isPreGoryeoKingdom(result.kingdom)) {
+          setStatus("not-found");
+          return;
+        }
         setPerson(result);
         setStatus("done");
         return getKingdomDetail(result.kingdom)

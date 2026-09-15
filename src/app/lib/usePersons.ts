@@ -10,8 +10,8 @@ export interface PersonsResult {
 
 /**
  * GET /explore/persons(No.24)로 전체 인물 목록을 조회하는 훅. explore 도메인은 SecurityConfig에서
- * 이미 permitAll로 공개돼 있어(비로그인도 200) 401/403 분기는 두지 않는다. 로컬 DB의 person 테이블이
- * 비어 있어 지금은 항상 빈 배열이 온다.
+ * 이미 permitAll로 공개돼 있어(비로그인도 200) 401/403 분기는 두지 않는다. 고려 이전 인물은
+ * getPersons()가 이미 걸러서 반환한다(explore.ts의 PRE_GORYEO_KINGDOMS 참고).
  */
 export function usePersons(): PersonsResult {
   const [status, setStatus] = useState<PersonsStatus>("loading");

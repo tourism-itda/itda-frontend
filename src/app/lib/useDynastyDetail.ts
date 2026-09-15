@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { ApiError } from "./api";
-import { getKingdomDetail, getPersonsByKingdom, Kingdom, Person } from "./explore";
+import { getKingdomDetail, getPersonsByKingdom, isPreGoryeoKingdom, Kingdom, Person } from "./explore";
 
 export type DynastyDetailStatus = "loading" | "done" | "not-found" | "error";
 
@@ -22,7 +22,7 @@ export function useDynastyDetail(kingdomCode: string | undefined): DynastyDetail
   const [persons, setPersons] = useState<Person[]>([]);
 
   useEffect(() => {
-    if (!kingdomCode) {
+    if (!kingdomCode || isPreGoryeoKingdom(kingdomCode)) {
       setStatus("not-found");
       return;
     }

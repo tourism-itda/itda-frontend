@@ -30,9 +30,12 @@ import { apiFetch } from "./api";
  *    데이터). PersonResponse도 name/description 외에 role·연도·업적·관련 사극·관련 장소는 없다.
  *    화면에서 이 값들을 지어내지 않는다.
  *
- * 6) 로컬 DB의 person 테이블은 현재 0 rows다(HistoricalPersonData.PEOPLE는 시드 러너에 연결돼 있지
- *    않은 죽은 코드). 그래서 GET /explore/persons, GET /explore/kingdoms/{kingdom}/persons는
- *    지금 항상 빈 배열을 반환한다 — 화면에서 반드시 빈 상태 UI를 갖춰야 한다.
+ * 6) 로컬 DB의 person 테이블은 이제 시드돼 있다(2026-09-15 기준 GET /explore/persons에서 71건
+ *    확인 — 예전엔 0 rows였다는 메모가 있었는데 더 이상 사실이 아니다). 다만 그 시드는
+ *    918년(고려 건국) 이전 인물(고구려 주몽·광개토대왕, 백제 온조왕 등)도 포함한 옛 버전 기준이라,
+ *    "고려 이전 제외"로 바뀐 현재의 HistoricalPersonData.java(고려부터 시작)와 어긋나 있다.
+ *    itda-backend는 읽기 전용이라 DB를 다시 시드해 고칠 수 없으므로, 팀 결정대로 고려 이전은
+ *    getPersons()/getPersonsByKingdom()에서 프론트가 걸러낸다(PRE_GORYEO_KINGDOMS 참고).
  */
 
 export interface Kingdom {
@@ -43,6 +46,25 @@ export interface Kingdom {
   time_period: string | null;
   description?: string | null;
   image_url: string | null;
+}
+
+// 918년(고려 건국) 이전 왕조는 서비스 대상에서 제외한다(팀 결정, HistoricalPersonData.java의
+// 동일 주석·ContentClassifier의 분류 규칙과 같은 결정). itda-backend의 explore/enums/Kingdom.java와
+// HistoricalKingdomData.java는 읽기 전용 참고 폴더(itda-backend) 소속이라 프론트에서 직접 고칠 수
+// 없고, 여전히 GET /explore/kingdoms가 이 왕조들을 내려주므로 프론트에서 걸러낸다.
+const PRE_GORYEO_KINGDOMS = new Set([
+  "GOGURYEO",
+  "BAEKJE",
+  "SILLA",
+  "GAYA",
+  "UNIFIED_SILLA",
+  "BALHAE",
+  "LATER_GOGURYEO",
+  "LATER_BAEKJE",
+]);
+
+export function isPreGoryeoKingdom(kingdomCode: string | undefined | null): boolean {
+  return !!kingdomCode && PRE_GORYEO_KINGDOMS.has(kingdomCode);
 }
 
 export interface Person {
@@ -59,9 +81,11 @@ export interface Person {
   image_url?: string | null;
 }
 
-// No.21 — 나라 목록
+// No.21 — 나라 목록. 고려 이전 왕조는 응답에서 걸러낸다(위 PRE_GORYEO_KINGDOMS 참고).
 export function getKingdoms() {
-  return apiFetch<Kingdom[]>("/api/explore/kingdoms");
+  return apiFetch<Kingdom[]>("/api/explore/kingdoms").then((kingdoms) =>
+    kingdoms.filter((k) => !isPreGoryeoKingdom(k.kingdom)),
+  );
 }
 
 // No.22 — 나라 상세
@@ -69,9 +93,12 @@ export function getKingdomDetail(kingdom: string) {
   return apiFetch<Kingdom>(`/api/explore/kingdoms/${encodeURIComponent(kingdom)}`);
 }
 
-// No.23 — 나라별 인물
+// No.23 — 나라별 인물. kingdom 자체가 고려 이전이면 호출부(useDynastyDetail)에서 이미 걸러내지만,
+// 방어적으로 여기서도 한 번 더 거른다.
 export function getPersonsByKingdom(kingdom: string) {
-  return apiFetch<Person[]>(`/api/explore/kingdoms/${encodeURIComponent(kingdom)}/persons`);
+  return apiFetch<Person[]>(`/api/explore/kingdoms/${encodeURIComponent(kingdom)}/persons`).then((persons) =>
+    persons.filter((p) => !isPreGoryeoKingdom(p.kingdom)),
+  );
 }
 
 // 나라별 관련 콘텐츠 — GET /explore/kingdoms/{kingdom}/contents. KingdomController.getContentsByKingdom가
@@ -102,9 +129,11 @@ export function getKingdomPlaces(kingdom: string) {
   return apiFetch<RelatedPlace[]>(`/api/explore/kingdoms/${encodeURIComponent(kingdom)}/places`);
 }
 
-// No.24 — 전체 인물 목록
+// No.24 — 전체 인물 목록. 고려 이전 인물은 응답에서 걸러낸다(위 PRE_GORYEO_KINGDOMS 참고).
 export function getPersons() {
-  return apiFetch<Person[]>("/api/explore/persons");
+  return apiFetch<Person[]>("/api/explore/persons").then((persons) =>
+    persons.filter((p) => !isPreGoryeoKingdom(p.kingdom)),
+  );
 }
 
 // No.25 — 인물 상세
