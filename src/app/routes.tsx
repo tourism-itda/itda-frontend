@@ -16,6 +16,7 @@ import Layout from "./components/Layout";
 import DynastyDetail from "./pages/DynastyDetail";
 import DynastyPersons from "./pages/DynastyPersons";
 import PopularContents from "./pages/PopularContents";
+import UpcomingEvents from "./pages/UpcomingEvents";
 import CommunityDetail from "./pages/CommunityDetail";
 import CommunityWrite from "./pages/CommunityWrite";
 import FontPicker from "./pages/FontPicker";
@@ -86,6 +87,10 @@ export const router = createBrowserRouter([
       {
         path: "popular",
         element: <PopularContents />,
+      },
+      {
+        path: "events",
+        element: <UpcomingEvents />,
       },
       {
         path: "community",

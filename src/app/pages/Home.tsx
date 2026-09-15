@@ -9,7 +9,7 @@ import { useContents } from "../lib/useContents";
 import { useKingdoms } from "../lib/useKingdoms";
 import { usePersons } from "../lib/usePersons";
 import { getKingdomEra } from "../lib/kingdomEra";
-import { getUpcomingEvents, EventSummary } from "../lib/events";
+import { getUpcomingEvents, getEventLink, EventSummary } from "../lib/events";
 import { getProxiedImageUrl } from "../lib/imageProxy";
 
 type Category = "콘텐츠 둘러보기" | "나라별" | "인물별";
@@ -439,7 +439,18 @@ export default function Home() {
         {/* 하단 2단 그리드 */}
         <section className="grid lg:grid-cols-3 gap-5 mb-10">
           <div className="lg:col-span-2 bg-card rounded-[28px] border border-border shadow-sm p-6">
-            <h3 className="font-heading text-lg font-black mb-4">다가오는 일정</h3>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-heading text-lg font-black">다가오는 일정</h3>
+              {upcomingStatus === "done" && upcomingEvents.length > 0 && (
+                <button
+                  onClick={() => navigate("/app/events")}
+                  className="text-sm text-primary font-bold hover:underline flex items-center gap-0.5 shrink-0"
+                >
+                  전체보기
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+              )}
+            </div>
 
             {upcomingStatus === "loading" && (
               <div className="space-y-3">
@@ -470,7 +481,13 @@ export default function Home() {
             {upcomingStatus === "done" && upcomingEvents.length > 0 && (
               <div className="divide-y divide-border">
                 {upcomingEvents.map((item) => (
-                  <div key={item.content_id} className="flex items-center gap-4 py-3 first:pt-0 last:pb-0">
+                  <a
+                    key={item.content_id}
+                    href={getEventLink(item)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-4 py-3 first:pt-0 last:pb-0 hover:bg-muted/40 rounded-xl transition-colors -mx-2 px-2"
+                  >
                     <div className="w-16 h-16 shrink-0 rounded-sm overflow-hidden bg-muted flex items-center justify-center">
                       {item.image_url ? (
                         <img src={getProxiedImageUrl(item.image_url)} alt={item.title} referrerPolicy="no-referrer" className="w-full h-full object-cover" />
@@ -490,7 +507,7 @@ export default function Home() {
                         {item.address.split(" ")[0]}
                       </span>
                     )}
-                  </div>
+                  </a>
                 ))}
               </div>
             )}
