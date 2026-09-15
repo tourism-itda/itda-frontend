@@ -7,7 +7,6 @@ import { ApiError } from "../lib/api";
 import { useContentDetail } from "../lib/useContentDetail";
 import { useContentPlaces } from "../lib/useContentPlaces";
 import { createBookmark, deleteBookmark, getMyBookmarks } from "../lib/bookmarksApi";
-import { getProxiedImageUrl } from "../lib/imageProxy";
 
 const mediaTypeLabel: Record<string, string> = {
   MOVIE: "영화",
@@ -119,14 +118,7 @@ export default function ContentDetail() {
   return (
     <div className="min-h-screen">
       {/* 히어로 */}
-      <div
-        className={`relative h-72 md:h-96 overflow-hidden ${
-          data.thumbnail_url ? "" : "bg-gradient-to-br from-navy to-navy/70"
-        }`}
-      >
-        {data.thumbnail_url && (
-          <img src={getProxiedImageUrl(data.thumbnail_url)} alt="" referrerPolicy="no-referrer" className="w-full h-full object-cover object-top" />
-        )}
+      <div className="relative h-72 md:h-96 overflow-hidden bg-gradient-to-br from-navy to-navy/70">
         <div className="absolute inset-0 bg-gradient-to-t from-background via-background/30 to-transparent" />
         <button
           onClick={() => navigate(-1)}
@@ -149,32 +141,6 @@ export default function ContentDetail() {
           <p className="text-foreground/80 leading-relaxed">
             {data.summary ?? "콘텐츠 소개가 아직 준비되지 않았어요."}
           </p>
-        </div>
-
-        {/* 등장인물 */}
-        {/* 콘텐츠 스토리텔링 데이터(캐릭터·역사 이야기·사실 vs 각색)가 아직 채워지지 않은 경우가 많아
-            (예: TMDB에서 막 가져온 콘텐츠), 섹션 자체를 숨기지 않고 관련 장소 섹션과 동일하게
-            "준비중" 안내를 보여준다. */}
-        <div className="mb-10">
-          <h2 className="text-[16px] font-extrabold mb-4">등장인물</h2>
-          {data.characters.length > 0 ? (
-            <div className="space-y-0">
-              {data.characters.map((c) => (
-                <div
-                  key={c.content_character_id}
-                  className="flex items-center justify-between py-3.5 border-b border-border last:border-0"
-                >
-                  <div>
-                    <span className="font-medium">{c.character_name}</span>
-                    <span className="text-muted-foreground text-sm ml-2">{c.actor_name}</span>
-                  </div>
-                  {c.is_historical && <span className="text-xs text-muted-foreground">실존 인물</span>}
-                </div>
-              ))}
-            </div>
-          ) : (
-            <p className="text-sm text-muted-foreground">등장인물 정보를 준비 중이에요.</p>
-          )}
         </div>
 
         {/* 역사 스토리텔링 */}
