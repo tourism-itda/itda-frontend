@@ -6,6 +6,7 @@ import { ApiError } from "../lib/api";
 import { createBookmark, deleteBookmark, findBookmarkId } from "../lib/bookmarksApi";
 import { usePlaceLookup } from "../lib/usePlaceLookup";
 import { usePlaceDetail } from "../lib/usePlaceDetail";
+import { MapView } from "./MapView";
 
 export interface PlaceSheetData {
   id: string;
@@ -125,28 +126,50 @@ export function PlaceSheet({ place, onClose }: PlaceSheetProps) {
           </button>
         </div>
 
-        {/* 지도 플레이스홀더 */}
-        <div
-          className="relative h-44 overflow-hidden shrink-0"
-          style={{
-            backgroundImage:
-              "linear-gradient(rgba(0,0,0,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(0,0,0,0.03) 1px, transparent 1px)",
-            backgroundSize: "24px 24px",
-            backgroundColor: "#e8e4d8",
-          }}
-        >
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="flex flex-col items-center">
-              <div className="w-10 h-10 rounded-full bg-foreground flex items-center justify-center shadow-lg">
-                <MapPin className="w-5 h-5 text-background fill-background" />
-              </div>
-              <div className="w-2 h-2 rounded-full bg-foreground/20 mt-1 blur-sm" />
+        {/* 지도 — placeId로 조회한 상세에 좌표가 있으면 실제 카카오맵을 보여주고,
+            없으면(이름 기반 조회거나 아직 로딩/실패 상태면) 플레이스홀더로 대체한다. */}
+        {detail.data ? (
+          <div className="relative h-44 overflow-hidden shrink-0">
+            <MapView
+              places={[
+                {
+                  id: String(detail.data.place_id),
+                  order: 1,
+                  name: place.name,
+                  lat: detail.data.latitude,
+                  lng: detail.data.longitude,
+                  image: place.image,
+                },
+              ]}
+              selectedPlace={String(detail.data.place_id)}
+            />
+            <div className="absolute top-4 left-1/2 -translate-x-1/2 bg-card rounded-xl px-3 py-1.5 shadow-md border border-border whitespace-nowrap pointer-events-none">
+              <p className="text-xs font-medium">{place.name}</p>
             </div>
           </div>
-          <div className="absolute top-4 left-1/2 -translate-x-1/2 bg-card rounded-xl px-3 py-1.5 shadow-md border border-border whitespace-nowrap">
-            <p className="text-xs font-medium">{place.name}</p>
+        ) : (
+          <div
+            className="relative h-44 overflow-hidden shrink-0"
+            style={{
+              backgroundImage:
+                "linear-gradient(rgba(0,0,0,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(0,0,0,0.03) 1px, transparent 1px)",
+              backgroundSize: "24px 24px",
+              backgroundColor: "#e8e4d8",
+            }}
+          >
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="flex flex-col items-center">
+                <div className="w-10 h-10 rounded-full bg-foreground flex items-center justify-center shadow-lg">
+                  <MapPin className="w-5 h-5 text-background fill-background" />
+                </div>
+                <div className="w-2 h-2 rounded-full bg-foreground/20 mt-1 blur-sm" />
+              </div>
+            </div>
+            <div className="absolute top-4 left-1/2 -translate-x-1/2 bg-card rounded-xl px-3 py-1.5 shadow-md border border-border whitespace-nowrap">
+              <p className="text-xs font-medium">{place.name}</p>
+            </div>
           </div>
-        </div>
+        )}
 
         {/* 장소 정보 */}
         <div className="px-5 py-4 space-y-4 overflow-y-auto">
