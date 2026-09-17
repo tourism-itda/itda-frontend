@@ -5,7 +5,7 @@ import { CalendarX, Loader2, LogIn, MapPin, Share2, Trash2 } from "lucide-react"
 import { Button } from "../components/ui/button";
 import { PageTitle } from "../components/PageTitle";
 import { ConfirmDeleteModal } from "../components/ConfirmDeleteModal";
-import { ApiError } from "../lib/api";
+import { ApiError, isLoginRequiredError } from "../lib/api";
 import { ItinerarySummary, deleteItinerary, getMyItineraries } from "../lib/itineraries";
 import { shareItinerary, unshareItinerary } from "../lib/community";
 import { getProxiedImageUrl } from "../lib/imageProxy";
@@ -35,7 +35,7 @@ export default function Planner() {
         if (cancelled) return;
         // 토큰이 없으면 401이 아니라 403으로 내려올 수 있다 (Spring Security 기본 동작,
         // bookmarksApi.ts/Bookmarks.tsx와 동일한 처리).
-        if (err instanceof ApiError && (err.status === 401 || err.status === 403)) {
+        if (isLoginRequiredError(err)) {
           setStatus("unauthenticated");
         } else {
           setStatus("error");
@@ -75,7 +75,7 @@ export default function Planner() {
           it.itinerary_id === item.itinerary_id ? { ...it, is_shared: prevIsShared } : it
         )
       );
-      if (err instanceof ApiError && (err.status === 401 || err.status === 403)) {
+      if (isLoginRequiredError(err)) {
         toast("로그인이 필요한 기능이에요. 로그인 후 다시 시도해주세요.");
         navigate("/login", { replace: true, state: { from: location.pathname + location.search } });
       } else {
@@ -104,7 +104,7 @@ export default function Planner() {
       setDeleteTargetId(null);
       toast("일정이 삭제되었습니다.");
     } catch (err) {
-      if (err instanceof ApiError && (err.status === 401 || err.status === 403)) {
+      if (isLoginRequiredError(err)) {
         toast("로그인이 필요한 기능이에요. 로그인 후 다시 시도해주세요.");
         navigate("/login", { replace: true, state: { from: location.pathname + location.search } });
       } else {

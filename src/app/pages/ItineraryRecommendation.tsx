@@ -14,7 +14,7 @@ import {
 } from "../lib/itineraryRecommend";
 import { PlaceSheet, PlaceSheetData } from "../components/PlaceSheet";
 import { PlaceSlotCard } from "../components/PlaceSlotCard";
-import { ApiError } from "../lib/api";
+import { ApiError, isLoginRequiredError } from "../lib/api";
 
 export default function ItineraryRecommendation() {
   const navigate = useNavigate();
@@ -155,7 +155,7 @@ export default function ItineraryRecommendation() {
     } catch (err) {
       // itda-backend는 인증 필요 라우트에 토큰이 없으면 401이 아니라 403(Forbidden)을 반환한다
       // (Spring Security 기본 동작, 실제 로컬 테스트로 확인함).
-      if (err instanceof ApiError && (err.status === 401 || err.status === 403)) {
+      if (isLoginRequiredError(err)) {
         toast("로그인이 필요한 기능이에요. 로그인 후 다시 시도해주세요.");
         navigate("/login", { replace: true, state: { from: location.pathname + location.search } });
       } else {

@@ -28,7 +28,7 @@ import {
   uploadAvatarFile,
   UserProfileResponse,
 } from "../lib/auth";
-import { ApiError } from "../lib/api";
+import { ApiError, isLoginRequiredError } from "../lib/api";
 import { getProxiedImageUrl } from "../lib/imageProxy";
 
 interface ProfileFormProps {
@@ -124,7 +124,7 @@ export default function MyPage() {
       })
       .catch((err) => {
         if (cancelled) return;
-        if (err instanceof ApiError && (err.status === 401 || err.status === 403)) {
+        if (isLoginRequiredError(err)) {
           navigate("/login", { replace: true, state: { from: location.pathname + location.search } });
         } else {
           toast(err instanceof ApiError ? err.message : "내 정보를 불러오지 못했어요.");
@@ -153,7 +153,7 @@ export default function MyPage() {
       setIsEditing(false);
       toast("프로필이 저장되었습니다.");
     } catch (err) {
-      if (err instanceof ApiError && (err.status === 401 || err.status === 403)) {
+      if (isLoginRequiredError(err)) {
         navigate("/login", { replace: true, state: { from: location.pathname + location.search } });
       } else {
         toast(err instanceof ApiError ? err.message : "프로필 저장에 실패했어요.");
@@ -186,7 +186,7 @@ export default function MyPage() {
       setProfile(updated);
       toast("프로필 사진이 변경되었습니다.");
     } catch (err) {
-      if (err instanceof ApiError && (err.status === 401 || err.status === 403)) {
+      if (isLoginRequiredError(err)) {
         navigate("/login", { replace: true, state: { from: location.pathname + location.search } });
       } else {
         toast(err instanceof ApiError ? err.message : "프로필 사진 업로드에 실패했어요.");
@@ -206,7 +206,7 @@ export default function MyPage() {
     } catch (err) {
       document.documentElement.classList.toggle("dark", !checked);
       setProfile((prev) => (prev ? { ...prev, darkMode: !checked } : prev));
-      if (err instanceof ApiError && (err.status === 401 || err.status === 403)) {
+      if (isLoginRequiredError(err)) {
         navigate("/login", { replace: true, state: { from: location.pathname + location.search } });
       } else {
         toast(err instanceof ApiError ? err.message : "다크 모드 설정을 저장하지 못했어요.");
@@ -229,7 +229,7 @@ export default function MyPage() {
       setShowWithdrawConfirm(false);
       navigate("/login", { replace: true });
     } catch (err) {
-      if (err instanceof ApiError && (err.status === 401 || err.status === 403)) {
+      if (isLoginRequiredError(err)) {
         setShowWithdrawConfirm(false);
         navigate("/login", { replace: true });
       } else {

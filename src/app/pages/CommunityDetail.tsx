@@ -18,7 +18,7 @@ import { toast } from "sonner";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { usePlaceLookup } from "../lib/usePlaceLookup";
-import { ApiError } from "../lib/api";
+import { ApiError, isLoginRequiredError } from "../lib/api";
 import { CommunityPostDetail, CommunityStop, getCommunityPostDetail, importItinerary } from "../lib/community";
 import { Review, createReview, getReviews, toggleReviewLike } from "../lib/reviews";
 import { getAvatarUrl, getProxiedImageUrl } from "../lib/imageProxy";
@@ -172,7 +172,7 @@ export default function CommunityDetail() {
       setReviews((prev) =>
         prev.map((r) => (r.review_id === reviewId ? { ...r, is_liked: prevLiked, like_count: prevCount } : r))
       );
-      if (err instanceof ApiError && (err.status === 401 || err.status === 403)) {
+      if (isLoginRequiredError(err)) {
         toast("로그인이 필요한 기능이에요. 로그인 후 다시 시도해주세요.");
         navigate("/login", { replace: true, state: { from: location.pathname + location.search } });
       } else {
@@ -196,7 +196,7 @@ export default function CommunityDetail() {
       setMyComment("");
       setMyRating(0);
     } catch (err) {
-      if (err instanceof ApiError && (err.status === 401 || err.status === 403)) {
+      if (isLoginRequiredError(err)) {
         toast("로그인이 필요한 기능이에요. 로그인 후 다시 시도해주세요.");
         navigate("/login", { replace: true, state: { from: location.pathname + location.search } });
       } else {
@@ -213,7 +213,7 @@ export default function CommunityDetail() {
     importItinerary(id)
       .then(() => setShowImportModal(true))
       .catch((err) => {
-        if (err instanceof ApiError && (err.status === 401 || err.status === 403)) {
+        if (isLoginRequiredError(err)) {
           toast("로그인이 필요한 기능이에요. 로그인 후 다시 시도해주세요.");
           navigate("/login", { replace: true, state: { from: location.pathname + location.search } });
         } else {

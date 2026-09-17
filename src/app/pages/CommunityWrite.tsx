@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from "react-router";
 import { toast } from "sonner";
 import { ArrowLeft, Check, Loader2, LogIn, MapPin, X } from "lucide-react";
 import { Button } from "../components/ui/button";
-import { ApiError } from "../lib/api";
+import { ApiError, isLoginRequiredError } from "../lib/api";
 import { ItinerarySummary, getMyItineraries } from "../lib/itineraries";
 import { shareItinerary } from "../lib/community";
 import { getProxiedImageUrl } from "../lib/imageProxy";
@@ -43,7 +43,7 @@ export default function CommunityWrite() {
       })
       .catch((err) => {
         if (cancelled) return;
-        if (err instanceof ApiError && (err.status === 401 || err.status === 403)) {
+        if (isLoginRequiredError(err)) {
           setStatus("unauthenticated");
         } else {
           setStatus("error");
@@ -90,7 +90,7 @@ export default function CommunityWrite() {
       toast("커뮤니티에 공유되었습니다!");
       navigate(`/app/community/${result.itinerary_id}`, { replace: true });
     } catch (err) {
-      if (err instanceof ApiError && (err.status === 401 || err.status === 403)) {
+      if (isLoginRequiredError(err)) {
         toast("로그인이 필요한 기능이에요. 로그인 후 다시 시도해주세요.");
         navigate("/login", { replace: true, state: { from: location.pathname + location.search } });
       } else {

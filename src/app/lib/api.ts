@@ -37,6 +37,17 @@ export class ApiError extends Error {
   }
 }
 
+// 401은 항상 "로그인 필요"다. 403은 다르다 — Spring Security 기본 동작상 토큰이
+// 아예 없을 때도 401 대신 403이 내려오므로(비로그인 상태 감지용), 토큰이 없는 403은
+// 로그인 필요로 취급한다. 하지만 토큰이 있는데 403이면 이건 권한/비즈니스 규칙 위반
+// (예: "가져온 일정은 공유할 수 없습니다")이지 로그인 필요가 아니므로, 로그인 화면으로
+// 보내지 말고 백엔드가 내려준 메시지를 그대로 보여줘야 한다.
+export function isLoginRequiredError(err: unknown): boolean {
+  if (!(err instanceof ApiError)) return false;
+  if (err.status === 401) return true;
+  return err.status === 403 && !getToken();
+}
+
 export async function apiFetch<T>(path: string, options: RequestInit = {}): Promise<T> {
   const accessToken = getToken();
   const headers = new Headers(options.headers);

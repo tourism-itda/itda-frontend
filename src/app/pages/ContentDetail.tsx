@@ -3,7 +3,7 @@ import { useNavigate, useParams, useLocation } from "react-router";
 import { toast } from "sonner";
 import { ArrowLeft, Bookmark, Loader2, MapPinOff } from "lucide-react";
 import { Button } from "../components/ui/button";
-import { ApiError } from "../lib/api";
+import { ApiError, isLoginRequiredError } from "../lib/api";
 import { useContentDetail } from "../lib/useContentDetail";
 import { useContentPlaces } from "../lib/useContentPlaces";
 import { createBookmark, deleteBookmark, getMyBookmarks } from "../lib/bookmarksApi";
@@ -77,7 +77,7 @@ export default function ContentDetail() {
       });
       // itda-backend는 인증 필요 라우트에 토큰이 없으면 401이 아니라 403(Forbidden)을 반환할 수 있다
       // (Spring Security 기본 동작, ItineraryRecommendation.tsx와 동일한 처리).
-      if (err instanceof ApiError && (err.status === 401 || err.status === 403)) {
+      if (isLoginRequiredError(err)) {
         toast("로그인이 필요한 기능이에요. 로그인 후 다시 시도해주세요.");
         navigate("/login", { replace: true, state: { from: location.pathname + location.search } });
       } else {
