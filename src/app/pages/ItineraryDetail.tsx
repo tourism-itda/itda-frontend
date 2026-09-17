@@ -265,19 +265,33 @@ export default function ItineraryDetail() {
     });
   }
 
-  // 카드의 "다른 곳 추천"은 바로 바꾸지 않고 후보를 먼저 보여준다. contentId+visitOrder
-  // 기준으로 excludePlaceId 다음 후보 하나를 받아온다(GET /api/places/alternative).
-  async function fetchSwapCandidate(place: ItineraryDetailPlace, excludePlaceId: number) {
+  // 카드의 "다른 곳 추천"은 바로 바꾸지 않고 후보를 먼저 보여준다. GET /api/places/alternative는
+  // "이 콘텐츠에서 recommend_order가 visit_order보다 큰 것 중 첫 번째"를 돌려주는데, 저장된
+  // 일정의 visit_order는 하루 나누기·순서 편집 기능 때문에 원래 recommend_order와 안 맞을 수
+  // 있다(예: 편집으로 값이 커지면 문턱값이 콘텐츠의 최대 recommend_order를 넘어버려서 실제로는
+  // 후보가 남아있는데도 바로 "더 이상 없다"고 잘못 뜬다). 그래서 문턱값은 항상 0(전체)으로 고정해
+  // 콘텐츠의 추천 목록을 처음부터 훑고, 이미 이 일정에 쓰인 장소는 건너뛰고 다음 걸 본다.
+  async function fetchSwapCandidate(excludePlaceId: number) {
     if (!detail || detail.content_id === null) return;
     setSwapStatus("loading");
+    const usedPlaceIds = new Set(detail.places.map((p) => p.place_id));
+    let exclude = excludePlaceId;
     try {
-      const result = await getAlternativePlace({
-        contentId: detail.content_id,
-        visitOrder: place.visit_order,
-        excludePlaceId,
-      });
-      setSwapCandidate(result.place);
-      setSwapStatus("done");
+      for (let guard = 0; guard < 30; guard++) {
+        const result = await getAlternativePlace({
+          contentId: detail.content_id,
+          visitOrder: 0,
+          excludePlaceId: exclude,
+        });
+        if (!usedPlaceIds.has(result.place.place_id)) {
+          setSwapCandidate(result.place);
+          setSwapStatus("done");
+          return;
+        }
+        exclude = result.place.place_id;
+      }
+      setSwapCandidate(null);
+      setSwapStatus("empty");
     } catch (err) {
       if (isLoginRequiredError(err)) {
         setSwapOriginal(null);
@@ -297,12 +311,12 @@ export default function ItineraryDetail() {
   function openSwapSheet(place: ItineraryDetailPlace) {
     setSwapOriginal(place);
     setSwapCandidate(null);
-    fetchSwapCandidate(place, place.place_id);
+    fetchSwapCandidate(place.place_id);
   }
 
   function handleNextCandidate() {
-    if (!swapOriginal || !swapCandidate) return;
-    fetchSwapCandidate(swapOriginal, swapCandidate.place_id);
+    if (!swapCandidate) return;
+    fetchSwapCandidate(swapCandidate.place_id);
   }
 
   async function handleApplySwap() {
