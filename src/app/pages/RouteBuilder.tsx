@@ -19,7 +19,7 @@ import {
 import { Button } from "../components/ui/button";
 import { ApiError, isLoginRequiredError } from "../lib/api";
 import { ItinerarySavePlace, saveItinerary } from "../lib/itineraryRecommend";
-import { getProxiedImageUrl } from "../lib/imageProxy";
+import { PlaceImage } from "../components/PlaceImage";
 import {
   ContentPlaceListItem,
   RouteCandidate,
@@ -104,11 +104,13 @@ function RouteSlotCard({ slot, onOpenCandidates }: { slot: RouteSlot; onOpenCand
       </div>
 
       <div className="flex gap-3 p-4">
-        {place.image_url ? (
-          <img src={getProxiedImageUrl(place.image_url)} alt={place.name} referrerPolicy="no-referrer" className="w-20 h-20 rounded-lg object-cover shrink-0" />
-        ) : (
-          <div className="w-20 h-20 rounded-lg bg-muted shrink-0" />
-        )}
+        <PlaceImage
+          src={place.image_url}
+          alt={place.name}
+          placeType={place.place_type}
+          category={place.category}
+          className="w-20 h-20 rounded-lg object-cover shrink-0"
+        />
         <div className="flex-1 min-w-0">
           <span className="inline-block text-xs px-2 py-0.5 rounded-full mb-1.5 bg-muted text-foreground">
             {place.category}
@@ -247,11 +249,13 @@ function CandidateSheet({
                   disabled={importingExternalId !== null}
                   className="w-full flex items-center gap-3 p-3 rounded-xl border border-border text-left hover:bg-muted/30 transition-colors disabled:opacity-60"
                 >
-                  {candidate.image_url ? (
-                    <img src={getProxiedImageUrl(candidate.image_url)} alt={candidate.name} referrerPolicy="no-referrer" className="w-16 h-16 rounded-lg object-cover shrink-0" />
-                  ) : (
-                    <div className="w-16 h-16 rounded-lg bg-muted shrink-0" />
-                  )}
+                  <PlaceImage
+                    src={candidate.image_url}
+                    alt={candidate.name}
+                    placeType={candidate.place_type}
+                    category={candidate.category}
+                    className="w-16 h-16 rounded-lg object-cover shrink-0"
+                  />
                   <div className="flex-1 min-w-0">
                     <span className="inline-block text-xs px-2 py-0.5 rounded-full mb-1 bg-muted text-foreground">
                       {candidate.category}
@@ -642,9 +646,12 @@ export default function RouteBuilder() {
                         </div>
                       )}
                       <div className="aspect-[4/3] bg-muted">
-                        {place.image_url && (
-                          <img src={getProxiedImageUrl(place.image_url)} alt={place.name} referrerPolicy="no-referrer" className="w-full h-full object-cover" />
-                        )}
+                        <PlaceImage
+                          src={place.image_url}
+                          alt={place.name}
+                          category={place.category}
+                          className="w-full h-full object-cover"
+                        />
                       </div>
                       <div className="p-3">
                         <span className="inline-block text-xs px-2 py-0.5 rounded-full mb-1.5 bg-muted text-foreground">

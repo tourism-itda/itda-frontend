@@ -4,7 +4,7 @@ import { toast } from "sonner";
 import { Bookmark, Clock, Info, Loader2, Navigation, Shuffle } from "lucide-react";
 import { ApiError, isLoginRequiredError } from "../lib/api";
 import { createBookmark, deleteBookmark, findBookmarkId } from "../lib/bookmarksApi";
-import { getProxiedImageUrl } from "../lib/imageProxy";
+import { PlaceImage } from "./PlaceImage";
 
 /**
  * ItineraryRecommendation(추천 미리보기)과 ItineraryDetail(저장된 일정 상세)이 함께 쓰는
@@ -154,17 +154,13 @@ export function PlaceSlotCard({
           {visitOrder}
         </div>
 
-        {/* 이미지 */}
-        {place.image_url ? (
-          <img
-            src={getProxiedImageUrl(place.image_url)}
-            alt={place.name ?? ""}
-            referrerPolicy="no-referrer"
-            className="w-20 h-20 rounded-lg object-cover shrink-0"
-          />
-        ) : (
-          <div className="w-20 h-20 rounded-lg bg-muted shrink-0" />
-        )}
+        {/* 이미지 — 사진이 없거나 못 불러오면 분류별 기본 이미지로 대체 */}
+        <PlaceImage
+          src={place.image_url}
+          alt={place.name ?? ""}
+          category={place.category}
+          className="w-20 h-20 rounded-lg object-cover shrink-0"
+        />
 
         {/* 정보 */}
         <div className="flex-1 min-w-0">

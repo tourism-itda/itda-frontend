@@ -5,7 +5,7 @@ import { ArrowLeft, Bookmark, Loader2, LogIn, MapPin } from "lucide-react";
 import { Button } from "../components/ui/button";
 import { ApiError, isLoginRequiredError } from "../lib/api";
 import { BookmarkListItem, deleteBookmark, getMyBookmarks } from "../lib/bookmarksApi";
-import { getProxiedImageUrl } from "../lib/imageProxy";
+import { PlaceImage } from "../components/PlaceImage";
 
 type Status = "loading" | "done" | "unauthenticated" | "error";
 
@@ -119,18 +119,12 @@ export default function Bookmarks() {
           <div className="divide-y divide-border border-t border-border">
             {bookmarks.map((place) => (
               <div key={place.bookmark_id} className="flex gap-3 py-4">
-                {place.image_url ? (
-                  <img
-                    src={getProxiedImageUrl(place.image_url)}
-                    alt={place.name}
-                    referrerPolicy="no-referrer"
-                    className="w-20 h-20 rounded-sm object-cover border border-border shrink-0"
-                  />
-                ) : (
-                  <div className="w-20 h-20 rounded-sm border border-border shrink-0 bg-muted flex items-center justify-center">
-                    <MapPin className="w-5 h-5 text-muted-foreground/40" />
-                  </div>
-                )}
+                <PlaceImage
+                  src={place.image_url}
+                  alt={place.name}
+                  category={place.category}
+                  className="w-20 h-20 rounded-sm object-cover border border-border shrink-0"
+                />
                 <div className="flex-1 min-w-0 py-0.5">
                   <p className="text-sm text-muted-foreground mb-1">{place.category}</p>
                   <p className="font-heading mb-1.5 truncate">{place.name}</p>
