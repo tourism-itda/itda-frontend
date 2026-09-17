@@ -1,27 +1,11 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
-import { ArrowLeft, Search, SlidersHorizontal, TrendingUp, Flame, MapPinOff } from "lucide-react";
+import { ArrowLeft, Search, MapPinOff } from "lucide-react";
 import { Input } from "../components/ui/input";
 import { ContentCard } from "../components/ContentCard";
 import { Skeleton } from "../components/ui/skeleton";
 import { useContents } from "../lib/useContents";
-import { ContentListItem, ContentMediaType, ContentSort } from "../lib/contents";
-import { getProxiedImageUrl } from "../lib/imageProxy";
-
-type Genre = "전체" | "드라마" | "영화" | "다큐";
-type Sort = "인기순" | "최신순";
-
-const genreToMediaType: Record<Genre, ContentMediaType | undefined> = {
-  전체: undefined,
-  드라마: "DRAMA",
-  영화: "MOVIE",
-  다큐: "DOCUMENTARY",
-};
-
-const sortToApiSort: Record<Sort, ContentSort> = {
-  인기순: "popular",
-  최신순: "recent",
-};
+import { ContentListItem } from "../lib/contents";
 
 const mediaTypeLabel: Record<string, string> = {
   MOVIE: "영화",
@@ -34,9 +18,6 @@ const PAGE_SIZE = 24;
 export default function PopularContents() {
   const navigate = useNavigate();
   const [query, setQuery] = useState("");
-  const [genre, setGenre] = useState<Genre>("전체");
-  const [sort, setSort] = useState<Sort>("인기순");
-  const [showFilters, setShowFilters] = useState(false);
   const [page, setPage] = useState(0);
 
   // API 호출은 q로 나가므로 매 타이핑마다 요청하지 않도록 디바운스한다.
@@ -46,15 +27,14 @@ export default function PopularContents() {
     return () => clearTimeout(timer);
   }, [query]);
 
-  // 필터가 바뀌면 1페이지부터 다시 본다.
+  // 검색어가 바뀌면 1페이지부터 다시 본다.
   useEffect(() => {
     setPage(0);
-  }, [debouncedQuery, genre, sort]);
+  }, [debouncedQuery]);
 
   const { status, data } = useContents({
     q: debouncedQuery || undefined,
-    mediaType: genreToMediaType[genre],
-    sort: sortToApiSort[sort],
+    sort: "popular",
     page,
     limit: PAGE_SIZE,
   });
@@ -69,7 +49,6 @@ export default function PopularContents() {
 
   const total = data?.total ?? 0;
   const hasMore = items.length < total;
-  const showTop3 = page === 0 && query === "" && genre === "전체" && sort === "인기순" && items.length >= 3;
 
   return (
     <div className="min-h-screen pb-8">
@@ -100,64 +79,16 @@ export default function PopularContents() {
                 className="pl-9 h-10 bg-input-background text-sm"
               />
             </div>
-            <button
-              onClick={() => setShowFilters(!showFilters)}
-              className={`px-3 h-10 rounded-lg border transition-colors flex items-center gap-1.5 text-sm ${
-                showFilters ? "bg-primary text-primary-foreground border-primary" : "border-border hover:bg-muted"
-              }`}
-            >
-              <SlidersHorizontal className="w-4 h-4" />
-              필터
-            </button>
           </div>
-
-          {/* 필터 확장 */}
-          {/* 카테고리(category_id) 필터는 아직 숨김: 다연 카테고리 도메인 작업 완료 전까지는
-              category_id로 필터링해도 항상 빈 결과만 나온다(로컬 DB에 content_category 데이터 없음). */}
-          {showFilters && (
-            <div className="mt-3 space-y-2 pt-3 border-t border-border">
-              <div>
-                <p className="text-xs text-muted-foreground mb-2">장르</p>
-                <div className="flex gap-2 flex-wrap">
-                  {(["전체", "드라마", "영화", "다큐"] as Genre[]).map((g) => (
-                    <button
-                      key={g}
-                      onClick={() => setGenre(g)}
-                      className={`px-3 py-1 rounded-full text-xs border transition-colors ${
-                        genre === g
-                          ? "bg-primary text-primary-foreground border-primary"
-                          : "border-border hover:bg-muted"
-                      }`}
-                    >
-                      {g}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
-          )}
         </div>
       </div>
 
       <div className="max-w-[1280px] mx-auto px-4 lg:px-8 mt-5">
-        {/* 정렬 + 결과 수 */}
-        <div className="flex items-center justify-between mb-4">
+        {/* 결과 수 */}
+        <div className="mb-4">
           <p className="text-sm text-muted-foreground">
             총 <span className="font-medium text-foreground">{total}</span>개
           </p>
-          <div className="flex gap-1">
-            {(["인기순", "최신순"] as Sort[]).map((s) => (
-              <button
-                key={s}
-                onClick={() => setSort(s)}
-                className={`px-2.5 py-1 rounded-md text-xs transition-colors ${
-                  sort === s ? "bg-muted font-medium" : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                {s}
-              </button>
-            ))}
-          </div>
         </div>
 
         {status === "loading" && page === 0 && (
@@ -188,49 +119,6 @@ export default function PopularContents() {
 
         {items.length > 0 && (
           <>
-            {/* TOP 3 하이라이트 */}
-            {showTop3 && (
-              <div className="mb-6">
-                <div className="flex items-center gap-2 mb-3">
-                  <Flame className="w-4 h-4 text-primary" />
-                  <span className="text-sm font-medium">이번 주 TOP 3</span>
-                </div>
-                <div className="grid grid-cols-3 gap-3">
-                  {items.slice(0, 3).map((c, i) => (
-                    <div
-                      key={c.content_id}
-                      onClick={() => navigate(`/app/content/${c.content_id}`)}
-                      className="relative cursor-pointer group rounded-xl overflow-hidden"
-                    >
-                      <div className="aspect-[3/4] overflow-hidden bg-muted">
-                        {c.thumbnail_url && (
-                          <img
-                            src={getProxiedImageUrl(c.thumbnail_url)}
-                            alt={c.title}
-                            referrerPolicy="no-referrer"
-                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                          />
-                        )}
-                      </div>
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
-                      <div className="absolute bottom-2 left-2 right-2">
-                        <p className="font-heading text-gold text-2xl leading-none mb-1">
-                          {["①", "②", "③"][i]}
-                        </p>
-                        <p className="text-ivory text-xs font-medium line-clamp-2 leading-tight">{c.title}</p>
-                      </div>
-                      <div className="absolute top-2 right-2">
-                        <div className="flex items-center gap-1 bg-navy/60 rounded-full px-2 py-0.5">
-                          <TrendingUp className="w-3 h-3 text-ivory" />
-                          <span className="text-ivory text-xs">{c.view_count.toLocaleString()}</span>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
             {/* 전체 그리드 */}
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 lg:gap-5">
               {items.map((content) => (
