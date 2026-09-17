@@ -22,6 +22,7 @@ import { ApiError } from "../lib/api";
 import { CommunityPostDetail, CommunityStop, getCommunityPostDetail, importItinerary } from "../lib/community";
 import { Review, createReview, getReviews, toggleReviewLike } from "../lib/reviews";
 import { getProxiedImageUrl } from "../lib/imageProxy";
+import { MapView } from "../components/MapView";
 
 /**
  * itda-backend CommunityController(No.41)/ReviewController(No.43,44)/ReviewLikeController(No.45),
@@ -582,30 +583,52 @@ export default function CommunityDetail() {
               </button>
             </div>
 
-            {/* 지도 플레이스홀더 */}
-            <div
-              className="relative h-44 bg-muted overflow-hidden shrink-0"
-              style={{
-                backgroundImage:
-                  "linear-gradient(rgba(0,0,0,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(0,0,0,0.03) 1px, transparent 1px)",
-                backgroundSize: "24px 24px",
-                backgroundColor: "#e8e4d8",
-              }}
-            >
-              {/* 중심 핀 */}
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="flex flex-col items-center">
-                  <div className="w-10 h-10 rounded-full bg-foreground flex items-center justify-center shadow-lg">
-                    <MapPin className="w-5 h-5 text-background fill-background" />
-                  </div>
-                  <div className="w-2 h-2 rounded-full bg-foreground/30 mt-1 blur-sm" />
+            {/* 지도 — stop 데이터에 이미 좌표(latitude/longitude)가 있으니 바로 실제 카카오맵을
+                보여준다. 좌표가 없을 때만(비정상 데이터) 플레이스홀더로 대체한다. */}
+            {Number.isFinite(selectedStop.lat) && Number.isFinite(selectedStop.lng) ? (
+              <div className="relative h-44 overflow-hidden shrink-0">
+                <MapView
+                  places={[
+                    {
+                      id: String(selectedStop.order),
+                      order: selectedStop.order,
+                      name: selectedStop.name,
+                      lat: selectedStop.lat,
+                      lng: selectedStop.lng,
+                      image: selectedStop.image,
+                    },
+                  ]}
+                  selectedPlace={String(selectedStop.order)}
+                />
+                <div className="absolute top-4 left-1/2 -translate-x-1/2 bg-card rounded-xl px-3 py-1.5 shadow-md border border-border whitespace-nowrap pointer-events-none">
+                  <p className="text-sm font-medium">{selectedStop.name}</p>
                 </div>
               </div>
-              {/* 장소명 말풍선 */}
-              <div className="absolute top-4 left-1/2 -translate-x-1/2 bg-card rounded-xl px-3 py-1.5 shadow-md border border-border whitespace-nowrap">
-                <p className="text-sm font-medium">{selectedStop.name}</p>
+            ) : (
+              <div
+                className="relative h-44 bg-muted overflow-hidden shrink-0"
+                style={{
+                  backgroundImage:
+                    "linear-gradient(rgba(0,0,0,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(0,0,0,0.03) 1px, transparent 1px)",
+                  backgroundSize: "24px 24px",
+                  backgroundColor: "#e8e4d8",
+                }}
+              >
+                {/* 중심 핀 */}
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="flex flex-col items-center">
+                    <div className="w-10 h-10 rounded-full bg-foreground flex items-center justify-center shadow-lg">
+                      <MapPin className="w-5 h-5 text-background fill-background" />
+                    </div>
+                    <div className="w-2 h-2 rounded-full bg-foreground/30 mt-1 blur-sm" />
+                  </div>
+                </div>
+                {/* 장소명 말풍선 */}
+                <div className="absolute top-4 left-1/2 -translate-x-1/2 bg-card rounded-xl px-3 py-1.5 shadow-md border border-border whitespace-nowrap">
+                  <p className="text-sm font-medium">{selectedStop.name}</p>
+                </div>
               </div>
-            </div>
+            )}
 
             {/* 장소 정보 */}
             <div className="px-5 py-4 space-y-4 overflow-y-auto">
