@@ -172,7 +172,7 @@ export function PlaceSheet({ place, onClose }: PlaceSheetProps) {
         )}
 
         {/* 장소 정보 */}
-        <div className="px-5 py-4 space-y-4 overflow-y-auto">
+        <div className="px-5 py-4 space-y-4 overflow-y-auto flex-1 min-h-0">
           <div>
             <p className="text-xs text-muted-foreground mb-0.5">{category}</p>
             <h3 className="text-lg font-semibold">{place.name}</h3>
