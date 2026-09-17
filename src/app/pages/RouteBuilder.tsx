@@ -9,6 +9,7 @@ import {
   MapPin,
   MapPinOff,
   Moon,
+  RefreshCw,
   Save,
   Sparkles,
   TriangleAlert,
@@ -24,6 +25,7 @@ import {
   RouteCandidate,
   RouteFillableType,
   RoutePlace,
+  RoutePlaceType,
   RoutePlanResult,
   RouteSlot,
   createRoute,
@@ -295,6 +297,9 @@ export default function RouteBuilder() {
   const [isCreating, setIsCreating] = useState(false);
 
   const [route, setRoute] = useState<RoutePlanResult | null>(null);
+  // "다른 조합 보기"용 — 지금까지 본 루트의 촬영지 place_id를 누적한다(직전 루트 것만 보내면 A↔B로 왔다갔다 함).
+  const [excludedPlaceIds, setExcludedPlaceIds] = useState<number[]>([]);
+  const [isRegenerating, setIsRegenerating] = useState(false);
 
   useEffect(() => {
     if (contentId === undefined) return;
@@ -325,6 +330,16 @@ export default function RouteBuilder() {
     });
   }
 
+  function getSpotPlaceIds(result: RoutePlanResult): number[] {
+    return result.slots
+      .filter((s) => s.slot_type === "SPOT" && s.place)
+      .map((s) => s.place!.place_id);
+  }
+
+  function segmentKey(startId: number, endId: number | undefined, slotType: RoutePlaceType) {
+    return `${startId}:${endId ?? "end"}:${slotType}`;
+  }
+
   async function handleCreateRoute(spotPlaceIds: number[]) {
     if (contentId === undefined || isCreating) return;
     setIsCreating(true);
@@ -334,6 +349,7 @@ export default function RouteBuilder() {
         spot_place_ids: spotPlaceIds.length > 0 ? spotPlaceIds : undefined,
       });
       setRoute(result);
+      setExcludedPlaceIds(getSpotPlaceIds(result));
       setStep("preview");
     } catch (err) {
       toast(
@@ -343,6 +359,60 @@ export default function RouteBuilder() {
       );
     } finally {
       setIsCreating(false);
+    }
+  }
+
+  // "다른 조합 보기" — 같은 spot_place_ids로, 지금까지 본 촬영지를 전부 제외하고 재생성한다.
+  async function handleRegenerateRoute() {
+    if (contentId === undefined || !route || isRegenerating) return;
+    setIsRegenerating(true);
+    try {
+      const result = await createRoute({
+        content_id: contentId,
+        spot_place_ids: selectedIds.length > 0 ? selectedIds : undefined,
+        exclude_place_ids: excludedPlaceIds,
+        allowance_meters: route.allowance_meters,
+      });
+
+      const prevSpotIds = new Set(getSpotPlaceIds(route));
+      const nextSpotIds = getSpotPlaceIds(result);
+      const sameCombo =
+        nextSpotIds.length === prevSpotIds.size && nextSpotIds.every((id) => prevSpotIds.has(id));
+
+      if (sameCombo) {
+        toast("더 볼 수 있는 코스가 없어요.");
+        return;
+      }
+
+      // 직전 루트에서 사용자가 고른 식당·카페는, 같은 구간(시작~끝 촬영지)이 새 루트에도 그대로
+      // 남아있을 때만 이어붙인다. 관련명소 자체가 바뀌는 작품은 구간이 안 맞아 자연히 초기화된다.
+      const prevFills = new Map<string, RoutePlace>();
+      for (const slot of route.slots) {
+        if (slot.slot_type === "SPOT" || !slot.place || slot.filled_by !== "USER") continue;
+        if (slot.segment_index === undefined) continue;
+        const segment = route.segments.find((s) => s.segment_index === slot.segment_index);
+        if (!segment) continue;
+        prevFills.set(segmentKey(segment.start_place_id, segment.end_place_id, slot.slot_type), slot.place);
+      }
+
+      const mergedSlots = result.slots.map((slot) => {
+        if (slot.slot_type === "SPOT" || slot.place || slot.segment_index === undefined) return slot;
+        const segment = result.segments.find((s) => s.segment_index === slot.segment_index);
+        if (!segment) return slot;
+        const carried = prevFills.get(segmentKey(segment.start_place_id, segment.end_place_id, slot.slot_type));
+        return carried ? { ...slot, place: carried, filled_by: "USER" as const } : slot;
+      });
+
+      setRoute({ ...result, slots: mergedSlots });
+      setExcludedPlaceIds((prev) => Array.from(new Set([...prev, ...nextSpotIds])));
+    } catch (err) {
+      toast(
+        err instanceof ApiError
+          ? err.message
+          : "다른 조합을 불러오지 못했어요. 잠시 후 다시 시도해주세요."
+      );
+    } finally {
+      setIsRegenerating(false);
     }
   }
 
@@ -650,7 +720,20 @@ export default function RouteBuilder() {
 
           {/* 하단 고정 액션 */}
           <div className="fixed bottom-16 left-0 right-0 z-40 px-4 pb-3 pt-2 bg-background/95 backdrop-blur-sm hanji-noise border-t border-border">
-            <div className="max-w-2xl mx-auto">
+            <div className="max-w-2xl mx-auto space-y-2">
+              <Button
+                variant="outline"
+                onClick={handleRegenerateRoute}
+                disabled={isRegenerating}
+                className="w-full h-11"
+              >
+                {isRegenerating ? (
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                ) : (
+                  <RefreshCw className="w-4 h-4 mr-2" />
+                )}
+                다른 조합 보기
+              </Button>
               <Button
                 onClick={() => {
                   setSaveTitle("");

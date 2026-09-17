@@ -75,6 +75,12 @@ export interface CreateRoutePayload {
   content_id: number;
   /** 사용자가 직접 고른 촬영지. 최대 3개. 비우면(또는 생략하면) 서버가 자동으로 3곳을 고른다. */
   spot_place_ids?: number[];
+  /**
+   * "다른 조합 보기"(루트 재생성) 시 지금까지 본 루트의 place_id 전부를 누적해서 보낸다.
+   * spot_place_ids와 겹쳐도 서버가 spot_place_ids를 우선 적용하므로 직전 루트를 통째로
+   * 넣어도 안전하다(누적하지 않고 직전 루트 것만 보내면 A↔B로 왔다갔다 하니 주의).
+   */
+  exclude_place_ids?: number[];
   /** 동선 허용거리(m). 생략 시 서버 기본값 3000. */
   allowance_meters?: number;
 }
