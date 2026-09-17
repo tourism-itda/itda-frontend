@@ -16,3 +16,8 @@ export function getProxiedImageUrl(url: string): string {
 
   return `/api/img-proxy?url=${encodeURIComponent(url)}`;
 }
+
+// 마이페이지와 동일한 기본 프로필 이미지 규칙: 등록된 프로필이 없으면 닉네임 기반 아바타를 사용한다.
+export function getAvatarUrl(profileUrl: string | null | undefined, nickname: string | null | undefined): string {
+  return profileUrl || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(nickname ?? "guest")}`;
+}

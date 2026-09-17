@@ -21,7 +21,7 @@ import { usePlaceLookup } from "../lib/usePlaceLookup";
 import { ApiError } from "../lib/api";
 import { CommunityPostDetail, CommunityStop, getCommunityPostDetail, importItinerary } from "../lib/community";
 import { Review, createReview, getReviews, toggleReviewLike } from "../lib/reviews";
-import { getProxiedImageUrl } from "../lib/imageProxy";
+import { getAvatarUrl, getProxiedImageUrl } from "../lib/imageProxy";
 import { MapView } from "../components/MapView";
 
 /**
@@ -295,11 +295,12 @@ export default function CommunityDetail() {
             <div className="lg:hidden space-y-4">
               <div className="flex items-center justify-between gap-3">
                 <div className="flex items-center gap-3 min-w-0">
-                  {post.author.profile_url ? (
-                    <img src={getProxiedImageUrl(post.author.profile_url)} alt="" referrerPolicy="no-referrer" className="w-10 h-10 rounded-full bg-muted shrink-0" />
-                  ) : (
-                    <div className="w-10 h-10 rounded-full bg-muted shrink-0" />
-                  )}
+                  <img
+                    src={getProxiedImageUrl(getAvatarUrl(post.author.profile_url, post.author.nickname))}
+                    alt=""
+                    referrerPolicy="no-referrer"
+                    className="w-10 h-10 rounded-full bg-muted shrink-0"
+                  />
                   <div className="min-w-0">
                     <p className="font-medium text-sm">{post.author.nickname ?? "알 수 없음"}</p>
                   </div>
@@ -484,16 +485,12 @@ export default function CommunityDetail() {
                     {reviews.map((review) => (
                       <div key={review.review_id} className="bg-card border border-border rounded-[24px] p-6">
                         <div className="flex items-center gap-2.5 mb-3">
-                          {review.author_profile_url ? (
-                            <img
-                              src={getProxiedImageUrl(review.author_profile_url)}
-                              alt=""
-                              referrerPolicy="no-referrer"
-                              className="w-9 h-9 rounded-full bg-muted shrink-0"
-                            />
-                          ) : (
-                            <div className="w-9 h-9 rounded-full bg-muted shrink-0" />
-                          )}
+                          <img
+                            src={getProxiedImageUrl(getAvatarUrl(review.author_profile_url, review.author_nickname))}
+                            alt=""
+                            referrerPolicy="no-referrer"
+                            className="w-9 h-9 rounded-full bg-muted shrink-0"
+                          />
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2 flex-wrap">
                               <p className="text-sm font-bold">{review.author_nickname ?? "알 수 없음"}</p>
@@ -525,11 +522,12 @@ export default function CommunityDetail() {
           <div className="hidden lg:block sticky top-24 mt-16 space-y-4">
             <div className="bg-card border border-border rounded-[28px] p-6">
               <div className="flex items-center gap-3 pb-5 mb-5 border-b border-border">
-                {post.author.profile_url ? (
-                  <img src={getProxiedImageUrl(post.author.profile_url)} alt="" referrerPolicy="no-referrer" className="w-12 h-12 rounded-full bg-muted shrink-0" />
-                ) : (
-                  <div className="w-12 h-12 rounded-full bg-muted shrink-0" />
-                )}
+                <img
+                  src={getProxiedImageUrl(getAvatarUrl(post.author.profile_url, post.author.nickname))}
+                  alt=""
+                  referrerPolicy="no-referrer"
+                  className="w-12 h-12 rounded-full bg-muted shrink-0"
+                />
                 <div className="min-w-0">
                   <p className="font-bold text-[15px]">{post.author.nickname ?? "알 수 없음"}</p>
                 </div>
