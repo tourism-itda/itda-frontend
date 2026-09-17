@@ -15,6 +15,7 @@ import {
 import { PlaceSheet, PlaceSheetData } from "../components/PlaceSheet";
 import { PlaceSlotCard } from "../components/PlaceSlotCard";
 import { ApiError, isLoginRequiredError } from "../lib/api";
+import { splitIntoPeriods } from "../lib/periodSplit";
 
 export default function ItineraryRecommendation() {
   const navigate = useNavigate();
@@ -64,6 +65,48 @@ export default function ItineraryRecommendation() {
   }
 
   const confirmedCount = slots.filter((s) => confirmedIds.has(s.place.place_id)).length;
+
+  // 일차 그룹을 모바일/데스크탑 두 레이아웃에서 그대로 재사용한다. 당일치기(dayCount===1)라
+  // "n일차" 헤더가 없어도, 하루 안에서 아침/점심/저녁 구간으로 나눠 흐름이 보이게 한다.
+  function renderDayGroups() {
+    return dayGroups.map((indices, dayIdx) => {
+      const periods = splitIntoPeriods(indices);
+      return (
+        <div key={dayIdx} className="space-y-3">
+          {dayCount > 1 && (
+            <div className="flex items-center gap-2 pt-1">
+              <span className="text-sm font-semibold text-primary shrink-0">{dayIdx + 1}일차</span>
+              <div className="flex-1 h-px bg-border" />
+            </div>
+          )}
+          {periods.map((period, periodIdx) => (
+            <div key={periodIdx} className="space-y-3">
+              {period.label && (
+                <div className="flex items-center gap-2 pt-1">
+                  <span className="text-xs font-medium text-muted-foreground shrink-0">{period.label}</span>
+                  <div className="flex-1 h-px bg-border/60" />
+                </div>
+              )}
+              {period.items.map((idx) => (
+                <PlaceSlotCard
+                  key={slots[idx].place.place_id}
+                  place={slots[idx].place}
+                  visitOrder={slots[idx].visit_order}
+                  confirmed={confirmedIds.has(slots[idx].place.place_id)}
+                  isSelected={selectedId === String(slots[idx].place.place_id)}
+                  onSelect={() => setSelectedId(String(slots[idx].place.place_id))}
+                  onConfirm={() => toggleConfirm(slots[idx].place.place_id)}
+                  onOpenDetail={() => openDetail(slots[idx].place)}
+                  onSwap={() => handleSwap(slots[idx])}
+                  swapping={swappingOrders.has(slots[idx].visit_order)}
+                />
+              ))}
+            </div>
+          ))}
+        </div>
+      );
+    });
+  }
 
   function toggleConfirm(placeId: number) {
     setConfirmedIds((prev) => {
@@ -301,32 +344,7 @@ export default function ItineraryRecommendation() {
             </div>
 
             {/* 장소 카드 리스트 */}
-            <div className="p-4 space-y-5 pb-36">
-              {dayGroups.map((indices, dayIdx) => (
-                <div key={dayIdx} className="space-y-3">
-                  {dayCount > 1 && (
-                    <div className="flex items-center gap-2 pt-1">
-                      <span className="text-sm font-semibold text-primary shrink-0">{dayIdx + 1}일차</span>
-                      <div className="flex-1 h-px bg-border" />
-                    </div>
-                  )}
-                  {indices.map((idx) => (
-                    <PlaceSlotCard
-                      key={slots[idx].place.place_id}
-                      place={slots[idx].place}
-                      visitOrder={slots[idx].visit_order}
-                      confirmed={confirmedIds.has(slots[idx].place.place_id)}
-                      isSelected={selectedId === String(slots[idx].place.place_id)}
-                      onSelect={() => setSelectedId(String(slots[idx].place.place_id))}
-                      onConfirm={() => toggleConfirm(slots[idx].place.place_id)}
-                      onOpenDetail={() => openDetail(slots[idx].place)}
-                      onSwap={() => handleSwap(slots[idx])}
-                      swapping={swappingOrders.has(slots[idx].visit_order)}
-                    />
-                  ))}
-                </div>
-              ))}
-            </div>
+            <div className="p-4 space-y-5 pb-36">{renderDayGroups()}</div>
 
             {/* 하단 고정 액션 */}
             <div className="fixed bottom-16 left-0 right-0 lg:hidden z-40 px-4 pb-3 pt-2 bg-background/95 backdrop-blur-sm hanji-noise border-t border-border">
@@ -339,32 +357,7 @@ export default function ItineraryRecommendation() {
           {/* 데스크탑 2분할 */}
           <div className="hidden lg:flex h-[calc(100vh-101px)]">
             <div className="w-[520px] border-r border-border overflow-y-auto flex flex-col">
-              <div className="flex-1 p-5 space-y-5">
-                {dayGroups.map((indices, dayIdx) => (
-                  <div key={dayIdx} className="space-y-3">
-                    {dayCount > 1 && (
-                      <div className="flex items-center gap-2 pt-1">
-                        <span className="text-sm font-semibold text-primary shrink-0">{dayIdx + 1}일차</span>
-                        <div className="flex-1 h-px bg-border" />
-                      </div>
-                    )}
-                    {indices.map((idx) => (
-                      <PlaceSlotCard
-                        key={slots[idx].place.place_id}
-                        place={slots[idx].place}
-                        visitOrder={slots[idx].visit_order}
-                        confirmed={confirmedIds.has(slots[idx].place.place_id)}
-                        isSelected={selectedId === String(slots[idx].place.place_id)}
-                        onSelect={() => setSelectedId(String(slots[idx].place.place_id))}
-                        onConfirm={() => toggleConfirm(slots[idx].place.place_id)}
-                        onOpenDetail={() => openDetail(slots[idx].place)}
-                        onSwap={() => handleSwap(slots[idx])}
-                        swapping={swappingOrders.has(slots[idx].visit_order)}
-                      />
-                    ))}
-                  </div>
-                ))}
-              </div>
+              <div className="flex-1 p-5 space-y-5">{renderDayGroups()}</div>
               <div className="p-5 border-t border-border">
                 <Button onClick={() => setShowSaveSheet(true)} className="w-full">저장하기</Button>
               </div>

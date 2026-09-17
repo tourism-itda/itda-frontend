@@ -7,6 +7,7 @@ import { MapView } from "../components/MapView";
 import { PlaceSheet, PlaceSheetData } from "../components/PlaceSheet";
 import { PlaceSlotCard } from "../components/PlaceSlotCard";
 import { ApiError, isLoginRequiredError } from "../lib/api";
+import { splitIntoPeriods } from "../lib/periodSplit";
 import {
   ItineraryDetail as ItineraryDetailData,
   ItineraryDetailPlace,
@@ -269,6 +270,9 @@ export default function ItineraryDetail() {
     }
     return dayNumbers.map((dayNumber) => {
       const dayPlaces = places.filter((p) => p.day_number === dayNumber);
+      // 당일치기는 dayNumbers.length===1이라 "n일차" 헤더가 안 뜨는데, 그렇다고 그냥 쭉
+      // 나열하면 흐름이 안 보이니 하루 안에서도 아침/점심/저녁 구간으로 나눠 보여준다.
+      const periods = splitIntoPeriods(dayPlaces);
       return (
         <div key={dayNumber} className="space-y-3">
           {dayNumbers.length > 1 && (
@@ -277,16 +281,26 @@ export default function ItineraryDetail() {
               <div className="flex-1 h-px bg-border" />
             </div>
           )}
-          {dayPlaces.map((p) => (
-            <PlaceSlotCard
-              key={p.itinerary_place_id}
-              place={p}
-              visitOrder={p.visit_order}
-              isSelected={selectedId === String(p.place_id)}
-              onSelect={() => setSelectedId(String(p.place_id))}
-              onOpenDetail={() => openPlaceDetail(p)}
-              statusLabel={statusLabels[p.status]}
-            />
+          {periods.map((period, periodIdx) => (
+            <div key={periodIdx} className="space-y-3">
+              {period.label && (
+                <div className="flex items-center gap-2 pt-1">
+                  <span className="text-xs font-medium text-muted-foreground shrink-0">{period.label}</span>
+                  <div className="flex-1 h-px bg-border/60" />
+                </div>
+              )}
+              {period.items.map((p) => (
+                <PlaceSlotCard
+                  key={p.itinerary_place_id}
+                  place={p}
+                  visitOrder={p.visit_order}
+                  isSelected={selectedId === String(p.place_id)}
+                  onSelect={() => setSelectedId(String(p.place_id))}
+                  onOpenDetail={() => openPlaceDetail(p)}
+                  statusLabel={statusLabels[p.status]}
+                />
+              ))}
+            </div>
           ))}
         </div>
       );
