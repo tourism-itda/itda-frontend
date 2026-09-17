@@ -230,7 +230,7 @@ export default function ItineraryDetail() {
           {/* 모바일 */}
           <div className="lg:hidden max-w-2xl mx-auto">
             <div className="h-52 border-b border-border">
-              <MapView places={mapPlaces} selectedPlace={selectedId} />
+              <MapView places={mapPlaces} selectedPlace={selectedId} onSelectPlace={setSelectedId} />
             </div>
             <div className="p-4 space-y-5 pb-10">{renderPlaceList()}</div>
           </div>
@@ -241,7 +241,7 @@ export default function ItineraryDetail() {
               <div className="flex-1 p-5 space-y-5">{renderPlaceList()}</div>
             </div>
             <div className="flex-1">
-              <MapView places={mapPlaces} selectedPlace={selectedId} />
+              <MapView places={mapPlaces} selectedPlace={selectedId} onSelectPlace={setSelectedId} />
             </div>
           </div>
         </>

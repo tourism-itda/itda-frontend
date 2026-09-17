@@ -215,11 +215,23 @@ export default function DynastyDetail() {
               )}
             </section>
 
-            {/* CTA */}
+            {/* CTA — 나라 자체엔 연결된 콘텐츠가 없어서(route-builder/itinerary는 항상 content_id가
+                있어야 동작), 위 "관련 콘텐츠" 중 첫 번째로 보낸다. 관련 콘텐츠가 없으면 만들 수 있는
+                일정이 없으므로 버튼을 비활성화한다. */}
             <div className="pt-2 pb-4">
-              <Button onClick={() => navigate("/app/planner")} className="w-full" variant="outline">
+              <Button
+                onClick={() => navigate(`/app/content/${contents[0].contentId}`)}
+                className="w-full"
+                variant="outline"
+                disabled={contentsStatus !== "done" || contents.length === 0}
+              >
                 여행 일정 만들기
               </Button>
+              {contentsStatus === "done" && contents.length === 0 && (
+                <p className="text-xs text-muted-foreground text-center mt-2">
+                  관련 콘텐츠가 있어야 일정을 만들 수 있어요.
+                </p>
+              )}
             </div>
           </>
         )}
