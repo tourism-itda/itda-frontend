@@ -4,10 +4,11 @@ import { toast } from "sonner";
 import { ArrowDown, ArrowLeft, ArrowUp, Check, Loader2, LogIn, MapPinOff, Pencil, Save, X } from "lucide-react";
 import { Button } from "../components/ui/button";
 import { MapView } from "../components/MapView";
+import { PlaceImage } from "../components/PlaceImage";
 import { PlaceSheet, PlaceSheetData } from "../components/PlaceSheet";
 import { PlaceSlotCard } from "../components/PlaceSlotCard";
 import { ApiError, isLoginRequiredError } from "../lib/api";
-import { getAlternativePlace } from "../lib/itineraryRecommend";
+import { AlternativePlace, getAlternativePlace } from "../lib/itineraryRecommend";
 import { splitIntoPeriods } from "../lib/periodSplit";
 import {
   ItineraryDetail as ItineraryDetailData,
@@ -104,7 +105,14 @@ export default function ItineraryDetail() {
   const [editTravelDate, setEditTravelDate] = useState("");
   const [editPlaces, setEditPlaces] = useState<EditPlace[]>([]);
   const [isSaving, setIsSaving] = useState(false);
-  const [swappingPlaceIds, setSwappingPlaceIds] = useState<Set<number>>(new Set());
+
+  // "다른 곳 추천" — 바로 바꾸지 않고 후보를 보여준 다음 고르게 한다. API가 한 번에 하나씩만
+  // 돌려주는 구조라("이 장소 다음으로 추천되는 것 하나"), "다른 후보 보기"를 누르면 방금
+  // 보여준 후보를 exclude로 다시 조회해서 한 걸음씩 다음 후보로 넘어간다.
+  const [swapOriginal, setSwapOriginal] = useState<ItineraryDetailPlace | null>(null);
+  const [swapCandidate, setSwapCandidate] = useState<AlternativePlace | null>(null);
+  const [swapStatus, setSwapStatus] = useState<"loading" | "done" | "empty" | "error">("loading");
+  const [isApplyingSwap, setIsApplyingSwap] = useState(false);
 
   useEffect(() => {
     if (!id) return;
@@ -257,23 +265,52 @@ export default function ItineraryDetail() {
     });
   }
 
-  // 카드에서 바로 "다른 곳 추천"(ItineraryRecommendation.tsx 미리보기와 같은 API)으로 장소를
-  // 교체한다. 미리보기와 달리 이미 저장된 일정이라, 바꾸자마자 PATCH로 바로 반영하고
-  // (거리/시간 등은 서버가 다시 계산해야 해서) 상세를 다시 불러온다.
-  async function handleSwapPlace(place: ItineraryDetailPlace) {
-    if (!id || !detail || detail.content_id === null || swappingPlaceIds.has(place.itinerary_place_id)) return;
-
-    setSwappingPlaceIds((prev) => new Set(prev).add(place.itinerary_place_id));
+  // 카드의 "다른 곳 추천"은 바로 바꾸지 않고 후보를 먼저 보여준다. contentId+visitOrder
+  // 기준으로 excludePlaceId 다음 후보 하나를 받아온다(GET /api/places/alternative).
+  async function fetchSwapCandidate(place: ItineraryDetailPlace, excludePlaceId: number) {
+    if (!detail || detail.content_id === null) return;
+    setSwapStatus("loading");
     try {
       const result = await getAlternativePlace({
         contentId: detail.content_id,
         visitOrder: place.visit_order,
-        excludePlaceId: place.place_id,
+        excludePlaceId,
       });
-      const alt = result.place;
+      setSwapCandidate(result.place);
+      setSwapStatus("done");
+    } catch (err) {
+      if (isLoginRequiredError(err)) {
+        setSwapOriginal(null);
+        toast("로그인이 필요한 기능이에요. 로그인 후 다시 시도해주세요.");
+        navigate("/login", { replace: true, state: { from: location.pathname + location.search } });
+      } else if (err instanceof ApiError && err.status === 404) {
+        // 더 이상 추천할 대안 장소가 없다는 정상적인 "마지막 후보" 신호.
+        setSwapCandidate(null);
+        setSwapStatus("empty");
+      } else {
+        setSwapCandidate(null);
+        setSwapStatus("error");
+      }
+    }
+  }
 
+  function openSwapSheet(place: ItineraryDetailPlace) {
+    setSwapOriginal(place);
+    setSwapCandidate(null);
+    fetchSwapCandidate(place, place.place_id);
+  }
+
+  function handleNextCandidate() {
+    if (!swapOriginal || !swapCandidate) return;
+    fetchSwapCandidate(swapOriginal, swapCandidate.place_id);
+  }
+
+  async function handleApplySwap() {
+    if (!id || !detail || !swapOriginal || !swapCandidate || isApplyingSwap) return;
+    setIsApplyingSwap(true);
+    try {
       const places: UpdateItineraryPlacePayload[] = detail.places.map((p) => ({
-        place_id: p.itinerary_place_id === place.itinerary_place_id ? alt.place_id : p.place_id,
+        place_id: p.itinerary_place_id === swapOriginal.itinerary_place_id ? swapCandidate.place_id : p.place_id,
         day_number: p.day_number,
         visit_order: p.visit_order,
         status: p.status,
@@ -283,21 +320,17 @@ export default function ItineraryDetail() {
 
       const refreshed = await getItineraryDetail(id);
       setDetail(refreshed);
-      toast(`${alt.name}(으)로 바꿨어요.`);
+      toast(`${swapCandidate.name}(으)로 바꿨어요.`);
+      setSwapOriginal(null);
     } catch (err) {
       if (isLoginRequiredError(err)) {
         toast("로그인이 필요한 기능이에요. 로그인 후 다시 시도해주세요.");
         navigate("/login", { replace: true, state: { from: location.pathname + location.search } });
       } else {
-        // 대안이 더 없으면 404("더 이상 추천할 대안 장소가 없습니다") — 정상적인 "마지막 후보" 신호.
-        toast(err instanceof ApiError ? err.message : "다른 장소를 불러오지 못했어요. 잠시 후 다시 시도해주세요.");
+        toast(err instanceof ApiError ? err.message : "장소를 바꾸지 못했어요. 잠시 후 다시 시도해주세요.");
       }
     } finally {
-      setSwappingPlaceIds((prev) => {
-        const next = new Set(prev);
-        next.delete(place.itinerary_place_id);
-        return next;
-      });
+      setIsApplyingSwap(false);
     }
   }
 
@@ -349,8 +382,7 @@ export default function ItineraryDetail() {
                   isSelected={selectedId === String(p.place_id)}
                   onSelect={() => setSelectedId(String(p.place_id))}
                   onOpenDetail={() => openPlaceDetail(p)}
-                  onSwap={detail && detail.content_id !== null ? () => handleSwapPlace(p) : undefined}
-                  swapping={swappingPlaceIds.has(p.itinerary_place_id)}
+                  onSwap={detail && detail.content_id !== null ? () => openSwapSheet(p) : undefined}
                 />
               ))}
             </div>
@@ -555,6 +587,91 @@ export default function ItineraryDetail() {
                 )}
                 저장
               </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* "다른 곳 추천" 후보 시트 — 바로 바꾸지 않고 후보를 보여준 뒤 고르게 한다 */}
+      {swapOriginal && (
+        <div className="fixed inset-0 z-[70] flex items-end lg:items-center justify-center">
+          <div
+            className="absolute inset-0 bg-black/40 backdrop-blur-sm hanji-noise"
+            onClick={() => setSwapOriginal(null)}
+          />
+          <div className="relative bg-card border border-border rounded-t-2xl lg:rounded-2xl w-full max-w-sm shadow-xl flex flex-col overflow-hidden">
+            <div className="flex items-center justify-between px-5 pt-5 pb-3 shrink-0">
+              <h2 className="text-lg">다른 곳 추천</h2>
+              <button
+                onClick={() => setSwapOriginal(null)}
+                className="w-8 h-8 rounded-full hover:bg-muted flex items-center justify-center transition-colors"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="px-5 pb-5">
+              <p className="text-sm text-muted-foreground mb-3">
+                {swapOriginal.name ?? "이 장소"} 대신 넣을 곳을 골라주세요.
+              </p>
+
+              {swapStatus === "loading" && (
+                <div className="flex flex-col items-center justify-center gap-2 py-12 text-muted-foreground">
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                  <p className="text-sm">후보를 불러오는 중이에요...</p>
+                </div>
+              )}
+
+              {swapStatus === "error" && (
+                <div className="flex flex-col items-center justify-center gap-2 py-12 text-center">
+                  <MapPinOff className="w-6 h-6 text-muted-foreground" />
+                  <p className="text-sm text-muted-foreground">후보를 불러오지 못했어요. 잠시 후 다시 시도해주세요.</p>
+                </div>
+              )}
+
+              {swapStatus === "empty" && (
+                <div className="flex flex-col items-center justify-center gap-2 py-12 text-center">
+                  <MapPinOff className="w-6 h-6 text-muted-foreground" />
+                  <p className="text-sm text-muted-foreground">더 이상 추천할 대안 장소가 없어요.</p>
+                </div>
+              )}
+
+              {swapStatus === "done" && swapCandidate && (
+                <div className="flex gap-3 p-3 rounded-xl border border-border mb-4">
+                  <PlaceImage
+                    src={swapCandidate.image_url}
+                    alt={swapCandidate.name}
+                    category={swapCandidate.category}
+                    className="w-20 h-20 rounded-lg object-cover shrink-0"
+                  />
+                  <div className="flex-1 min-w-0">
+                    <span className="inline-block text-xs px-2 py-0.5 rounded-full mb-1 bg-muted text-foreground">
+                      {swapCandidate.category}
+                    </span>
+                    <p className="font-medium text-sm leading-tight line-clamp-1">{swapCandidate.name}</p>
+                    <p className="text-sm text-muted-foreground line-clamp-2 mt-0.5">{swapCandidate.description}</p>
+                  </div>
+                </div>
+              )}
+
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  onClick={handleNextCandidate}
+                  disabled={swapStatus !== "done" || isApplyingSwap}
+                  className="flex-1 h-11"
+                >
+                  다른 후보 보기
+                </Button>
+                <Button
+                  onClick={handleApplySwap}
+                  disabled={swapStatus !== "done" || isApplyingSwap}
+                  className="flex-1 h-11"
+                >
+                  {isApplyingSwap && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+                  이걸로 바꾸기
+                </Button>
+              </div>
             </div>
           </div>
         </div>
