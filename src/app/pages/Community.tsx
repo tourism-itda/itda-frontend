@@ -92,24 +92,26 @@ export default function Community() {
       {/* 헤더 */}
       <div className="border-b border-border bg-card sticky top-0 lg:top-16 z-40">
         <div className="max-w-[1280px] mx-auto px-4 lg:px-8 py-6">
-          <div className="flex items-center justify-between mb-5">
+          <div className="mb-5">
             <PageTitle title="커뮤니티" />
+          </div>
+          <div className="flex items-center gap-4">
+            <div className="relative max-w-2xl flex-1">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Input
+                placeholder="지역, 테마, 작성자"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-11 h-12 rounded-full bg-input-background text-[16px] font-semibold"
+              />
+            </div>
             <button
               onClick={() => navigate("/app/community/write")}
-              className="flex items-center gap-1.5 h-11 px-5 rounded-full bg-primary text-primary-foreground text-sm font-black hover:bg-primary/90 transition-colors"
+              className="flex items-center gap-1.5 h-11 px-5 rounded-full bg-primary text-primary-foreground text-sm font-black hover:bg-primary/90 transition-colors shrink-0"
             >
               <PenLine className="w-4 h-4" />
               공유하기
             </button>
-          </div>
-          <div className="relative max-w-2xl">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <Input
-              placeholder="지역, 테마, 작성자"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-11 h-12 rounded-full bg-input-background text-[16px] font-semibold"
-            />
           </div>
         </div>
       </div>
