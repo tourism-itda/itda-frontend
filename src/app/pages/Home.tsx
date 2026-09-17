@@ -8,7 +8,7 @@ import { ContentCard } from "../components/ContentCard";
 import { useContents } from "../lib/useContents";
 import { useKingdoms } from "../lib/useKingdoms";
 import { usePersons } from "../lib/usePersons";
-import { getKingdomEra } from "../lib/kingdomEra";
+import { formatPersonEra } from "../lib/explore";
 import { getUpcomingEvents, getEventLink, EventSummary } from "../lib/events";
 import { getProxiedImageUrl } from "../lib/imageProxy";
 
@@ -22,8 +22,8 @@ export interface ExploreItem {
   subtitle?: string;
   /** 인물 카드에서만 쓰는 한 줄 소개(person.summary, 없으면 person.description으로 폴백). */
   description?: string | null;
-  /** 인물 카드에서만 쓰는 시대 텍스트(예: "918년 ~ 1392년"). kingdoms 목록의 time_period를
-   *  재사용해서 채운다 — 매칭되는 나라가 없으면 undefined로 두고 카드에서 생략한다. */
+  /** 인물 카드에서만 쓰는 시대 텍스트(예: "918년 ~ 943년"). person.start_year/end_year(개인
+   *  재위·생몰 연도)로 채운다 — 값이 없으면 undefined로 두고 카드에서 생략한다. */
   era?: string;
   /** 나라 카드: kingdom.image_url. 인물 카드: person.image_url. */
   image?: string | null;
@@ -185,12 +185,12 @@ export default function Home() {
         tag: "인물",
         subtitle: personTypeLabel[p.type] ?? p.type,
         description: p.summary ?? p.description,
-        era: getKingdomEra(kingdoms.data, p.kingdom),
+        era: formatPersonEra(p),
         image: p.image_url,
         kingdomCode: p.kingdom,
         href: `/app/person/${p.person_id}`,
       })),
-    [persons.data, kingdoms.data]
+    [persons.data]
   );
 
   const activeItems = useMemo(() => {

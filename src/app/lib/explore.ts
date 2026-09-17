@@ -27,8 +27,11 @@ import { apiFetch } from "./api";
  *    HistoricalKingdomData.KINGDOMS에서 오는데 전체 Kingdom enum이 다 채워져 있어 실제로는
  *    null이 오지 않지만, DTO 필드 자체가 nullable 아님을 보장하지 않으므로 화면에서는 방어적으로
  *    다룬다. 주요 사실·관련 사극·관련 장소 같은 필드는 여전히 백엔드에 없다(디자인 목업에만 있던
- *    데이터). PersonResponse도 name/description 외에 role·연도·업적·관련 사극·관련 장소는 없다.
- *    화면에서 이 값들을 지어내지 않는다.
+ *    데이터). PersonResponse는 name/description 외에 업적·관련 사극·관련 장소는 없지만,
+ *    2026-09-17에 start_year/end_year(개인 재위·생몰 연도, Person 엔티티에는 원래 있었으나
+ *    DTO에 안 실려 있던 값)를 추가했다 — 전에는 인물 카드에 나라 전체의 time_period를 대신
+ *    붙였는데(kingdomEra.ts), 그러면 같은 나라 인물이 전부 똑같은 연도로 보이는 문제가 있어서
+ *    바로잡았다. 화면에서 이 값들을 지어내지 않는다.
  *
  * 6) 로컬 DB의 person 테이블은 이제 시드돼 있다(2026-09-15 기준 GET /explore/persons에서 71건
  *    확인 — 예전엔 0 rows였다는 메모가 있었는데 더 이상 사실이 아니다). 다만 그 시드는
@@ -79,6 +82,18 @@ export interface Person {
   // 상세(GET /explore/persons/{id})는 항상 채워 주지만, 목록 응답에서는 아직 비어있는 경우가
   // 있어 방어적으로 optional로 둔다.
   image_url?: string | null;
+  // 개인 재위/생몰 연도(PersonResponse.start_year/end_year, 2026-09-17 추가). 인물 카드의
+  // "시대" 표시에 쓴다 — 나라 전체 time_period가 아니라 이 값을 우선 써야 한다.
+  start_year?: number | null;
+  end_year?: number | null;
+}
+
+// 인물 카드/상세에 표시할 "시대" 텍스트. person.start_year/end_year가 있으면 그걸 쓰고(개인
+// 연도), 없으면 undefined를 반환한다 — 나라 전체 time_period로 대신 채우지 않는다(그러면 같은
+// 나라 인물이 전부 같은 연도로 보이는 문제가 재발한다).
+export function formatPersonEra(person: Pick<Person, "start_year" | "end_year">): string | undefined {
+  if (person.start_year == null || person.end_year == null) return undefined;
+  return `${person.start_year}년 ~ ${person.end_year}년`;
 }
 
 // No.21 — 나라 목록. 고려 이전 왕조는 응답에서 걸러낸다(위 PRE_GORYEO_KINGDOMS 참고).

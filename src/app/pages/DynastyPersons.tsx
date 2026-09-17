@@ -3,6 +3,7 @@ import { ArrowLeft, MapPinOff, ShieldAlert, Users } from "lucide-react";
 import { Button } from "../components/ui/button";
 import { Skeleton } from "../components/ui/skeleton";
 import { useDynastyDetail } from "../lib/useDynastyDetail";
+import { formatPersonEra } from "../lib/explore";
 import { ExploreCard, ExploreItem, personTypeLabel } from "./Home";
 
 // 홈 화면 인물별 탭의 나라별 그룹에서 "전체보기"를 누르면 오는 페이지.
@@ -13,15 +14,16 @@ export default function DynastyPersons() {
   const navigate = useNavigate();
   const { status, kingdom, persons } = useDynastyDetail(kingdomCode);
 
-  // 이 페이지는 단일 나라(kingdomCode) 안의 인물만 다루므로, 매핑 테이블 없이
-  // useDynastyDetail이 이미 받아온 kingdom.time_period를 모든 카드에 그대로 재사용한다.
+  // person.start_year/end_year(개인 재위·생몰 연도)로 카드마다 다른 연도를 보여준다.
+  // 이전에는 kingdom.time_period(나라 전체 연도)를 모든 카드에 그대로 붙여써서 같은 나라
+  // 인물이 전부 같은 연도로 보이는 문제가 있었다.
   const items: ExploreItem[] = persons.map((p) => ({
     id: String(p.person_id),
     title: p.name,
     tag: "인물",
     subtitle: personTypeLabel[p.type] ?? p.type,
     description: p.summary ?? p.description,
-    era: kingdom?.time_period ?? undefined,
+    era: formatPersonEra(p),
     image: p.image_url,
     kingdomCode: p.kingdom,
     href: `/app/person/${p.person_id}`,
