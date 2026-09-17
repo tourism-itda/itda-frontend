@@ -64,6 +64,35 @@ function renumberPlaces(list: EditPlace[]): EditPlace[] {
   return result;
 }
 
+// "1박 2일" → 2, "2박 3일" → 3, "당일치기"/미상 → 1. duration_label에서 총 일수를 읽어낸다 —
+// 이 값을 고정된 옵션 목록으로 매칭하지 않고 "N일" 패턴으로 파싱해서, 저장 화면(ItineraryRecommendation.tsx)의
+// durationOptions가 늘어나도 그대로 맞는다.
+function parseDayCount(durationLabel: string | null): number {
+  if (!durationLabel) return 1;
+  const match = durationLabel.match(/(\d+)\s*일/);
+  return match ? parseInt(match[1], 10) : 1;
+}
+
+// day_number를 무시하고 현재 순서(day_number asc, visit_order asc) 그대로 dayCount개 일자에
+// 앞에서부터 고르게 나눠 담는다. ItineraryRecommendation.tsx handleSave와 같은 분배 방식 —
+// day_number를 못 받아 전부 1일차로 저장된 옛 일정을 한 번에 바로잡는 용도.
+function distributeEvenly(list: EditPlace[], dayCount: number): EditPlace[] {
+  const sorted = [...list].sort((a, b) => a.day_number - b.day_number || a.visit_order - b.visit_order);
+  const base = Math.floor(sorted.length / dayCount);
+  let remainder = sorted.length % dayCount;
+  let idx = 0;
+  const result: EditPlace[] = [];
+  for (let day = 1; day <= dayCount; day++) {
+    const size = base + (remainder > 0 ? 1 : 0);
+    if (remainder > 0) remainder--;
+    for (let i = 0; i < size; i++) {
+      result.push({ ...sorted[idx], day_number: day, visit_order: i + 1 });
+      idx++;
+    }
+  }
+  return result;
+}
+
 export default function ItineraryDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -113,19 +142,30 @@ export default function ItineraryDetail() {
     if (!detail) return;
     setEditTitle(detail.title);
     setEditTravelDate(detail.travel_date ?? "");
-    setEditPlaces(
-      renumberPlaces(
-        detail.places.map((p) => ({
-          itinerary_place_id: p.itinerary_place_id,
-          place_id: p.place_id,
-          name: p.name,
-          day_number: p.day_number,
-          visit_order: p.visit_order,
-          status: p.status,
-          memo: p.memo,
-        }))
-      )
+
+    const rawPlaces = renumberPlaces(
+      detail.places.map((p) => ({
+        itinerary_place_id: p.itinerary_place_id,
+        place_id: p.place_id,
+        name: p.name,
+        day_number: p.day_number,
+        visit_order: p.visit_order,
+        status: p.status,
+        memo: p.memo,
+      }))
     );
+
+    // day_number를 안 보내던 예전 버전 버그로, 1박2일/2박3일로 저장했는데도 전부 1일차로
+    // 뭉쳐 저장된 일정이 있다 — duration_label 기준 일수보다 실제 쓰인 일자 수가 적으면
+    // 편집 시트를 열 때 바로 고르게 나눠서 보여준다(따로 누를 버튼 없이 자동으로).
+    const usedDayCount = new Set(rawPlaces.map((p) => p.day_number)).size;
+    const suggestedDayCount = parseDayCount(detail.duration_label);
+    const initialPlaces =
+      suggestedDayCount > 1 && usedDayCount < suggestedDayCount
+        ? distributeEvenly(rawPlaces, suggestedDayCount)
+        : rawPlaces;
+
+    setEditPlaces(initialPlaces);
     setShowEditSheet(true);
   }
 
