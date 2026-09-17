@@ -3,7 +3,7 @@ import { Compass, Route, Users } from "lucide-react";
 import { BrandMark } from "./BrandMark";
 
 const highlights = [
-  { icon: Compass, title: "배경지 탐험", desc: "드라마·영화 속 장소를 실제 지도 위에서 확인해요" },
+  { icon: Compass, title: "배경지 탐험", desc: "영화 속 장소를 실제 지도 위에서 확인해요" },
   { icon: Route, title: "여행 코스 추천", desc: "관심 시대와 인물만 고르면 코스를 짜드려요" },
   { icon: Users, title: "커뮤니티 공유", desc: "다른 여행자가 만든 루트를 가져와 바로 떠나요" },
 ];
@@ -40,7 +40,7 @@ export function AuthLayout({ children, size = "sm" }: { children: ReactNode; siz
             여행으로 이어보세요
           </h1>
           <p className="text-white/70 text-base mb-10 max-w-sm">
-            드라마·영화 속 배경지를 실제 여행 코스로, 잇다가 시대와 인물의 발자취를 안내합니다.
+            영화 속 배경지를 실제 여행 코스로, 잇다가 시대와 인물의 발자취를 안내합니다.
           </p>
 
           <div className="space-y-5">
