@@ -7,6 +7,7 @@ import { MapView } from "../components/MapView";
 import { PlaceSheet, PlaceSheetData } from "../components/PlaceSheet";
 import { PlaceSlotCard } from "../components/PlaceSlotCard";
 import { ApiError, isLoginRequiredError } from "../lib/api";
+import { getAlternativePlace } from "../lib/itineraryRecommend";
 import { splitIntoPeriods } from "../lib/periodSplit";
 import {
   ItineraryDetail as ItineraryDetailData,
@@ -103,6 +104,7 @@ export default function ItineraryDetail() {
   const [editTravelDate, setEditTravelDate] = useState("");
   const [editPlaces, setEditPlaces] = useState<EditPlace[]>([]);
   const [isSaving, setIsSaving] = useState(false);
+  const [swappingPlaceIds, setSwappingPlaceIds] = useState<Set<number>>(new Set());
 
   useEffect(() => {
     if (!id) return;
@@ -255,6 +257,50 @@ export default function ItineraryDetail() {
     });
   }
 
+  // 카드에서 바로 "다른 곳 추천"(ItineraryRecommendation.tsx 미리보기와 같은 API)으로 장소를
+  // 교체한다. 미리보기와 달리 이미 저장된 일정이라, 바꾸자마자 PATCH로 바로 반영하고
+  // (거리/시간 등은 서버가 다시 계산해야 해서) 상세를 다시 불러온다.
+  async function handleSwapPlace(place: ItineraryDetailPlace) {
+    if (!id || !detail || detail.content_id === null || swappingPlaceIds.has(place.itinerary_place_id)) return;
+
+    setSwappingPlaceIds((prev) => new Set(prev).add(place.itinerary_place_id));
+    try {
+      const result = await getAlternativePlace({
+        contentId: detail.content_id,
+        visitOrder: place.visit_order,
+        excludePlaceId: place.place_id,
+      });
+      const alt = result.place;
+
+      const places: UpdateItineraryPlacePayload[] = detail.places.map((p) => ({
+        place_id: p.itinerary_place_id === place.itinerary_place_id ? alt.place_id : p.place_id,
+        day_number: p.day_number,
+        visit_order: p.visit_order,
+        status: p.status,
+        memo: p.memo ?? undefined,
+      }));
+      await updateItinerary(id, { places });
+
+      const refreshed = await getItineraryDetail(id);
+      setDetail(refreshed);
+      toast(`${alt.name}(으)로 바꿨어요.`);
+    } catch (err) {
+      if (isLoginRequiredError(err)) {
+        toast("로그인이 필요한 기능이에요. 로그인 후 다시 시도해주세요.");
+        navigate("/login", { replace: true, state: { from: location.pathname + location.search } });
+      } else {
+        // 대안이 더 없으면 404("더 이상 추천할 대안 장소가 없습니다") — 정상적인 "마지막 후보" 신호.
+        toast(err instanceof ApiError ? err.message : "다른 장소를 불러오지 못했어요. 잠시 후 다시 시도해주세요.");
+      }
+    } finally {
+      setSwappingPlaceIds((prev) => {
+        const next = new Set(prev);
+        next.delete(place.itinerary_place_id);
+        return next;
+      });
+    }
+  }
+
   const places = detail?.places ?? [];
   // day_number 오름차순으로 이미 정렬돼서 오지만(백엔드 buildDetail), 일차별로 묶어서 보여준다.
   const dayNumbers = Array.from(new Set(places.map((p) => p.day_number))).sort((a, b) => a - b);
@@ -303,6 +349,8 @@ export default function ItineraryDetail() {
                   isSelected={selectedId === String(p.place_id)}
                   onSelect={() => setSelectedId(String(p.place_id))}
                   onOpenDetail={() => openPlaceDetail(p)}
+                  onSwap={detail && detail.content_id !== null ? () => handleSwapPlace(p) : undefined}
+                  swapping={swappingPlaceIds.has(p.itinerary_place_id)}
                 />
               ))}
             </div>
