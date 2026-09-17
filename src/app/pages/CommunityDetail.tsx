@@ -60,6 +60,34 @@ function toRouteStops(stops: CommunityStop[]): RouteStop[] {
   }));
 }
 
+// ItineraryRecommendation.tsx와 동일한 표기 규칙(dayCounts). itda-backend가 stops[]에
+// day_number를 내려주지 않아(CommunityStopView 미포함) 일자 경계를 정확히 알 수 없으므로,
+// duration_label로 얻은 일수만큼 순서 그대로 균등 분배하는 근사치로 대신한다.
+const DURATION_DAY_COUNTS: Record<string, number> = {
+  "당일치기": 1,
+  "1박 2일": 2,
+  "2박 3일": 3,
+};
+
+function resolveDayCount(durationLabel: string | null): number {
+  if (!durationLabel) return 1;
+  return DURATION_DAY_COUNTS[durationLabel] ?? 1;
+}
+
+function splitStopsByDay(stops: RouteStop[], dayCount: number): RouteStop[][] {
+  if (dayCount <= 1) return [stops];
+  const groups: RouteStop[][] = Array.from({ length: dayCount }, () => []);
+  const base = Math.floor(stops.length / dayCount);
+  let remainder = stops.length % dayCount;
+  let idx = 0;
+  for (let d = 0; d < dayCount; d++) {
+    const size = base + (remainder > 0 ? 1 : 0);
+    if (remainder > 0) remainder--;
+    for (let i = 0; i < size; i++) groups[d].push(stops[idx++]);
+  }
+  return groups;
+}
+
 function StarRating({ value, size = "sm" }: { value: number; size?: "sm" | "lg" }) {
   const sz = size === "lg" ? "w-5 h-5" : "w-4 h-4";
   return (
@@ -258,6 +286,7 @@ export default function CommunityDetail() {
   }
 
   const avgRating = post.rating ?? 0;
+  const dayGroups = splitStopsByDay(stops, resolveDayCount(post.duration_label));
 
   return (
     <div className="min-h-screen pb-8">
@@ -350,36 +379,54 @@ export default function CommunityDetail() {
                 <p className="text-[15px] leading-relaxed text-muted-foreground mb-6">
                   {post.description || "아직 등록된 소개가 없습니다."}
                 </p>
-                <div className="lg:grid lg:grid-cols-2 lg:gap-4 lg:space-y-0 space-y-1">
-                  {stops.map((stop, idx) => (
-                    <div key={stop.order}>
-                      <button
-                        onClick={() => setSelectedStop(stop)}
-                        className="w-full bg-card border border-border rounded-[24px] overflow-hidden flex gap-4 p-5 text-left hover:bg-muted/30 hover:shadow-sm transition-all"
-                      >
-                        <PlaceImage
-                          src={stop.image}
-                          alt={stop.name}
-                          category={stop.category}
-                          className="w-20 h-20 rounded-2xl object-cover shrink-0"
-                        />
-                        <div className="flex-1 min-w-0">
-                          <span className="text-sm text-muted-foreground">{stop.category}</span>
-                          <p className="font-black text-[16px] mt-1 mb-1.5">{stop.name}</p>
-                          <p className="text-sm text-muted-foreground line-clamp-2">{stop.description}</p>
+                {dayGroups.map((dayStops, dayIdx) => (
+                  <div key={dayIdx} className={dayIdx > 0 ? "mt-6" : ""}>
+                    {dayGroups.length > 1 && (
+                      <div className="flex items-center gap-2 mb-3">
+                        <span className="text-sm font-semibold text-primary shrink-0">{dayIdx + 1}일차</span>
+                        <div className="flex-1 h-px bg-border" />
+                      </div>
+                    )}
+                    <div
+                      className={
+                        dayGroups.length > 1
+                          ? "space-y-1"
+                          : "lg:grid lg:grid-cols-2 lg:gap-4 lg:space-y-0 space-y-1"
+                      }
+                    >
+                      {dayStops.map((stop, idx) => (
+                        <div key={stop.order}>
+                          <button
+                            onClick={() => setSelectedStop(stop)}
+                            className="w-full bg-card border border-border rounded-[24px] overflow-hidden flex gap-4 p-5 text-left hover:bg-muted/30 hover:shadow-sm transition-all"
+                          >
+                            <PlaceImage
+                              src={stop.image}
+                              alt={stop.name}
+                              category={stop.category}
+                              className="w-20 h-20 rounded-2xl object-cover shrink-0"
+                            />
+                            <div className="flex-1 min-w-0">
+                              <span className="text-sm text-muted-foreground">{stop.category}</span>
+                              <p className="font-black text-[16px] mt-1 mb-1.5">{stop.name}</p>
+                              <p className="text-sm text-muted-foreground line-clamp-2">{stop.description}</p>
+                            </div>
+                            <ChevronRight className="w-4 h-4 text-muted-foreground shrink-0 self-center" />
+                          </button>
+                          {idx < dayStops.length - 1 && (
+                            <div
+                              className={`${dayGroups.length > 1 ? "flex" : "lg:hidden flex"} items-center justify-center gap-2 py-1.5`}
+                            >
+                              <div className="h-px w-8 bg-border" />
+                              <span className="text-muted-foreground/50 text-xs">↓</span>
+                              <div className="h-px w-8 bg-border" />
+                            </div>
+                          )}
                         </div>
-                        <ChevronRight className="w-4 h-4 text-muted-foreground shrink-0 self-center" />
-                      </button>
-                      {idx < stops.length - 1 && (
-                        <div className="lg:hidden flex items-center justify-center gap-2 py-1.5">
-                          <div className="h-px w-8 bg-border" />
-                          <span className="text-muted-foreground/50 text-xs">↓</span>
-                          <div className="h-px w-8 bg-border" />
-                        </div>
-                      )}
+                      ))}
                     </div>
-                  ))}
-                </div>
+                  </div>
+                ))}
                 <div className="hidden lg:flex gap-3 pt-6">
                   <Button onClick={handleImport} disabled={importing} className="h-12 px-6 text-[14px] font-black">
                     {importing ? <Loader2 className="w-4 h-4 animate-spin" /> : "가져오기"}
