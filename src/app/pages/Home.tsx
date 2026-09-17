@@ -1,55 +1,21 @@
 import { useEffect, useMemo, useState } from "react";
-import { useNavigate, useSearchParams } from "react-router";
-import { Calendar, ChevronRight, Footprints, LogIn, MapPin, MapPinOff, Search, User } from "lucide-react";
+import { useNavigate } from "react-router";
+import { Calendar, ChevronRight, Footprints, MapPinOff, Search } from "lucide-react";
 import { Input } from "../components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../components/ui/select";
 import { Skeleton } from "../components/ui/skeleton";
-import { Button } from "../components/ui/button";
 import { ContentCard } from "../components/ContentCard";
 import { useContents } from "../lib/useContents";
 import { useKingdoms } from "../lib/useKingdoms";
 import { usePersons } from "../lib/usePersons";
-import { formatPersonEra } from "../lib/explore";
 import { getUpcomingEvents, getEventLink, EventSummary } from "../lib/events";
 import { getProxiedImageUrl } from "../lib/imageProxy";
-
-type Category = "콘텐츠 둘러보기" | "나라별" | "인물별";
-
-export interface ExploreItem {
-  id: string;
-  title: string;
-  tag: string;
-  /** 나라 카드: 없음. 인물 카드: 소속 나라 한글 이름(예: "조선"). */
-  subtitle?: string;
-  /** 인물 카드에서만 쓰는 한 줄 소개(person.summary, 없으면 person.description으로 폴백). */
-  description?: string | null;
-  /** 인물 카드에서만 쓰는 시대 텍스트(예: "918년 ~ 943년"). person.start_year/end_year(개인
-   *  재위·생몰 연도)로 채운다 — 값이 없으면 undefined로 두고 카드에서 생략한다. */
-  era?: string;
-  /** 나라 카드: kingdom.image_url. 인물 카드: person.image_url. */
-  image?: string | null;
-  /** 인물 카드에서만 쓰는 소속 나라 enum 코드(예: "GORYEO"). 나라별 그룹핑에 쓴다. */
-  kingdomCode?: string;
-  href: string;
-}
-
-const categories: Category[] = ["콘텐츠 둘러보기", "나라별", "인물별"];
-
-// 탭 상태를 URL search param(?tab=...)으로 노출할 때 쓰는 영문 슬러그.
-// 한글을 그대로 쓰면 URL 인코딩이 지저분해지므로 이 매핑을 거친다.
-const CATEGORY_SLUG: Record<Category, string> = {
-  "콘텐츠 둘러보기": "content",
-  "나라별": "kingdom",
-  "인물별": "person",
-};
-
-const SLUG_TO_CATEGORY: Record<string, Category> = {
-  content: "콘텐츠 둘러보기",
-  kingdom: "나라별",
-  person: "인물별",
-};
-
-// 인물별 탭에서 나라 그룹당 홈 화면에 보여줄 카드 수. 넘으면 "전체보기"로 유도한다.
-const PERSON_GROUP_LIMIT = 8;
 
 const mediaTypeLabel: Record<string, string> = {
   MOVIE: "영화",
@@ -57,91 +23,31 @@ const mediaTypeLabel: Record<string, string> = {
   DOCUMENTARY: "다큐",
 };
 
-// PersonResponse.type(enum 코드)의 한글 라벨. 백엔드가 라벨을 안 내려주므로 프론트에서
-// mediaTypeLabel과 같은 방식으로 관리한다(explore/enums/PersonType.java 기준).
-export const personTypeLabel: Record<string, string> = {
-  KING: "왕",
-  GENERAL: "장군",
-  SCHOLAR: "학자",
-  MONK: "승려",
-  POLITICIAN: "정치가",
-  INVENTOR: "과학자·발명가",
-  INDEPENDENCE_ACTIVIST: "독립운동가",
-};
-
-export function ExploreCard({ item, onClick }: { item: ExploreItem; onClick: () => void }) {
-  return (
-    <button
-      onClick={onClick}
-      className="group text-left bg-card rounded-2xl border border-border shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 overflow-hidden"
-    >
-      <div className="relative aspect-square overflow-hidden bg-muted">
-        {item.image && (
-          <img
-            src={getProxiedImageUrl(item.image)}
-            alt={item.title}
-            loading="lazy"
-            decoding="async"
-            referrerPolicy="no-referrer"
-            className={`w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ${
-              item.tag === "인물" ? "object-[50%_20%]" : ""
-            }`}
-          />
-        )}
-        <div className="absolute left-2 bottom-2 flex items-center gap-1">
-          <span className="px-2 py-0.5 rounded-full bg-neutral-900/70 backdrop-blur-sm text-white text-[10px] font-bold tracking-wide">
-            {item.tag}
-          </span>
-          {item.subtitle && (
-            <span className="px-2 py-0.5 rounded-full bg-white/85 backdrop-blur-sm text-neutral-900 text-[10px] font-bold tracking-wide">
-              {item.subtitle}
-            </span>
-          )}
-        </div>
-      </div>
-      <div className="px-3 pt-3 pb-3">
-        <p className="font-heading text-[14px] font-black mb-1 line-clamp-1">{item.title}</p>
-        {(item.subtitle || item.era) && item.tag === "인물" && (
-          <p className="text-[11px] text-muted-foreground/80 font-semibold mb-1 truncate">
-            {[item.subtitle, item.era].filter(Boolean).join(" · ")}
-          </p>
-        )}
-        {item.description && (
-          <div className="flex items-start gap-1 text-xs text-muted-foreground mb-2">
-            {item.tag === "인물" ? (
-              <User className="w-3 h-3 shrink-0 mt-0.5" />
-            ) : (
-              <MapPin className="w-3 h-3 shrink-0 mt-0.5" />
-            )}
-            <span className="line-clamp-2">{item.description}</span>
-          </div>
-        )}
-        <span className="inline-flex items-center gap-0.5 text-xs text-primary font-bold group-hover:gap-1.5 transition-all">
-          상세 정보 보기
-          <ChevronRight className="w-3 h-3" />
-        </span>
-      </div>
-    </button>
-  );
-}
+// Radix Select는 value=""인 Item을 허용하지 않아 "전체" 선택을 나타낼 때 이 값을 쓴다.
+const ALL_VALUE = "ALL";
 
 export default function Home() {
   const navigate = useNavigate();
   const [query, setQuery] = useState("");
-  const [searchParams, setSearchParams] = useSearchParams();
-  // 알 수 없는/누락된 tab 값은 기본 탭("콘텐츠 둘러보기")으로 폴백한다.
-  const category: Category = SLUG_TO_CATEGORY[searchParams.get("tab") ?? ""] ?? "콘텐츠 둘러보기";
+  const [kingdom, setKingdom] = useState<string | undefined>(undefined);
+  const [personId, setPersonId] = useState<number | undefined>(undefined);
 
-  // 콘텐츠 둘러보기 탭은 검색어를 API 쿼리(q)로 보내므로, 매 타이핑마다 요청하지 않도록 디바운스한다.
+  // 검색어는 API 쿼리(q)로 나가므로, 매 타이핑마다 요청하지 않도록 디바운스한다.
   const [debouncedQuery, setDebouncedQuery] = useState("");
   useEffect(() => {
     const timer = setTimeout(() => setDebouncedQuery(query), 300);
     return () => clearTimeout(timer);
   }, [query]);
 
-  const popular = useContents({ sort: "popular", limit: 6, q: debouncedQuery || undefined });
+  const popular = useContents({ sort: "popular", limit: 6, q: debouncedQuery || undefined, kingdom, personId });
   const kingdoms = useKingdoms();
   const persons = usePersons();
+
+  // 나라를 고르면 인물 드롭다운도 해당 나라 인물로 좁힌다.
+  const personOptions = useMemo(
+    () => (kingdom ? persons.data.filter((p) => p.kingdom === kingdom) : persons.data),
+    [persons.data, kingdom]
+  );
 
   const [upcomingStatus, setUpcomingStatus] = useState<"loading" | "done" | "error">("loading");
   const [upcomingEvents, setUpcomingEvents] = useState<EventSummary[]>([]);
@@ -164,82 +70,6 @@ export default function Home() {
       cancelled = true;
     };
   }, []);
-
-  const dynastyItems: ExploreItem[] = useMemo(
-    () =>
-      kingdoms.data.map((k) => ({
-        id: k.kingdom,
-        title: k.name,
-        tag: "시대",
-        image: k.image_url,
-        href: `/app/dynasty/${k.kingdom}`,
-      })),
-    [kingdoms.data]
-  );
-
-  const personItems: ExploreItem[] = useMemo(
-    () =>
-      persons.data.map((p) => ({
-        id: String(p.person_id),
-        title: p.name,
-        tag: "인물",
-        subtitle: personTypeLabel[p.type] ?? p.type,
-        description: p.summary ?? p.description,
-        era: formatPersonEra(p),
-        image: p.image_url,
-        kingdomCode: p.kingdom,
-        href: `/app/person/${p.person_id}`,
-      })),
-    [persons.data]
-  );
-
-  const activeItems = useMemo(() => {
-    if (category === "콘텐츠 둘러보기") return [];
-    const source: ExploreItem[] = category === "나라별" ? dynastyItems : personItems;
-    if (query === "") return source;
-    return source.filter(
-      (item) => item.title.includes(query) || (item.description ?? "").includes(query)
-    );
-  }, [category, query, dynastyItems, personItems]);
-
-  // 인물별 탭 전용: 나라(kingdom) 코드 -> 한글 이름. 전체보기 진입 경로(/app/dynasty/:code/persons)의
-  // 표시 이름도 이 맵을 그대로 쓴다.
-  const kingdomNameByCode = useMemo(() => {
-    const map: Record<string, string> = {};
-    kingdoms.data.forEach((k) => {
-      map[k.kingdom] = k.name;
-    });
-    return map;
-  }, [kingdoms.data]);
-
-  // 인물별 탭에서만 쓰는, 나라별로 묶은 인물 카드 그룹. 그룹 순서는 나라별 탭(kingdoms.data)과
-  // 동일하게 시대 순으로 맞춘다.
-  const personGroups = useMemo(() => {
-    if (category !== "인물별") return [];
-    const order = kingdoms.data.map((k) => k.kingdom);
-    const byCode = new Map<string, ExploreItem[]>();
-    activeItems.forEach((item) => {
-      const code = item.kingdomCode ?? "UNKNOWN";
-      if (!byCode.has(code)) byCode.set(code, []);
-      byCode.get(code)!.push(item);
-    });
-    const codes = Array.from(byCode.keys()).sort((a, b) => {
-      const ai = order.indexOf(a);
-      const bi = order.indexOf(b);
-      if (ai === -1 && bi === -1) return 0;
-      if (ai === -1) return 1;
-      if (bi === -1) return -1;
-      return ai - bi;
-    });
-    return codes.map((code) => ({
-      code,
-      name: kingdomNameByCode[code] ?? code,
-      items: byCode.get(code)!,
-    }));
-  }, [category, activeItems, kingdoms.data, kingdomNameByCode]);
-
-  // 나라별/인물별 탭은 각각 GET /explore/kingdoms(No.21), GET /explore/persons(No.24) 상태를 그대로 쓴다.
-  const activeExploreStatus = category === "나라별" ? kingdoms.status : category === "인물별" ? persons.status : "done";
 
   return (
     <div className="min-h-screen pb-16">
@@ -276,21 +106,50 @@ export default function Home() {
           </div>
         </section>
 
-        {/* 카테고리 탭 */}
-        <div className="flex items-center gap-2 mb-8 overflow-x-auto pb-1">
-          {categories.map((c) => (
-            <button
-              key={c}
-              onClick={() => setSearchParams({ tab: CATEGORY_SLUG[c] })}
-              className={`flex items-center h-[38px] px-4 py-2 rounded-full text-sm font-bold whitespace-nowrap border transition-colors ${
-                category === c
-                  ? "bg-primary-75 border-primary text-primary"
-                  : "bg-card border-neutral-200 text-foreground hover:bg-muted"
-              }`}
-            >
-              {c}
-            </button>
-          ))}
+        {/* 나라/인물 필터 */}
+        <div className="flex gap-2 mb-8">
+          <Select
+            value={kingdom ?? ALL_VALUE}
+            onValueChange={(value) => {
+              const next = value === ALL_VALUE ? undefined : value;
+              setKingdom(next);
+              // 나라가 바뀌면 인물 목록도 좁혀지므로, 새 나라에 없는 인물 선택은 해제한다.
+              setPersonId((prevId) => {
+                if (prevId === undefined || !next) return prevId;
+                const stillValid = persons.data.some((p) => p.person_id === prevId && p.kingdom === next);
+                return stillValid ? prevId : undefined;
+              });
+            }}
+          >
+            <SelectTrigger className="w-32 h-9 text-sm bg-card">
+              <SelectValue placeholder="나라" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value={ALL_VALUE}>전체 나라</SelectItem>
+              {kingdoms.data.map((k) => (
+                <SelectItem key={k.kingdom} value={k.kingdom}>
+                  {k.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          <Select
+            value={personId !== undefined ? String(personId) : ALL_VALUE}
+            onValueChange={(value) => setPersonId(value === ALL_VALUE ? undefined : Number(value))}
+          >
+            <SelectTrigger className="w-32 h-9 text-sm bg-card">
+              <SelectValue placeholder="인물" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value={ALL_VALUE}>전체 인물</SelectItem>
+              {personOptions.map((p) => (
+                <SelectItem key={p.person_id} value={String(p.person_id)}>
+                  {p.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
 
         {/* 섹션 타이틀 + 개수 + 전체보기 */}
@@ -298,141 +157,57 @@ export default function Home() {
           <div className="flex items-end justify-between mb-6">
             <div>
               <div className="flex items-baseline gap-2">
-                <h2 className="font-heading text-[24px] font-black">{category}</h2>
-                <span className="text-sm text-muted-foreground">
-                  총 {category === "콘텐츠 둘러보기" ? popular.data?.total ?? 0 : activeItems.length}개
-                </span>
+                <h2 className="font-heading text-[24px] font-black">콘텐츠 둘러보기</h2>
+                <span className="text-sm text-muted-foreground">총 {popular.data?.total ?? 0}개</span>
               </div>
             </div>
-            {category === "콘텐츠 둘러보기" && (
-              <button
-                onClick={() => navigate("/app/popular")}
-                className="text-sm text-primary font-bold hover:underline flex items-center gap-0.5 shrink-0"
-              >
-                전체보기
-                <ChevronRight className="w-4 h-4" />
-              </button>
-            )}
+            <button
+              onClick={() => navigate("/app/popular")}
+              className="text-sm text-primary font-bold hover:underline flex items-center gap-0.5 shrink-0"
+            >
+              전체보기
+              <ChevronRight className="w-4 h-4" />
+            </button>
           </div>
 
-          {category === "콘텐츠 둘러보기" ? (
-            <>
-              {popular.status === "loading" && (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-                  {Array.from({ length: 6 }).map((_, i) => (
-                    <div key={i}>
-                      <Skeleton className="aspect-[3/4] rounded-sm mb-2" />
-                      <Skeleton className="h-4 w-3/4 mb-1.5" />
-                      <Skeleton className="h-3 w-1/3" />
-                    </div>
-                  ))}
+          {popular.status === "loading" && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <div key={i}>
+                  <Skeleton className="aspect-[3/4] rounded-sm mb-2" />
+                  <Skeleton className="h-4 w-3/4 mb-1.5" />
+                  <Skeleton className="h-3 w-1/3" />
                 </div>
-              )}
-              {popular.status === "error" && (
-                <div className="text-center py-16 text-muted-foreground">
-                  <MapPinOff className="w-10 h-10 mx-auto mb-3 opacity-30" />
-                  <p className="text-sm">콘텐츠를 불러오지 못했어요. 잠시 후 다시 시도해주세요.</p>
-                </div>
-              )}
-              {popular.status === "done" && (popular.data?.data.length ?? 0) === 0 && (
-                <div className="text-center py-16 text-muted-foreground">
-                  <Search className="w-10 h-10 mx-auto mb-3 opacity-30" />
-                  <p className="text-sm">검색 결과가 없습니다</p>
-                </div>
-              )}
-              {popular.status === "done" && (popular.data?.data.length ?? 0) > 0 && (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-                  {popular.data!.data.map((item) => (
-                    <ContentCard
-                      key={item.content_id}
-                      content={{
-                        id: String(item.content_id),
-                        title: item.title,
-                        genre: item.media ? mediaTypeLabel[item.media.type] ?? item.media.type : "",
-                        era: item.media?.release_year ? String(item.media.release_year) : "",
-                        image: item.thumbnail_url,
-                      }}
-                    />
-                  ))}
-                </div>
-              )}
-            </>
-          ) : (
-            <>
-              {activeExploreStatus === "loading" && (
-                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-                  {Array.from({ length: 4 }).map((_, i) => (
-                    <div key={i}>
-                      <Skeleton className="aspect-square rounded-2xl mb-2" />
-                      <Skeleton className="h-4 w-3/4 mb-1.5" />
-                      <Skeleton className="h-3 w-1/3" />
-                    </div>
-                  ))}
-                </div>
-              )}
-              {activeExploreStatus === "unauthenticated" && (
-                <div className="text-center py-16 text-muted-foreground">
-                  <LogIn className="w-10 h-10 mx-auto mb-3 opacity-30" />
-                  <p className="text-sm mb-4">로그인이 필요한 기능이에요</p>
-                  <Button onClick={() => navigate("/login")}>로그인하기</Button>
-                </div>
-              )}
-              {activeExploreStatus === "error" && (
-                <div className="text-center py-16 text-muted-foreground">
-                  <MapPinOff className="w-10 h-10 mx-auto mb-3 opacity-30" />
-                  <p className="text-sm">
-                    {category} 목록을 불러오지 못했어요. 잠시 후 다시 시도해주세요.
-                  </p>
-                </div>
-              )}
-              {activeExploreStatus === "done" && activeItems.length === 0 && (
-                <div className="text-center py-16 text-muted-foreground">
-                  <Search className="w-10 h-10 mx-auto mb-3 opacity-30" />
-                  <p className="text-sm">
-                    {query
-                      ? "검색 결과가 없습니다"
-                      : category === "나라별"
-                        ? "아직 등록된 나라 정보가 없습니다"
-                        : "아직 등록된 인물 정보가 없습니다"}
-                  </p>
-                </div>
-              )}
-              {activeExploreStatus === "done" && activeItems.length > 0 && category === "인물별" && (
-                <div className="space-y-10">
-                  {personGroups.map((group) => (
-                    <div key={group.code}>
-                      <div className="flex items-end justify-between mb-4">
-                        <div className="flex items-baseline gap-2">
-                          <h3 className="font-heading text-lg font-black">{group.name}</h3>
-                          <span className="text-sm text-muted-foreground">총 {group.items.length}개</span>
-                        </div>
-                        {group.items.length > PERSON_GROUP_LIMIT && (
-                          <button
-                            onClick={() => navigate(`/app/dynasty/${group.code}/persons`)}
-                            className="text-sm text-primary font-bold hover:underline flex items-center gap-0.5 shrink-0"
-                          >
-                            전체보기
-                            <ChevronRight className="w-4 h-4" />
-                          </button>
-                        )}
-                      </div>
-                      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-                        {group.items.slice(0, PERSON_GROUP_LIMIT).map((item) => (
-                          <ExploreCard key={item.id} item={item} onClick={() => navigate(item.href)} />
-                        ))}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-              {activeExploreStatus === "done" && activeItems.length > 0 && category === "나라별" && (
-                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-                  {activeItems.map((item) => (
-                    <ExploreCard key={item.id} item={item} onClick={() => navigate(item.href)} />
-                  ))}
-                </div>
-              )}
-            </>
+              ))}
+            </div>
+          )}
+          {popular.status === "error" && (
+            <div className="text-center py-16 text-muted-foreground">
+              <MapPinOff className="w-10 h-10 mx-auto mb-3 opacity-30" />
+              <p className="text-sm">콘텐츠를 불러오지 못했어요. 잠시 후 다시 시도해주세요.</p>
+            </div>
+          )}
+          {popular.status === "done" && (popular.data?.data.length ?? 0) === 0 && (
+            <div className="text-center py-16 text-muted-foreground">
+              <Search className="w-10 h-10 mx-auto mb-3 opacity-30" />
+              <p className="text-sm">검색 결과가 없습니다</p>
+            </div>
+          )}
+          {popular.status === "done" && (popular.data?.data.length ?? 0) > 0 && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+              {popular.data!.data.map((item) => (
+                <ContentCard
+                  key={item.content_id}
+                  content={{
+                    id: String(item.content_id),
+                    title: item.title,
+                    genre: item.media ? mediaTypeLabel[item.media.type] ?? item.media.type : "",
+                    era: item.media?.release_year ? String(item.media.release_year) : "",
+                    image: item.thumbnail_url,
+                  }}
+                />
+              ))}
+            </div>
           )}
         </section>
 

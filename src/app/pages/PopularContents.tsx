@@ -1,11 +1,20 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router";
 import { ArrowLeft, Search, MapPinOff } from "lucide-react";
 import { Input } from "../components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../components/ui/select";
 import { ContentCard } from "../components/ContentCard";
 import { Skeleton } from "../components/ui/skeleton";
 import { useContents } from "../lib/useContents";
 import { ContentListItem } from "../lib/contents";
+import { useKingdoms } from "../lib/useKingdoms";
+import { usePersons } from "../lib/usePersons";
 
 const mediaTypeLabel: Record<string, string> = {
   MOVIE: "영화",
@@ -13,12 +22,17 @@ const mediaTypeLabel: Record<string, string> = {
   DOCUMENTARY: "다큐",
 };
 
+// Radix Select는 value=""인 Item을 허용하지 않아 "전체" 선택을 나타낼 때 이 값을 쓴다.
+const ALL_VALUE = "ALL";
+
 const PAGE_SIZE = 24;
 
 export default function PopularContents() {
   const navigate = useNavigate();
   const [query, setQuery] = useState("");
   const [page, setPage] = useState(0);
+  const [kingdom, setKingdom] = useState<string | undefined>(undefined);
+  const [personId, setPersonId] = useState<number | undefined>(undefined);
 
   // API 호출은 q로 나가므로 매 타이핑마다 요청하지 않도록 디바운스한다.
   const [debouncedQuery, setDebouncedQuery] = useState("");
@@ -27,13 +41,24 @@ export default function PopularContents() {
     return () => clearTimeout(timer);
   }, [query]);
 
-  // 검색어가 바뀌면 1페이지부터 다시 본다.
+  // 검색어/필터가 바뀌면 1페이지부터 다시 본다.
   useEffect(() => {
     setPage(0);
-  }, [debouncedQuery]);
+  }, [debouncedQuery, kingdom, personId]);
+
+  const kingdoms = useKingdoms();
+  const persons = usePersons();
+
+  // 나라를 고르면 인물 드롭다운도 해당 나라 인물로 좁힌다.
+  const personOptions = useMemo(
+    () => (kingdom ? persons.data.filter((p) => p.kingdom === kingdom) : persons.data),
+    [persons.data, kingdom]
+  );
 
   const { status, data } = useContents({
     q: debouncedQuery || undefined,
+    kingdom,
+    personId,
     sort: "popular",
     page,
     limit: PAGE_SIZE,
@@ -69,7 +94,7 @@ export default function PopularContents() {
           </div>
 
           {/* 검색바 */}
-          <div className="flex gap-2 lg:max-w-md">
+          <div className="flex gap-2 lg:max-w-md mb-3">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input
@@ -79,6 +104,52 @@ export default function PopularContents() {
                 className="pl-9 h-10 bg-input-background text-sm"
               />
             </div>
+          </div>
+
+          {/* 나라/인물 필터 */}
+          <div className="flex gap-2">
+            <Select
+              value={kingdom ?? ALL_VALUE}
+              onValueChange={(value) => {
+                const next = value === ALL_VALUE ? undefined : value;
+                setKingdom(next);
+                // 나라가 바뀌면 인물 목록도 좁혀지므로, 새 나라에 없는 인물 선택은 해제한다.
+                setPersonId((prevId) => {
+                  if (prevId === undefined || !next) return prevId;
+                  const stillValid = persons.data.some((p) => p.person_id === prevId && p.kingdom === next);
+                  return stillValid ? prevId : undefined;
+                });
+              }}
+            >
+              <SelectTrigger className="w-32 h-9 text-sm">
+                <SelectValue placeholder="나라" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value={ALL_VALUE}>전체 나라</SelectItem>
+                {kingdoms.data.map((k) => (
+                  <SelectItem key={k.kingdom} value={k.kingdom}>
+                    {k.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            <Select
+              value={personId !== undefined ? String(personId) : ALL_VALUE}
+              onValueChange={(value) => setPersonId(value === ALL_VALUE ? undefined : Number(value))}
+            >
+              <SelectTrigger className="w-32 h-9 text-sm">
+                <SelectValue placeholder="인물" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value={ALL_VALUE}>전체 인물</SelectItem>
+                {personOptions.map((p) => (
+                  <SelectItem key={p.person_id} value={String(p.person_id)}>
+                    {p.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
         </div>
       </div>

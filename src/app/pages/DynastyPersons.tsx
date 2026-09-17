@@ -4,11 +4,11 @@ import { Button } from "../components/ui/button";
 import { Skeleton } from "../components/ui/skeleton";
 import { useDynastyDetail } from "../lib/useDynastyDetail";
 import { formatPersonEra } from "../lib/explore";
-import { ExploreCard, ExploreItem, personTypeLabel } from "./Home";
+import { ExploreCard, ExploreItem, personTypeLabel } from "../components/ExploreCard";
 
 // 홈 화면 인물별 탭의 나라별 그룹에서 "전체보기"를 누르면 오는 페이지.
 // GET /explore/kingdoms/{kingdom}(No.22) + GET /explore/kingdoms/{kingdom}/persons(No.23)를
-// 함께 쓰는 useDynastyDetail을 그대로 재사용하고, 카드 UI는 Home의 ExploreCard를 재사용한다.
+// 함께 쓰는 useDynastyDetail을 그대로 재사용하고, 카드 UI는 components/ExploreCard를 재사용한다.
 export default function DynastyPersons() {
   const { id: kingdomCode } = useParams<{ id: string }>();
   const navigate = useNavigate();
