@@ -31,6 +31,74 @@ import {
 import { ApiError } from "../lib/api";
 import { getProxiedImageUrl } from "../lib/imageProxy";
 
+interface ProfileFormProps {
+  suffix?: string;
+  nicknameInput: string;
+  onNicknameChange: (value: string) => void;
+  isEditing: boolean;
+  saving: boolean;
+  profileName: string;
+  profileEmail: string;
+  onStartEdit: () => void;
+  onCancelEdit: () => void;
+  onSave: () => void;
+}
+
+// MyPage 렌더 함수 안에서 정의돼 있었다 — 렌더될 때마다 새 컴포넌트 타입이 생겨서 React가
+// 매번 이 서브트리를 통째로 언마운트/리마운트했다. 그래서 Input에 한 글자만 쳐도(리렌더)
+// focus가 날아가 매번 다시 클릭해야 했다. 컴포넌트 정체성을 유지하려면 바깥으로 빼야 한다.
+function ProfileForm({
+  suffix = "",
+  nicknameInput,
+  onNicknameChange,
+  isEditing,
+  saving,
+  profileName,
+  profileEmail,
+  onStartEdit,
+  onCancelEdit,
+  onSave,
+}: ProfileFormProps) {
+  return (
+    <div className="space-y-4 px-1">
+      <div className="space-y-1.5">
+        <Label htmlFor={`nickname${suffix}`} className="text-sm font-normal text-muted-foreground">닉네임</Label>
+        <Input
+          id={`nickname${suffix}`}
+          value={nicknameInput}
+          onChange={(e) => onNicknameChange(e.target.value)}
+          disabled={!isEditing || saving}
+          className="h-11"
+        />
+      </div>
+      {/* 이름/이메일은 백엔드 PATCH /users/me가 지원하지 않는 필드라 읽기 전용으로만 표시한다 */}
+      <div className="space-y-1.5">
+        <Label htmlFor={`name${suffix}`} className="text-sm font-normal text-muted-foreground">이름</Label>
+        <Input id={`name${suffix}`} value={profileName} disabled className="h-11" />
+      </div>
+      <div className="space-y-1.5">
+        <Label htmlFor={`email${suffix}`} className="text-sm font-normal text-muted-foreground">이메일</Label>
+        <Input id={`email${suffix}`} type="email" value={profileEmail} disabled className="h-11" />
+      </div>
+      {/* 프로필 수정 버튼: 이메일과 간격 */}
+      <div className="pt-3">
+        {isEditing ? (
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={onCancelEdit} disabled={saving} className="flex-1">
+              취소
+            </Button>
+            <Button onClick={onSave} disabled={saving} className="flex-1">
+              {saving ? "저장 중..." : "저장"}
+            </Button>
+          </div>
+        ) : (
+          <Button variant="outline" onClick={onStartEdit} className="w-full">프로필 수정</Button>
+        )}
+      </div>
+    </div>
+  );
+}
+
 export default function MyPage() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -190,52 +258,10 @@ export default function MyPage() {
     { icon: BookOpen, label: "사용설명서", path: "/app/manual" },
   ];
 
-  const ProfileForm = ({ suffix = "" }: { suffix?: string }) => (
-    <div className="space-y-4 px-1">
-      <div className="space-y-1.5">
-        <Label htmlFor={`nickname${suffix}`} className="text-sm font-normal text-muted-foreground">닉네임</Label>
-        <Input
-          id={`nickname${suffix}`}
-          value={nicknameInput}
-          onChange={(e) => setNicknameInput(e.target.value)}
-          disabled={!isEditing || saving}
-          className="h-11"
-        />
-      </div>
-      {/* 이름/이메일은 백엔드 PATCH /users/me가 지원하지 않는 필드라 읽기 전용으로만 표시한다 */}
-      <div className="space-y-1.5">
-        <Label htmlFor={`name${suffix}`} className="text-sm font-normal text-muted-foreground">이름</Label>
-        <Input id={`name${suffix}`} value={profile.name} disabled className="h-11" />
-      </div>
-      <div className="space-y-1.5">
-        <Label htmlFor={`email${suffix}`} className="text-sm font-normal text-muted-foreground">이메일</Label>
-        <Input id={`email${suffix}`} type="email" value={profile.email} disabled className="h-11" />
-      </div>
-      {/* 프로필 수정 버튼: 이메일과 간격 */}
-      <div className="pt-3">
-        {isEditing ? (
-          <div className="flex gap-2">
-            <Button
-              variant="outline"
-              onClick={() => {
-                setIsEditing(false);
-                setNicknameInput(profile.nickname);
-              }}
-              disabled={saving}
-              className="flex-1"
-            >
-              취소
-            </Button>
-            <Button onClick={handleSave} disabled={saving} className="flex-1">
-              {saving ? "저장 중..." : "저장"}
-            </Button>
-          </div>
-        ) : (
-          <Button variant="outline" onClick={() => setIsEditing(true)} className="w-full">프로필 수정</Button>
-        )}
-      </div>
-    </div>
-  );
+  const handleCancelEdit = () => {
+    setIsEditing(false);
+    setNicknameInput(profile.nickname);
+  };
 
   return (
     <div className="min-h-screen">
@@ -270,7 +296,17 @@ export default function MyPage() {
                 </button>
               </div>
             </div>
-            <ProfileForm />
+            <ProfileForm
+              nicknameInput={nicknameInput}
+              onNicknameChange={setNicknameInput}
+              isEditing={isEditing}
+              saving={saving}
+              profileName={profile.name}
+              profileEmail={profile.email}
+              onStartEdit={() => setIsEditing(true)}
+              onCancelEdit={handleCancelEdit}
+              onSave={handleSave}
+            />
           </div>
 
           {/* 설정 */}
@@ -354,7 +390,18 @@ export default function MyPage() {
                   </button>
                 </div>
               </div>
-              <ProfileForm suffix="-d" />
+              <ProfileForm
+                suffix="-d"
+                nicknameInput={nicknameInput}
+                onNicknameChange={setNicknameInput}
+                isEditing={isEditing}
+                saving={saving}
+                profileName={profile.name}
+                profileEmail={profile.email}
+                onStartEdit={() => setIsEditing(true)}
+                onCancelEdit={handleCancelEdit}
+                onSave={handleSave}
+              />
             </div>
 
             {/* 우측 */}
