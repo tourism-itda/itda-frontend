@@ -31,7 +31,7 @@ import {
   createRoute,
   getContentPlaces,
   getRouteCandidates,
-  importPlace,
+  importPlaceFromCandidate,
 } from "../lib/routeBuilder";
 
 /**
@@ -485,23 +485,10 @@ export default function RouteBuilder() {
     if (!candidateSheet || importingExternalId) return;
     setImportingExternalId(candidate.external_id);
     try {
-      const imported = await importPlace({
-        external_id: candidate.external_id,
-        place_type: candidateSheet.slotType,
-      });
-      // import 응답엔 image_url이 없다 — 후보 카드에서 이미 갖고 있던 값을 재사용한다.
-      const place: RoutePlace = {
-        place_id: imported.place_id,
-        place_type: imported.place_type,
-        name: imported.name,
-        category: imported.category,
-        address: imported.address,
-        image_url: candidate.image_url,
-        opening_hours: imported.opening_hours,
-        night_open: imported.night_open,
-        latitude: imported.latitude,
-        longitude: imported.longitude,
-      };
+      // source/name/latitude/longitude를 후보 그대로 실어 보낸다 — 카카오 후보는 이게 있어야
+      // 서버가 카카오 로컬 API에서 재검색해 id를 검증할 수 있다(없으면 404).
+      // 응답은 RoutePlaceView 그대로라(이미지가 없으면 기본 이미지로 채워져 온다) 바로 쓰면 된다.
+      const place = await importPlaceFromCandidate(candidate);
 
       setRoute((prev) =>
         prev

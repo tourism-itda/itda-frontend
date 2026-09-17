@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { ApiError } from "./api";
 import { getItineraryRecommendation, ItineraryRecommendResponse } from "./itineraryRecommend";
 
 export type ItineraryRecommendationStatus = "idle" | "loading" | "done" | "error";
@@ -6,6 +7,9 @@ export type ItineraryRecommendationStatus = "idle" | "loading" | "done" | "error
 export interface ItineraryRecommendationResult {
   status: ItineraryRecommendationStatus;
   data: ItineraryRecommendResponse | null;
+  // status가 "error"일 때만 채워진다. 이제 404는 "콘텐츠 자체가 없음"만 의미하므로(장소가
+  // 없는 경우는 200 + anchor_source:NONE) 백엔드 메시지를 그대로 보여줘도 된다.
+  errorMessage: string | null;
 }
 
 /**
@@ -17,17 +21,20 @@ export function useItineraryRecommendation(
 ): ItineraryRecommendationResult {
   const [status, setStatus] = useState<ItineraryRecommendationStatus>("idle");
   const [data, setData] = useState<ItineraryRecommendResponse | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   useEffect(() => {
     if (contentId === undefined) {
       setStatus("idle");
       setData(null);
+      setErrorMessage(null);
       return;
     }
 
     let cancelled = false;
     setStatus("loading");
     setData(null);
+    setErrorMessage(null);
 
     getItineraryRecommendation(contentId)
       .then((result) => {
@@ -35,8 +42,10 @@ export function useItineraryRecommendation(
         setData(result);
         setStatus("done");
       })
-      .catch(() => {
-        if (!cancelled) setStatus("error");
+      .catch((err) => {
+        if (cancelled) return;
+        setErrorMessage(err instanceof ApiError ? err.message : null);
+        setStatus("error");
       });
 
     return () => {
@@ -44,5 +53,5 @@ export function useItineraryRecommendation(
     };
   }, [contentId]);
 
-  return { status, data };
+  return { status, data, errorMessage };
 }

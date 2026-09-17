@@ -22,7 +22,7 @@ export default function ItineraryRecommendation() {
   const { id } = useParams<{ id: string }>();
   const contentId = id !== undefined && !Number.isNaN(Number(id)) ? Number(id) : undefined;
 
-  const { status, data } = useItineraryRecommendation(contentId);
+  const { status, data, errorMessage } = useItineraryRecommendation(contentId);
   // "다른 곳 추천"으로 바뀐 슬롯은 visit_order를 키로 로컬에서만 덮어쓴다(서버 저장 아님 —
   // 저장은 기존 "저장하기" 버튼에서). 콘텐츠가 바뀌면(=data 갱신) 초기화한다.
   const [placeOverrides, setPlaceOverrides] = useState<Record<number, ItineraryRecommendPlace>>({});
@@ -212,7 +212,7 @@ export default function ItineraryRecommendation() {
         <div className="flex flex-col items-center justify-center gap-3 py-24 px-6 text-center">
           <MapPinOff className="w-8 h-8 text-muted-foreground" />
           <p className="text-sm text-muted-foreground">
-            추천 일정을 불러오지 못했어요. 잠시 후 다시 시도해주세요.
+            {errorMessage ?? "추천 일정을 불러오지 못했어요. 잠시 후 다시 시도해주세요."}
           </p>
           <Button variant="outline" onClick={() => navigate(-1)}>
             돌아가기
@@ -224,13 +224,22 @@ export default function ItineraryRecommendation() {
         <div className="flex flex-col items-center justify-center gap-3 py-24 px-6 text-center">
           <MapPinOff className="w-8 h-8 text-muted-foreground" />
           <p className="text-sm text-muted-foreground">
-            이 콘텐츠와 연관된 추천 장소가 아직 없어요.
+            이 콘텐츠는 추천 장소를 아직 준비 중이에요.
           </p>
         </div>
       )}
 
       {status === "done" && slots.length > 0 && (
         <>
+          {/* PERSON_CHAIN(인물 연고지)은 실제 촬영지가 아니므로 구분해서 안내한다 */}
+          {data?.anchor_source === "PERSON_CHAIN" && (
+            <div className="max-w-2xl mx-auto px-4 pt-3">
+              <p className="text-xs text-muted-foreground bg-muted/50 rounded-lg px-3 py-2">
+                이 장소들은 작품 속 실존 인물과 연결된 곳이에요. 실제 촬영지가 아닐 수 있어요.
+              </p>
+            </div>
+          )}
+
           {/* 확정 현황 + 여행 기간 */}
           <div className="border-b border-border">
             <div className="max-w-2xl mx-auto px-4 py-3 flex items-center justify-between gap-3">

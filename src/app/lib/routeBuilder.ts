@@ -21,6 +21,7 @@ export const getContentPlaces = getContentRelatedPlaces;
 
 export type RoutePlaceType = "SPOT" | "RESTAURANT" | "CAFE";
 export type RouteSlotFilledBy = "USER" | "CURATED" | "SCORED" | "EMPTY";
+export type PlaceSource = "TOUR_API" | "KAKAO";
 
 export interface RoutePlace {
   place_id: number;
@@ -28,7 +29,10 @@ export interface RoutePlace {
   name: string;
   category: string;
   address: string;
-  image_url?: string;
+  // 이제 항상 채워진다(사진을 못 구했으면 분류별 기본 이미지) — 빈 값이 올 일이 없다.
+  image_url: string;
+  // true면 실제 사진이 아니라 기본 이미지다. "사진 있음" 배지 등에 쓰면 안 된다.
+  image_is_placeholder: boolean;
   opening_hours: string;
   night_open: boolean;
   latitude: number;
@@ -99,11 +103,13 @@ export type RouteFillableType = "RESTAURANT" | "CAFE";
 
 export interface RouteCandidate {
   external_id: string;
+  // 후보 출처. import 확정 시 그대로 돌려보내야 한다(카카오 후보는 이게 없으면 404).
+  source: PlaceSource;
   place_type: RoutePlaceType;
   name: string;
   category: string;
   address: string;
-  // NON_NULL이라 없으면 키 자체가 빠진다.
+  // NON_NULL이라 없으면 키 자체가 빠진다. 카카오 후보는 응답에 이미지 필드가 아예 없어 항상 없다.
   image_url?: string;
   latitude: number;
   longitude: number;
@@ -155,28 +161,37 @@ export function getRouteCandidates(params: GetRouteCandidatesParams) {
 // ─── 4단계: 고른 후보를 place로 확정 (POST /api/places/import) ───
 // ⚠️ 현재 인증 불필요(PlaceController.importPlace에 @LoginUser 없음, 명세서 v4에 없는 신규
 // 엔드포인트라 팀 합의 전). TODO: 나중에 인증이 걸리면 401/403 분기 추가 필요.
+//
+// source/name/latitude/longitude는 저장에 쓰이지 않고 카카오 후보 검증용 힌트로만 쓰인다
+// (카카오 로컬 API는 id 단건 조회가 없어 이름+좌표로 재검색 후 id가 일치하는 것만 채택).
+// source를 생략하면 서버가 TOUR_API로 간주하므로, TOUR_API 후보는 external_id/place_type만
+// 보내도 되지만 후보 목록(RouteCandidate)에 있는 값을 그대로 실어 보내는 편이 안전하다.
 
 export interface ImportPlacePayload {
   external_id: string;
   place_type: RouteFillableType;
+  source?: PlaceSource;
+  name?: string;
+  latitude?: number;
+  longitude?: number;
 }
 
-export interface ImportedPlace {
-  place_id: number;
-  place_type: RoutePlaceType;
-  name: string;
-  category: string;
-  address: string;
-  opening_hours: string;
-  night_open: boolean;
-  latitude: number;
-  longitude: number;
-  // ⚠️ image_url이 응답에 없다(서버가 항상 null로 내려 NON_NULL에 의해 키가 빠짐).
-  // 후보 목록(RouteCandidate)에서 갖고 있던 image_url을 호출부가 들고 있다가 재사용해야 한다.
+export function importPlaceFromCandidate(candidate: RouteCandidate) {
+  const payload: ImportPlacePayload = {
+    external_id: candidate.external_id,
+    place_type: candidate.place_type as RouteFillableType,
+    source: candidate.source,
+    name: candidate.name,
+    latitude: candidate.latitude,
+    longitude: candidate.longitude,
+  };
+  return importPlace(payload);
 }
 
+// 응답이 RoutePlaceView 그대로라 RoutePlace와 필드가 같다(이미지가 없으면 기본 이미지 +
+// image_is_placeholder:true로 채워져 온다 — 예전처럼 후보 카드의 image_url을 재사용할 필요 없음).
 export function importPlace(payload: ImportPlacePayload) {
-  return apiFetch<ImportedPlace>("/api/places/import", {
+  return apiFetch<RoutePlace>("/api/places/import", {
     method: "POST",
     body: JSON.stringify(payload),
   });
