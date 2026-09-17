@@ -23,6 +23,7 @@ import { CommunityPostDetail, CommunityStop, getCommunityPostDetail, importItine
 import { Review, createReview, getReviews, toggleReviewLike } from "../lib/reviews";
 import { getAvatarUrl, getProxiedImageUrl } from "../lib/imageProxy";
 import { MapView } from "../components/MapView";
+import { PlaceImage } from "../components/PlaceImage";
 
 /**
  * itda-backend CommunityController(No.41)/ReviewController(No.43,44)/ReviewLikeController(No.45),
@@ -262,9 +263,7 @@ export default function CommunityDetail() {
     <div className="min-h-screen pb-8">
       {/* 히어로 */}
       <div className="relative h-52 md:h-64 lg:h-80 overflow-hidden bg-muted">
-        {post.thumbnail_url && (
-          <img src={getProxiedImageUrl(post.thumbnail_url)} alt={post.title} referrerPolicy="no-referrer" className="w-full h-full object-cover" />
-        )}
+        <PlaceImage src={post.thumbnail_url} alt={post.title} className="w-full h-full object-cover" />
         <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-black/65" />
         <button
           onClick={() => navigate(-1)}
@@ -358,11 +357,12 @@ export default function CommunityDetail() {
                         onClick={() => setSelectedStop(stop)}
                         className="w-full bg-card border border-border rounded-[24px] overflow-hidden flex gap-4 p-5 text-left hover:bg-muted/30 hover:shadow-sm transition-all"
                       >
-                        {stop.image ? (
-                          <img src={getProxiedImageUrl(stop.image)} alt={stop.name} referrerPolicy="no-referrer" className="w-20 h-20 rounded-2xl object-cover shrink-0" />
-                        ) : (
-                          <div className="w-20 h-20 rounded-2xl bg-muted shrink-0" />
-                        )}
+                        <PlaceImage
+                          src={stop.image}
+                          alt={stop.name}
+                          category={stop.category}
+                          className="w-20 h-20 rounded-2xl object-cover shrink-0"
+                        />
                         <div className="flex-1 min-w-0">
                           <span className="text-sm text-muted-foreground">{stop.category}</span>
                           <p className="font-black text-[16px] mt-1 mb-1.5">{stop.name}</p>

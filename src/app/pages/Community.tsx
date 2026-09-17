@@ -5,6 +5,7 @@ import { Input } from "../components/ui/input";
 import { PageTitle } from "../components/PageTitle";
 import { CommunityPostSummary, getCommunityPosts } from "../lib/community";
 import { getAvatarUrl, getProxiedImageUrl } from "../lib/imageProxy";
+import { PlaceImage } from "../components/PlaceImage";
 
 type Status = "loading" | "done" | "error";
 
@@ -13,14 +14,11 @@ function RouteCard({ post, onOpen }: { post: CommunityPostSummary; onOpen: () =>
     <button onClick={onOpen} className="group text-left bg-card rounded-[28px] border border-border shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 overflow-hidden">
       {/* 썸네일 + 배지 오버레이 */}
       <div className="relative aspect-[4/3] overflow-hidden bg-muted">
-        {post.thumbnail_url && (
-          <img
-            src={getProxiedImageUrl(post.thumbnail_url)}
-            alt={post.title}
-            referrerPolicy="no-referrer"
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-          />
-        )}
+        <PlaceImage
+          src={post.thumbnail_url}
+          alt={post.title}
+          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+        />
         {post.region && (
           <div className="absolute left-3 bottom-3">
             <span className="px-2.5 py-1 rounded-full bg-neutral-900/70 backdrop-blur-sm text-white text-xs font-bold tracking-wide">
