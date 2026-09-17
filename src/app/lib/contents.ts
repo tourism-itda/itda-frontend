@@ -104,6 +104,10 @@ export function getContentRelatedPlaces(contentId: number | string) {
 //   현재 로컬 DB의 content_category 테이블이 비어 있어(0 rows) 어떤 categoryId로 필터해도 항상 빈 결과가
 //   나온다. → UI에서는 카테고리 필터를 노출하지 않는다(다연 작업 완료 후 활성화).
 // - category, media, thumbnail_url은 전부 null 가능(콘텐츠에 연결된 row/필드가 없으면 null).
+// - 2026-09-18 PR #56(dev 병합)로 kingdom(나라, ContentKingdom 관계 기준)/person_id(인물,
+//   ContentPerson 관계 기준) 필터가 추가됐다. 둘 다 optional이고 동시에 주면 AND 조건이다.
+//   kingdom 값은 explore 도메인과 동일한 Kingdom enum 코드(대문자, 예: JOSEON)를 요구한다
+//   (explore.ts의 Kingdom.kingdom 필드를 그대로 쓰면 된다).
 
 export type ContentMediaType = "DRAMA" | "MOVIE" | "DOCUMENTARY";
 export type ContentSort = "popular" | "recent";
@@ -112,6 +116,8 @@ export interface ContentListParams {
   q?: string;
   mediaType?: ContentMediaType;
   categoryId?: number;
+  kingdom?: string;
+  personId?: number;
   sort?: ContentSort;
   /** 0부터 시작 (백엔드 PageRequest 기준) */
   page?: number;
@@ -151,6 +157,8 @@ export function getContents(params: ContentListParams = {}) {
       q: params.q,
       media_type: params.mediaType,
       category_id: params.categoryId,
+      kingdom: params.kingdom,
+      person_id: params.personId,
       sort: params.sort,
       page: params.page,
       limit: params.limit,

@@ -13,7 +13,7 @@ export interface ContentsResult {
  * 이전 요청 결과는 무시한다. 객체 identity가 아니라 각 필드 값 기준으로 재조회를 판단한다.
  */
 export function useContents(params: ContentListParams): ContentsResult {
-  const { q, mediaType, categoryId, sort, page, limit } = params;
+  const { q, mediaType, categoryId, kingdom, personId, sort, page, limit } = params;
   const [status, setStatus] = useState<ContentsStatus>("loading");
   const [data, setData] = useState<ContentListResponse | null>(null);
 
@@ -21,7 +21,7 @@ export function useContents(params: ContentListParams): ContentsResult {
     let cancelled = false;
     setStatus("loading");
 
-    getContents({ q, mediaType, categoryId, sort, page, limit })
+    getContents({ q, mediaType, categoryId, kingdom, personId, sort, page, limit })
       .then((result) => {
         if (cancelled) return;
         setData(result);
@@ -34,7 +34,7 @@ export function useContents(params: ContentListParams): ContentsResult {
     return () => {
       cancelled = true;
     };
-  }, [q, mediaType, categoryId, sort, page, limit]);
+  }, [q, mediaType, categoryId, kingdom, personId, sort, page, limit]);
 
   return { status, data };
 }
