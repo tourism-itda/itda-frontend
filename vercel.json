@@ -10,6 +10,7 @@
     { "source": "/itineraries/:path*", "destination": "https://api.itda-travel.com/itineraries/:path*" },
     { "source": "/community/:path*", "destination": "https://api.itda-travel.com/community/:path*" },
     { "source": "/reviews/:path*", "destination": "https://api.itda-travel.com/reviews/:path*" },
+    { "source": "/images/:path*", "destination": "https://api.itda-travel.com/images/:path*" },
     { "source": "/(.*)", "destination": "/index.html" }
   ]
 }
