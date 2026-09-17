@@ -28,7 +28,7 @@ function RouteCard({ post, onOpen }: { post: CommunityPostSummary; onOpen: () =>
             </span>
           </div>
         )}
-        {post.rating !== null && (
+        {post.rating != null && (
           <div className="absolute top-3 right-3 flex items-center gap-1 px-2.5 py-1 rounded-full bg-neutral-900/70 backdrop-blur-sm text-white text-xs font-bold">
             <Star className="w-3.5 h-3.5 fill-primary text-primary" />
             {post.rating.toFixed(1)}
