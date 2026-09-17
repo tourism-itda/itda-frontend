@@ -98,7 +98,7 @@ export default function Home() {
                 <Input
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
-                  placeholder="드라마·영화 제목, 시대, 인물로 검색"
+                  placeholder="영화 제목을 검색해보세요"
                   className="border-0 shadow-none bg-transparent h-9 px-1 text-[16px] font-semibold focus-visible:ring-0"
                 />
               </div>
