@@ -58,8 +58,6 @@ interface PlaceSlotCardProps {
    */
   onSwap?: () => void;
   swapping?: boolean;
-  /** 저장된 일정 상세 전용 — 서버에 저장된 status를 읽기 전용 배지로 보여준다. */
-  statusLabel?: string;
 }
 
 export function PlaceSlotCard({
@@ -72,7 +70,6 @@ export function PlaceSlotCard({
   onConfirm,
   onSwap,
   swapping,
-  statusLabel,
 }: PlaceSlotCardProps) {
   const navigate = useNavigate();
   const location = useLocation();
@@ -132,15 +129,10 @@ export function PlaceSlotCard({
           : "border-border hover:border-muted-foreground/40"
       }`}
     >
-      {/* 확정 상태 배너(추천 화면) / 저장 상태 배지(상세 화면) */}
+      {/* 확정 상태 배너(추천 화면 전용) */}
       {showConfirmToggle && confirmed && (
         <div className="bg-muted/50 px-4 py-1.5">
           <span className="text-sm text-muted-foreground">확정됨</span>
-        </div>
-      )}
-      {!showConfirmToggle && statusLabel && (
-        <div className="bg-muted/50 px-4 py-1.5">
-          <span className="text-sm text-muted-foreground">{statusLabel}</span>
         </div>
       )}
 

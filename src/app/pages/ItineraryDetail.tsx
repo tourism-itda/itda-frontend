@@ -29,12 +29,6 @@ import {
 
 type Status = "loading" | "done" | "not-found" | "unauthenticated" | "error";
 
-const statusLabels: Record<ItineraryPlaceStatus, string> = {
-  PENDING: "확인 필요",
-  CONFIRMED: "확정",
-  CHANGED: "변경됨",
-};
-
 // 수정 바텀시트 안에서만 쓰는 로컬 편집용 타입 — day_number/visit_order만 건드린다.
 interface EditPlace {
   itinerary_place_id: number;
@@ -309,7 +303,6 @@ export default function ItineraryDetail() {
                   isSelected={selectedId === String(p.place_id)}
                   onSelect={() => setSelectedId(String(p.place_id))}
                   onOpenDetail={() => openPlaceDetail(p)}
-                  statusLabel={statusLabels[p.status]}
                 />
               ))}
             </div>
