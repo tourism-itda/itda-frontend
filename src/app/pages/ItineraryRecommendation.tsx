@@ -131,8 +131,19 @@ export default function ItineraryRecommendation() {
   async function handleSave() {
     if (!travelDate || !data || slots.length === 0) return;
 
-    const places: ItinerarySavePlace[] = slots.map((s) => ({
+    // dayGroups[dayIdx]는 slots 배열의 인덱스 목록 — 이걸 역으로 뒤집어 인덱스별 day_number를 구한다.
+    // 이걸 안 보내면 백엔드가 전부 1일차로 저장해버려서(PlaceItemRequest: null이면 1일차),
+    // 1박 2일/2박 3일로 골라도 상세 화면에서 하루로 뭉쳐 나온다.
+    const dayNumberByIndex: number[] = new Array(slots.length).fill(1);
+    dayGroups.forEach((indices, dayIdx) => {
+      indices.forEach((idx) => {
+        dayNumberByIndex[idx] = dayIdx + 1;
+      });
+    });
+
+    const places: ItinerarySavePlace[] = slots.map((s, idx) => ({
       place_id: s.place.place_id,
+      day_number: dayNumberByIndex[idx],
       visit_order: s.visit_order,
       // 신규 저장이라 전 슬롯 PENDING으로 시작한다. 화면의 "확정" 토글은 저장 여부를 가르는
       // 로컬 UI 상태일 뿐, 서버 status와는 별개다.

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router";
 import { toast } from "sonner";
-import { ArrowLeft, Loader2, LogIn, MapPinOff, Pencil, Save, X } from "lucide-react";
+import { ArrowDown, ArrowLeft, ArrowUp, Loader2, LogIn, MapPinOff, Pencil, Save, X } from "lucide-react";
 import { Button } from "../components/ui/button";
 import { MapView } from "../components/MapView";
 import { PlaceSheet, PlaceSheetData } from "../components/PlaceSheet";
@@ -11,6 +11,7 @@ import {
   ItineraryDetail as ItineraryDetailData,
   ItineraryDetailPlace,
   ItineraryPlaceStatus,
+  UpdateItineraryPlacePayload,
   getItineraryDetail,
   updateItinerary,
 } from "../lib/itineraries";
@@ -20,10 +21,9 @@ import {
  * (ItineraryRecommendation)과 레이아웃을 공유하도록 되어 있어, 슬롯 카드는
  * components/PlaceSlotCard.tsx를 그대로 재사용한다.
  *
- * 이번 범위는 제목/날짜 수정까지다 — 장소 순서 재배치·추가/삭제 UI는 범위 밖.
- * PATCH로 places를 보내면 전체 교체되는 API라 잘못 건드리면 데이터가 날아가므로,
- * places 재배치가 필요해지면 lib/itineraries.ts의 UpdateItineraryPayload.places를 참고해서
- * 별도로 구현해야 한다(TODO).
+ * 수정 범위: 제목/날짜 + 장소별 일자 이동·같은 날 안에서의 순서 이동.
+ * 장소 추가/삭제 UI는 범위 밖. PATCH로 places를 보내면 전체 교체되는 API라
+ * (UpdateItineraryPayload.places 참고) 수정 저장 시 항상 전체 장소 목록을 다시 보낸다.
  */
 
 type Status = "loading" | "done" | "not-found" | "unauthenticated" | "error";
@@ -33,6 +33,36 @@ const statusLabels: Record<ItineraryPlaceStatus, string> = {
   CONFIRMED: "확정",
   CHANGED: "변경됨",
 };
+
+// 수정 바텀시트 안에서만 쓰는 로컬 편집용 타입 — day_number/visit_order만 건드린다.
+interface EditPlace {
+  itinerary_place_id: number;
+  place_id: number;
+  name: string | null;
+  day_number: number;
+  visit_order: number;
+  status: ItineraryPlaceStatus;
+  memo: string | null;
+}
+
+// 같은 day_number끼리 묶어 visit_order를 1부터 다시 매긴다(값 자체는 GET에서 온 그대로
+// 써도 정렬만 맞으면 되지만, 편집 중 일자를 옮기고 나면 겹치거나 비는 값이 생기므로 정리해준다).
+function renumberPlaces(list: EditPlace[]): EditPlace[] {
+  const byDay = new Map<number, EditPlace[]>();
+  for (const p of list) {
+    const group = byDay.get(p.day_number) ?? [];
+    group.push(p);
+    byDay.set(p.day_number, group);
+  }
+  const result: EditPlace[] = [];
+  Array.from(byDay.keys())
+    .sort((a, b) => a - b)
+    .forEach((day) => {
+      const group = [...byDay.get(day)!].sort((a, b) => a.visit_order - b.visit_order);
+      group.forEach((p, i) => result.push({ ...p, visit_order: i + 1 }));
+    });
+  return result;
+}
 
 export default function ItineraryDetail() {
   const { id } = useParams<{ id: string }>();
@@ -47,6 +77,7 @@ export default function ItineraryDetail() {
   const [showEditSheet, setShowEditSheet] = useState(false);
   const [editTitle, setEditTitle] = useState("");
   const [editTravelDate, setEditTravelDate] = useState("");
+  const [editPlaces, setEditPlaces] = useState<EditPlace[]>([]);
   const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
@@ -82,20 +113,74 @@ export default function ItineraryDetail() {
     if (!detail) return;
     setEditTitle(detail.title);
     setEditTravelDate(detail.travel_date ?? "");
+    setEditPlaces(
+      renumberPlaces(
+        detail.places.map((p) => ({
+          itinerary_place_id: p.itinerary_place_id,
+          place_id: p.place_id,
+          name: p.name,
+          day_number: p.day_number,
+          visit_order: p.visit_order,
+          status: p.status,
+          memo: p.memo,
+        }))
+      )
+    );
     setShowEditSheet(true);
+  }
+
+  // 편집 중인 일자 목록(오름차순) — 새 날짜를 추가할 수 있게 드롭다운 옵션도 여기서 계산한다.
+  const editDayNumbers = Array.from(new Set(editPlaces.map((p) => p.day_number))).sort((a, b) => a - b);
+  const maxSelectableDay = Math.min(14, Math.max(...editDayNumbers, 0) + 1);
+  const dayOptions = Array.from({ length: maxSelectableDay }, (_, i) => i + 1);
+
+  function changePlaceDay(itineraryPlaceId: number, newDay: number) {
+    setEditPlaces((prev) =>
+      renumberPlaces(
+        prev.map((p) =>
+          p.itinerary_place_id === itineraryPlaceId
+            ? { ...p, day_number: newDay, visit_order: Number.MAX_SAFE_INTEGER }
+            : p
+        )
+      )
+    );
+  }
+
+  function movePlace(itineraryPlaceId: number, direction: "up" | "down") {
+    setEditPlaces((prev) => {
+      const target = prev.find((p) => p.itinerary_place_id === itineraryPlaceId);
+      if (!target) return prev;
+      const sameDay = prev.filter((p) => p.day_number === target.day_number).sort((a, b) => a.visit_order - b.visit_order);
+      const idx = sameDay.findIndex((p) => p.itinerary_place_id === itineraryPlaceId);
+      const swapIdx = direction === "up" ? idx - 1 : idx + 1;
+      if (swapIdx < 0 || swapIdx >= sameDay.length) return prev;
+      const other = sameDay[swapIdx];
+      return prev.map((p) => {
+        if (p.itinerary_place_id === target.itinerary_place_id) return { ...p, visit_order: other.visit_order };
+        if (p.itinerary_place_id === other.itinerary_place_id) return { ...p, visit_order: target.visit_order };
+        return p;
+      });
+    });
   }
 
   async function handleSaveEdit() {
     if (!id || !detail || !editTitle.trim() || isSaving) return;
     setIsSaving(true);
     try {
+      const places: UpdateItineraryPlacePayload[] = editPlaces.map((p) => ({
+        place_id: p.place_id,
+        day_number: p.day_number,
+        visit_order: p.visit_order,
+        status: p.status,
+        memo: p.memo ?? undefined,
+      }));
       await updateItinerary(id, {
         title: editTitle.trim(),
         travel_date: editTravelDate || undefined,
+        places,
       });
-      const savedTitle = editTitle.trim();
-      const savedDate = editTravelDate || detail.travel_date;
-      setDetail((prev) => (prev ? { ...prev, title: savedTitle, travel_date: savedDate } : prev));
+      const refreshed = await getItineraryDetail(id);
+      setDetail(refreshed);
       toast("일정이 수정되었습니다.");
       setShowEditSheet(false);
     } catch (err) {
@@ -247,7 +332,7 @@ export default function ItineraryDetail() {
         </>
       )}
 
-      {/* 수정 바텀시트 — 제목/날짜만. 장소 재배치는 범위 밖(TODO) */}
+      {/* 수정 바텀시트 — 제목/날짜 + 장소별 일자·순서 편집 */}
       {showEditSheet && (
         <div className="fixed inset-0 z-[60] flex items-end lg:items-center justify-center">
           <div
@@ -285,6 +370,63 @@ export default function ItineraryDetail() {
                   className="w-full h-11 px-3 rounded-lg border border-border bg-input text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
                 />
               </div>
+
+              {editPlaces.length > 0 && (
+                <div className="mb-5">
+                  <label className="block text-sm font-medium mb-2">장소 일정</label>
+                  <div className="space-y-4">
+                    {editDayNumbers.map((day) => {
+                      const dayPlaces = editPlaces
+                        .filter((p) => p.day_number === day)
+                        .sort((a, b) => a.visit_order - b.visit_order);
+                      return (
+                        <div key={day} className="space-y-2">
+                          {editDayNumbers.length > 1 && (
+                            <p className="text-xs font-semibold text-primary">{day}일차</p>
+                          )}
+                          {dayPlaces.map((p, i) => (
+                            <div
+                              key={p.itinerary_place_id}
+                              className="flex items-center gap-2 rounded-lg border border-border px-3 py-2"
+                            >
+                              <span className="flex-1 min-w-0 text-sm truncate">
+                                {p.name ?? "이름 미상"}
+                              </span>
+                              <select
+                                value={p.day_number}
+                                onChange={(e) => changePlaceDay(p.itinerary_place_id, Number(e.target.value))}
+                                className="h-8 px-2 rounded-md border border-border bg-input text-xs focus:outline-none focus:ring-2 focus:ring-primary/50"
+                              >
+                                {dayOptions.map((d) => (
+                                  <option key={d} value={d}>
+                                    {d}일차
+                                  </option>
+                                ))}
+                              </select>
+                              <button
+                                type="button"
+                                onClick={() => movePlace(p.itinerary_place_id, "up")}
+                                disabled={i === 0}
+                                className="w-7 h-7 rounded-md border border-border flex items-center justify-center hover:bg-muted transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                              >
+                                <ArrowUp className="w-3.5 h-3.5" />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => movePlace(p.itinerary_place_id, "down")}
+                                disabled={i === dayPlaces.length - 1}
+                                className="w-7 h-7 rounded-md border border-border flex items-center justify-center hover:bg-muted transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                              >
+                                <ArrowDown className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
 
               <Button onClick={handleSaveEdit} disabled={!editTitle.trim() || isSaving} className="w-full h-11">
                 {isSaving ? (
