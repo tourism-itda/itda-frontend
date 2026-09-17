@@ -188,9 +188,10 @@ export default function ItineraryRecommendation() {
       place_id: s.place.place_id,
       day_number: dayNumberByIndex[idx],
       visit_order: s.visit_order,
-      // 신규 저장이라 전 슬롯 PENDING으로 시작한다. 화면의 "확정" 토글은 저장 여부를 가르는
-      // 로컬 UI 상태일 뿐, 서버 status와는 별개다.
-      status: "PENDING",
+      // 화면에서 "확정" 토글한 장소는 CONFIRMED로 저장한다. 예전엔 이 토글이 로컬 UI 상태일
+      // 뿐이라며 전부 PENDING으로 보내서, 다 확정하고 저장해도 상세 화면에 "확인 필요"만
+      // 떴었다 — 사용자가 확정한 걸 그대로 서버 status에 반영하도록 고침.
+      status: confirmedIds.has(s.place.place_id) ? "CONFIRMED" : "PENDING",
     }));
 
     setIsSaving(true);

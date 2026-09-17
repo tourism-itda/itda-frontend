@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router";
 import { toast } from "sonner";
-import { ArrowDown, ArrowLeft, ArrowUp, Loader2, LogIn, MapPinOff, Pencil, Save, X } from "lucide-react";
+import { ArrowDown, ArrowLeft, ArrowUp, Check, Loader2, LogIn, MapPinOff, Pencil, Save, X } from "lucide-react";
 import { Button } from "../components/ui/button";
 import { MapView } from "../components/MapView";
 import { PlaceSheet, PlaceSheetData } from "../components/PlaceSheet";
@@ -202,6 +202,18 @@ export default function ItineraryDetail() {
         return p;
       });
     });
+  }
+
+  // 저장 시 항상 PENDING으로만 보내던 예전 버그로 "확인 필요"만 남아있는 옛 일정을
+  // 여기서 확정/해제할 수 있게 한다. CHANGED 상태는 건드리지 않고 그냥 CONFIRMED로 넘긴다.
+  function togglePlaceStatus(itineraryPlaceId: number) {
+    setEditPlaces((prev) =>
+      prev.map((p) =>
+        p.itinerary_place_id === itineraryPlaceId
+          ? { ...p, status: p.status === "CONFIRMED" ? "PENDING" : "CONFIRMED" }
+          : p
+      )
+    );
   }
 
   async function handleSaveEdit() {
@@ -443,6 +455,18 @@ export default function ItineraryDetail() {
                               key={p.itinerary_place_id}
                               className="flex items-center gap-2 rounded-lg border border-border px-3 py-2"
                             >
+                              <button
+                                type="button"
+                                onClick={() => togglePlaceStatus(p.itinerary_place_id)}
+                                title={p.status === "CONFIRMED" ? "확정 해제" : "확정으로 표시"}
+                                className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 transition-colors ${
+                                  p.status === "CONFIRMED"
+                                    ? "bg-primary text-primary-foreground"
+                                    : "bg-muted text-muted-foreground hover:bg-muted/80"
+                                }`}
+                              >
+                                <Check className="w-3.5 h-3.5" />
+                              </button>
                               <span className="flex-1 min-w-0 text-sm truncate">
                                 {p.name ?? "이름 미상"}
                               </span>
