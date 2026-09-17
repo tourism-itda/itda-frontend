@@ -106,13 +106,13 @@ export default function ItineraryDetail() {
   const [editPlaces, setEditPlaces] = useState<EditPlace[]>([]);
   const [isSaving, setIsSaving] = useState(false);
 
-  // "다른 곳 추천" — 바로 바꾸지 않고 후보를 보여준 다음 고르게 한다. API가 한 번에 하나씩만
-  // 돌려주는 구조라("이 장소 다음으로 추천되는 것 하나"), "다른 후보 보기"를 누르면 방금
-  // 보여준 후보를 exclude로 다시 조회해서 한 걸음씩 다음 후보로 넘어간다.
+  // "다른 곳 추천" — 루트 만들기(RouteBuilder.tsx)의 후보 시트처럼 후보를 목록으로 보여주고
+  // 바로 골라서 바꾸게 한다. API가 한 번에 하나씩만 돌려주는 구조라("이 장소 다음으로
+  // 추천되는 것 하나"), exclude를 계속 바꿔가며 남은 후보를 미리 다 모아서 보여준다.
   const [swapOriginal, setSwapOriginal] = useState<ItineraryDetailPlace | null>(null);
-  const [swapCandidate, setSwapCandidate] = useState<AlternativePlace | null>(null);
-  const [swapStatus, setSwapStatus] = useState<"loading" | "done" | "empty" | "error">("loading");
-  const [isApplyingSwap, setIsApplyingSwap] = useState(false);
+  const [swapCandidates, setSwapCandidates] = useState<AlternativePlace[]>([]);
+  const [swapStatus, setSwapStatus] = useState<"loading" | "done" | "error">("loading");
+  const [applyingSwapPlaceId, setApplyingSwapPlaceId] = useState<number | null>(null);
 
   useEffect(() => {
     if (!id) return;
@@ -265,17 +265,20 @@ export default function ItineraryDetail() {
     });
   }
 
-  // 카드의 "다른 곳 추천"은 바로 바꾸지 않고 후보를 먼저 보여준다. GET /api/places/alternative는
-  // "이 콘텐츠에서 recommend_order가 visit_order보다 큰 것 중 첫 번째"를 돌려주는데, 저장된
-  // 일정의 visit_order는 하루 나누기·순서 편집 기능 때문에 원래 recommend_order와 안 맞을 수
-  // 있다(예: 편집으로 값이 커지면 문턱값이 콘텐츠의 최대 recommend_order를 넘어버려서 실제로는
-  // 후보가 남아있는데도 바로 "더 이상 없다"고 잘못 뜬다). 그래서 문턱값은 항상 0(전체)으로 고정해
-  // 콘텐츠의 추천 목록을 처음부터 훑고, 이미 이 일정에 쓰인 장소는 건너뛰고 다음 걸 본다.
-  async function fetchSwapCandidate(excludePlaceId: number) {
+  // 카드의 "다른 곳 추천"은 루트 만들기의 후보 시트처럼 목록으로 미리 보여준다.
+  // GET /api/places/alternative가 한 번에 하나씩만("이 콘텐츠에서 recommend_order가
+  // visit_order보다 큰 것 중 첫 번째") 돌려주는 구조라, exclude를 계속 바꿔가며 반복
+  // 호출해서 남은 후보를 전부 모은다. 문턱값(visitOrder)은 항상 0(전체)으로 고정한다 —
+  // 저장된 일정의 visit_order는 하루 나누기·순서 편집 기능 때문에 원래 recommend_order와
+  // 안 맞을 수 있어서(편집으로 값이 커지면 문턱값이 콘텐츠의 최대 recommend_order를 넘어버려
+  // 실제로는 후보가 남아있는데도 "더 이상 없다"고 잘못 뜬다), 항상 목록 전체를 훑는다.
+  // 이미 이 일정에 쓰인 장소는 후보에서 제외한다.
+  async function fetchSwapCandidates(place: ItineraryDetailPlace) {
     if (!detail || detail.content_id === null) return;
     setSwapStatus("loading");
     const usedPlaceIds = new Set(detail.places.map((p) => p.place_id));
-    let exclude = excludePlaceId;
+    const found: AlternativePlace[] = [];
+    let exclude = place.place_id;
     try {
       for (let guard = 0; guard < 30; guard++) {
         const result = await getAlternativePlace({
@@ -284,47 +287,41 @@ export default function ItineraryDetail() {
           excludePlaceId: exclude,
         });
         if (!usedPlaceIds.has(result.place.place_id)) {
-          setSwapCandidate(result.place);
-          setSwapStatus("done");
-          return;
+          found.push(result.place);
         }
         exclude = result.place.place_id;
       }
-      setSwapCandidate(null);
-      setSwapStatus("empty");
     } catch (err) {
       if (isLoginRequiredError(err)) {
         setSwapOriginal(null);
         toast("로그인이 필요한 기능이에요. 로그인 후 다시 시도해주세요.");
         navigate("/login", { replace: true, state: { from: location.pathname + location.search } });
-      } else if (err instanceof ApiError && err.status === 404) {
-        // 더 이상 추천할 대안 장소가 없다는 정상적인 "마지막 후보" 신호.
-        setSwapCandidate(null);
-        setSwapStatus("empty");
-      } else {
-        setSwapCandidate(null);
+        return;
+      }
+      if (!(err instanceof ApiError && err.status === 404)) {
+        // 404(더 이상 추천할 대안 장소가 없다)는 정상적인 "목록 끝" 신호라 그냥 종료하고,
+        // 그 외 에러만 실패로 취급한다.
+        setSwapCandidates([]);
         setSwapStatus("error");
+        return;
       }
     }
+    setSwapCandidates(found);
+    setSwapStatus("done");
   }
 
   function openSwapSheet(place: ItineraryDetailPlace) {
     setSwapOriginal(place);
-    setSwapCandidate(null);
-    fetchSwapCandidate(place.place_id);
+    setSwapCandidates([]);
+    fetchSwapCandidates(place);
   }
 
-  function handleNextCandidate() {
-    if (!swapCandidate) return;
-    fetchSwapCandidate(swapCandidate.place_id);
-  }
-
-  async function handleApplySwap() {
-    if (!id || !detail || !swapOriginal || !swapCandidate || isApplyingSwap) return;
-    setIsApplyingSwap(true);
+  async function handleApplySwap(candidate: AlternativePlace) {
+    if (!id || !detail || !swapOriginal || applyingSwapPlaceId !== null) return;
+    setApplyingSwapPlaceId(candidate.place_id);
     try {
       const places: UpdateItineraryPlacePayload[] = detail.places.map((p) => ({
-        place_id: p.itinerary_place_id === swapOriginal.itinerary_place_id ? swapCandidate.place_id : p.place_id,
+        place_id: p.itinerary_place_id === swapOriginal.itinerary_place_id ? candidate.place_id : p.place_id,
         day_number: p.day_number,
         visit_order: p.visit_order,
         status: p.status,
@@ -334,7 +331,7 @@ export default function ItineraryDetail() {
 
       const refreshed = await getItineraryDetail(id);
       setDetail(refreshed);
-      toast(`${swapCandidate.name}(으)로 바꿨어요.`);
+      toast(`${candidate.name}(으)로 바꿨어요.`);
       setSwapOriginal(null);
     } catch (err) {
       if (isLoginRequiredError(err)) {
@@ -344,7 +341,7 @@ export default function ItineraryDetail() {
         toast(err instanceof ApiError ? err.message : "장소를 바꾸지 못했어요. 잠시 후 다시 시도해주세요.");
       }
     } finally {
-      setIsApplyingSwap(false);
+      setApplyingSwapPlaceId(null);
     }
   }
 
@@ -606,14 +603,14 @@ export default function ItineraryDetail() {
         </div>
       )}
 
-      {/* "다른 곳 추천" 후보 시트 — 바로 바꾸지 않고 후보를 보여준 뒤 고르게 한다 */}
+      {/* "다른 곳 추천" 후보 시트 — 루트 만들기의 후보 목록과 같은 방식: 목록에서 바로 골라서 바꾼다 */}
       {swapOriginal && (
         <div className="fixed inset-0 z-[70] flex items-end lg:items-center justify-center">
           <div
             className="absolute inset-0 bg-black/40 backdrop-blur-sm hanji-noise"
             onClick={() => setSwapOriginal(null)}
           />
-          <div className="relative bg-card border border-border rounded-t-2xl lg:rounded-2xl w-full max-w-sm shadow-xl flex flex-col overflow-hidden">
+          <div className="relative bg-card border border-border rounded-t-2xl lg:rounded-2xl w-full max-w-sm max-h-[80vh] shadow-xl flex flex-col overflow-hidden">
             <div className="flex items-center justify-between px-5 pt-5 pb-3 shrink-0">
               <h2 className="text-lg">다른 곳 추천</h2>
               <button
@@ -624,68 +621,61 @@ export default function ItineraryDetail() {
               </button>
             </div>
 
-            <div className="px-5 pb-5">
+            <div className="px-5 pb-5 overflow-y-auto">
               <p className="text-sm text-muted-foreground mb-3">
                 {swapOriginal.name ?? "이 장소"} 대신 넣을 곳을 골라주세요.
               </p>
 
               {swapStatus === "loading" && (
-                <div className="flex flex-col items-center justify-center gap-2 py-12 text-muted-foreground">
+                <div className="flex flex-col items-center justify-center gap-2 py-16 text-muted-foreground">
                   <Loader2 className="w-5 h-5 animate-spin" />
                   <p className="text-sm">후보를 불러오는 중이에요...</p>
                 </div>
               )}
 
               {swapStatus === "error" && (
-                <div className="flex flex-col items-center justify-center gap-2 py-12 text-center">
+                <div className="flex flex-col items-center justify-center gap-2 py-16 text-center">
                   <MapPinOff className="w-6 h-6 text-muted-foreground" />
                   <p className="text-sm text-muted-foreground">후보를 불러오지 못했어요. 잠시 후 다시 시도해주세요.</p>
                 </div>
               )}
 
-              {swapStatus === "empty" && (
-                <div className="flex flex-col items-center justify-center gap-2 py-12 text-center">
+              {swapStatus === "done" && swapCandidates.length === 0 && (
+                <div className="flex flex-col items-center justify-center gap-2 py-16 text-center">
                   <MapPinOff className="w-6 h-6 text-muted-foreground" />
                   <p className="text-sm text-muted-foreground">더 이상 추천할 대안 장소가 없어요.</p>
                 </div>
               )}
 
-              {swapStatus === "done" && swapCandidate && (
-                <div className="flex gap-3 p-3 rounded-xl border border-border mb-4">
-                  <PlaceImage
-                    src={swapCandidate.image_url}
-                    alt={swapCandidate.name}
-                    category={swapCandidate.category}
-                    className="w-20 h-20 rounded-lg object-cover shrink-0"
-                  />
-                  <div className="flex-1 min-w-0">
-                    <span className="inline-block text-xs px-2 py-0.5 rounded-full mb-1 bg-muted text-foreground">
-                      {swapCandidate.category}
-                    </span>
-                    <p className="font-medium text-sm leading-tight line-clamp-1">{swapCandidate.name}</p>
-                    <p className="text-sm text-muted-foreground line-clamp-2 mt-0.5">{swapCandidate.description}</p>
-                  </div>
+              {swapStatus === "done" && swapCandidates.length > 0 && (
+                <div className="space-y-2">
+                  {swapCandidates.map((candidate) => (
+                    <button
+                      key={candidate.place_id}
+                      onClick={() => handleApplySwap(candidate)}
+                      disabled={applyingSwapPlaceId !== null}
+                      className="w-full flex items-center gap-3 p-3 rounded-xl border border-border text-left hover:bg-muted/30 transition-colors disabled:opacity-60"
+                    >
+                      <PlaceImage
+                        src={candidate.image_url}
+                        alt={candidate.name}
+                        category={candidate.category}
+                        className="w-16 h-16 rounded-lg object-cover shrink-0"
+                      />
+                      <div className="flex-1 min-w-0">
+                        <span className="inline-block text-xs px-2 py-0.5 rounded-full mb-1 bg-muted text-foreground">
+                          {candidate.category}
+                        </span>
+                        <p className="font-medium text-sm leading-tight line-clamp-1">{candidate.name}</p>
+                        <p className="text-sm text-muted-foreground line-clamp-1">{candidate.description}</p>
+                      </div>
+                      {applyingSwapPlaceId === candidate.place_id && (
+                        <Loader2 className="w-4 h-4 animate-spin shrink-0" />
+                      )}
+                    </button>
+                  ))}
                 </div>
               )}
-
-              <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  onClick={handleNextCandidate}
-                  disabled={swapStatus !== "done" || isApplyingSwap}
-                  className="flex-1 h-11"
-                >
-                  다른 후보 보기
-                </Button>
-                <Button
-                  onClick={handleApplySwap}
-                  disabled={swapStatus !== "done" || isApplyingSwap}
-                  className="flex-1 h-11"
-                >
-                  {isApplyingSwap && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-                  이걸로 바꾸기
-                </Button>
-              </div>
             </div>
           </div>
         </div>
