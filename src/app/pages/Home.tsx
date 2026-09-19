@@ -1,19 +1,10 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import { Calendar, ChevronRight, Footprints, MapPinOff, Search } from "lucide-react";
 import { Input } from "../components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "../components/ui/select";
 import { Skeleton } from "../components/ui/skeleton";
 import { ContentCard } from "../components/ContentCard";
 import { useContents } from "../lib/useContents";
-import { useKingdoms } from "../lib/useKingdoms";
-import { usePersons } from "../lib/usePersons";
 import { getUpcomingEvents, getEventLink, EventSummary } from "../lib/events";
 import { getProxiedImageUrl } from "../lib/imageProxy";
 
@@ -23,14 +14,9 @@ const mediaTypeLabel: Record<string, string> = {
   DOCUMENTARY: "다큐",
 };
 
-// Radix Select는 value=""인 Item을 허용하지 않아 "전체" 선택을 나타낼 때 이 값을 쓴다.
-const ALL_VALUE = "ALL";
-
 export default function Home() {
   const navigate = useNavigate();
   const [query, setQuery] = useState("");
-  const [kingdom, setKingdom] = useState<string | undefined>(undefined);
-  const [personId, setPersonId] = useState<number | undefined>(undefined);
 
   // 검색어는 API 쿼리(q)로 나가므로, 매 타이핑마다 요청하지 않도록 디바운스한다.
   const [debouncedQuery, setDebouncedQuery] = useState("");
@@ -39,15 +25,7 @@ export default function Home() {
     return () => clearTimeout(timer);
   }, [query]);
 
-  const popular = useContents({ sort: "popular", limit: 6, q: debouncedQuery || undefined, kingdom, personId });
-  const kingdoms = useKingdoms();
-  const persons = usePersons();
-
-  // 나라를 고르면 인물 드롭다운도 해당 나라 인물로 좁힌다.
-  const personOptions = useMemo(
-    () => (kingdom ? persons.data.filter((p) => p.kingdom === kingdom) : persons.data),
-    [persons.data, kingdom]
-  );
+  const popular = useContents({ sort: "popular", limit: 6, q: debouncedQuery || undefined });
 
   const [upcomingStatus, setUpcomingStatus] = useState<"loading" | "done" | "error">("loading");
   const [upcomingEvents, setUpcomingEvents] = useState<EventSummary[]>([]);
@@ -105,52 +83,6 @@ export default function Home() {
             </div>
           </div>
         </section>
-
-        {/* 나라/인물 필터 */}
-        <div className="flex gap-2 mb-8">
-          <Select
-            value={kingdom ?? ALL_VALUE}
-            onValueChange={(value) => {
-              const next = value === ALL_VALUE ? undefined : value;
-              setKingdom(next);
-              // 나라가 바뀌면 인물 목록도 좁혀지므로, 새 나라에 없는 인물 선택은 해제한다.
-              setPersonId((prevId) => {
-                if (prevId === undefined || !next) return prevId;
-                const stillValid = persons.data.some((p) => p.person_id === prevId && p.kingdom === next);
-                return stillValid ? prevId : undefined;
-              });
-            }}
-          >
-            <SelectTrigger className="w-32 h-9 text-sm bg-card">
-              <SelectValue placeholder="나라" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value={ALL_VALUE}>전체 나라</SelectItem>
-              {kingdoms.data.map((k) => (
-                <SelectItem key={k.kingdom} value={k.kingdom}>
-                  {k.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-
-          <Select
-            value={personId !== undefined ? String(personId) : ALL_VALUE}
-            onValueChange={(value) => setPersonId(value === ALL_VALUE ? undefined : Number(value))}
-          >
-            <SelectTrigger className="w-32 h-9 text-sm bg-card">
-              <SelectValue placeholder="인물" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value={ALL_VALUE}>전체 인물</SelectItem>
-              {personOptions.map((p) => (
-                <SelectItem key={p.person_id} value={String(p.person_id)}>
-                  {p.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
 
         {/* 섹션 타이틀 + 개수 + 전체보기 */}
         <section className="mb-20">
