@@ -16,6 +16,10 @@ export interface Review {
   created_at: string;
   // 비로그인 조회이거나(is_liked 계산 안 함), 방금 작성 직후 응답(null로 내려와 키 자체가 빠짐)에는 없다.
   is_liked?: boolean;
+  // 이 리뷰를 지금 보고 있는 사용자가 작성했는지. 삭제 버튼 노출 판단에 쓴다.
+  // ⚠️ 백엔드 미구현 필드 — ReviewResponse에 is_mine(로그인 시에만 채우는 NON_NULL Boolean)이
+  // 추가되면 자동으로 채워진다. 그 전까지는 항상 undefined라 삭제 버튼이 뜨지 않는다(안전).
+  is_mine?: boolean;
 }
 
 export interface ReviewListParams {
@@ -50,5 +54,14 @@ export interface ReviewLikeToggleResult {
 export function toggleReviewLike(reviewId: number | string) {
   return apiFetch<ReviewLikeToggleResult>(`/api/reviews/${reviewId}/likes`, {
     method: "POST",
+  });
+}
+
+// 본인 리뷰 삭제 — 인증 필요, 작성자 본인만. 성공 시 204(No Content).
+// ⚠️ 백엔드 미구현 엔드포인트. ReviewLikeController(@RequestMapping("/api/reviews"))와 같은 기준으로
+//    DELETE /api/reviews/{reviewId} 를 예상해 맞춰 둔다. 본인이 아니면 403, 없는 리뷰면 404 예상.
+export function deleteReview(reviewId: number | string) {
+  return apiFetch<void>(`/api/reviews/${reviewId}`, {
+    method: "DELETE",
   });
 }

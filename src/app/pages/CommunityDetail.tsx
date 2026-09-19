@@ -13,6 +13,7 @@ import {
   MapPin,
   Navigation,
   Loader2,
+  Trash2,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "../components/ui/button";
@@ -21,9 +22,10 @@ import { usePlaceLookup } from "../lib/usePlaceLookup";
 import { htmlToText } from "../lib/text";
 import { splitIntoPeriods } from "../lib/periodSplit";
 import { CommunityContentBox } from "../components/CommunityContentBox";
+import { ConfirmDeleteModal } from "../components/ConfirmDeleteModal";
 import { ApiError, isLoginRequiredError } from "../lib/api";
 import { CommunityPostDetail, CommunityStop, getCommunityPostDetail, importItinerary } from "../lib/community";
-import { Review, createReview, getReviews, toggleReviewLike } from "../lib/reviews";
+import { Review, createReview, deleteReview, getReviews, toggleReviewLike } from "../lib/reviews";
 import { getAvatarUrl, getProxiedImageUrl } from "../lib/imageProxy";
 import { MapView } from "../components/MapView";
 import { PlaceImage } from "../components/PlaceImage";
@@ -123,6 +125,8 @@ export default function CommunityDetail() {
   const [myComment, setMyComment] = useState("");
   const [submittingReview, setSubmittingReview] = useState(false);
   const [likingIds, setLikingIds] = useState<Set<number>>(new Set());
+  const [deleteReviewTargetId, setDeleteReviewTargetId] = useState<number | null>(null);
+  const [deletingReview, setDeletingReview] = useState(false);
 
   const [activeTab, setActiveTab] = useState<"route" | "review">("route");
   const [selectedStop, setSelectedStop] = useState<RouteStop | null>(null);
@@ -225,6 +229,15 @@ export default function CommunityDetail() {
     try {
       const created = await createReview(id, myRating, myComment.trim());
       setReviews((prev) => [created, ...prev]);
+      // 평균 별점·리뷰 수는 최초 조회한 post 값에 고정돼 있어, 방금 등록한 리뷰가 즉시 반영되도록
+      // 직접 재계산한다(리뷰 목록은 페이지네이션될 수 있어 목록 배열만으로 평균을 내면 부정확하다).
+      setPost((prev) => {
+        if (!prev) return prev;
+        const prevCount = prev.review_count;
+        const newCount = prevCount + 1;
+        const newRating = ((prev.rating ?? 0) * prevCount + created.rating) / newCount;
+        return { ...prev, review_count: newCount, rating: newRating };
+      });
       setMyComment("");
       setMyRating(0);
     } catch (err) {
@@ -236,6 +249,37 @@ export default function CommunityDetail() {
       }
     } finally {
       setSubmittingReview(false);
+    }
+  }
+
+  async function handleConfirmDeleteReview() {
+    if (deleteReviewTargetId === null || deletingReview) return;
+    const target = reviews.find((r) => r.review_id === deleteReviewTargetId);
+    setDeletingReview(true);
+    try {
+      await deleteReview(deleteReviewTargetId);
+      setReviews((prev) => prev.filter((r) => r.review_id !== deleteReviewTargetId));
+      // 등록 때와 대칭으로 평균 별점·리뷰 수를 되돌린다. 마지막 한 개를 지우면 평점은 null로 비운다.
+      if (target) {
+        setPost((prev) => {
+          if (!prev) return prev;
+          const newCount = Math.max(0, prev.review_count - 1);
+          const newRating =
+            newCount === 0 ? null : ((prev.rating ?? 0) * prev.review_count - target.rating) / newCount;
+          return { ...prev, review_count: newCount, rating: newRating };
+        });
+      }
+      setDeleteReviewTargetId(null);
+      toast("리뷰가 삭제되었습니다.");
+    } catch (err) {
+      if (isLoginRequiredError(err)) {
+        toast("로그인이 필요한 기능이에요. 로그인 후 다시 시도해주세요.");
+        navigate("/login", { replace: true, state: { from: location.pathname + location.search } });
+      } else {
+        toast(err instanceof ApiError ? err.message : "리뷰 삭제에 실패했어요.");
+      }
+    } finally {
+      setDeletingReview(false);
     }
   }
 
@@ -588,16 +632,30 @@ export default function CommunityDetail() {
                           </div>
                         </div>
                         <p className="text-sm text-foreground leading-relaxed mb-3">{review.content}</p>
-                        <button
-                          onClick={() => handleToggleLike(review.review_id)}
-                          disabled={likingIds.has(review.review_id)}
-                          className={`flex items-center gap-1.5 text-sm transition-colors disabled:opacity-60 ${
-                            review.is_liked ? "text-primary" : "text-muted-foreground hover:text-foreground"
-                          }`}
-                        >
-                          <ThumbsUp className={`w-3.5 h-3.5 ${review.is_liked ? "fill-current" : ""}`} />
-                          <span>도움이 됐어요 {review.like_count}</span>
-                        </button>
+                        <div className="flex items-center justify-between gap-2">
+                          <button
+                            onClick={() => handleToggleLike(review.review_id)}
+                            disabled={likingIds.has(review.review_id)}
+                            className={`flex items-center gap-1.5 text-sm transition-colors disabled:opacity-60 ${
+                              review.is_liked ? "text-primary" : "text-muted-foreground hover:text-foreground"
+                            }`}
+                          >
+                            <ThumbsUp className={`w-3.5 h-3.5 ${review.is_liked ? "fill-current" : ""}`} />
+                            <span>도움이 됐어요 {review.like_count}</span>
+                          </button>
+                          {/* 본인이 작성한 리뷰에만 삭제 버튼 노출(is_mine). 백엔드가 이 필드를 아직
+                              안 내려주면 undefined라 버튼도 뜨지 않는다. */}
+                          {review.is_mine && (
+                            <button
+                              onClick={() => setDeleteReviewTargetId(review.review_id)}
+                              className="flex items-center gap-1 text-sm text-muted-foreground hover:text-destructive transition-colors shrink-0"
+                              title="리뷰 삭제"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                              <span>삭제</span>
+                            </button>
+                          )}
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -765,6 +823,15 @@ export default function CommunityDetail() {
           </div>
         </div>
       )}
+
+      {/* 리뷰 삭제 확인 */}
+      <ConfirmDeleteModal
+        open={deleteReviewTargetId !== null}
+        title="이 리뷰를 삭제하시겠습니까?"
+        description="삭제한 리뷰는 복구할 수 없습니다."
+        onConfirm={handleConfirmDeleteReview}
+        onCancel={() => setDeleteReviewTargetId(null)}
+      />
 
       {/* 가져오기 완료 배너 */}
       {showImportModal && (

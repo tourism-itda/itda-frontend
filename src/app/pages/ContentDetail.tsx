@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { ArrowLeft, Bookmark, Loader2, MapPinOff } from "lucide-react";
 import { Button } from "../components/ui/button";
 import { StorySourceBadge } from "../components/StorySourceBadge";
+import { PlaceImage } from "../components/PlaceImage";
 import { ApiError, isLoginRequiredError } from "../lib/api";
 import { useContentDetail } from "../lib/useContentDetail";
 import { useContentPlaces } from "../lib/useContentPlaces";
@@ -155,8 +156,14 @@ export default function ContentDetail() {
         {/* 역사 스토리텔링 */}
         {/* story_sections(구조화된 절)이 비어 있어도 story_intro/story_body(원문 프롬프트 그대로의
             생성 텍스트)는 채워져 있는 콘텐츠가 있어, 그 경우 원문 텍스트를 대신 보여준다. */}
+        {/* 역사 이야기 — 이 앱의 핵심 콘텐츠라 다른 섹션보다 제목을 크게 두고 안내 문구로 부각한다. */}
         <div className="mb-10">
-          <h2 className="text-[16px] font-extrabold mb-4">역사 이야기</h2>
+          <div className="flex items-center gap-1.5 text-primary mb-1.5">
+            <span className="h-4 w-1 rounded-full bg-primary" />
+            <span className="text-xs font-bold tracking-wide">HISTORY</span>
+          </div>
+          <h2 className="text-[24px] font-black mb-1.5 tracking-[-0.02em]">역사 이야기</h2>
+          <p className="text-sm text-muted-foreground mb-4">작품 속 이야기를 실제 역사의 흐름으로 풀어드려요</p>
           {/* 본문이 있을 때만 출처를 보여준다("준비 중" 안내에는 출처가 의미 없다). */}
           {(data.story_sections.length > 0 || data.story_body) && (
             <StorySourceBadge source={data.story_source ?? null} />
@@ -234,22 +241,40 @@ export default function ContentDetail() {
             <p className="text-sm text-muted-foreground">관련 장소 정보를 준비 중이에요.</p>
           )}
           {places.status === "done" && relatedPlaces && relatedPlaces.length > 0 && (
-            <div className="flex flex-wrap gap-2">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
               {relatedPlaces.map((p) => {
                 const saved = bookmarkedIds.has(p.place_id);
                 return (
-                  <button
+                  <div
                     key={p.place_id}
-                    onClick={() => handleToggleBookmark(p.place_id)}
-                    disabled={pendingIds.has(p.place_id)}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm transition-colors disabled:opacity-60 ${
-                      saved ? "bg-primary/10 text-primary hover:bg-primary/20" : "bg-muted hover:bg-muted/70"
-                    }`}
+                    className="rounded-2xl border border-border bg-card overflow-hidden"
                   >
-                    <Bookmark className={`w-3.5 h-3.5 ${saved ? "fill-primary" : ""}`} />
-                    {p.name}
-                    {p.category !== "미분류" && ` · ${p.category}`}
-                  </button>
+                    <div className="relative aspect-[4/3] bg-muted">
+                      {/* image_url이 null이어도(place 도메인 준비 전) 분류별 기본 이미지로 대체된다. */}
+                      <PlaceImage
+                        src={p.image_url}
+                        alt={p.name}
+                        category={p.category}
+                        className="w-full h-full object-cover"
+                      />
+                      <button
+                        onClick={() => handleToggleBookmark(p.place_id)}
+                        disabled={pendingIds.has(p.place_id)}
+                        title={saved ? "북마크 해제" : "북마크"}
+                        className={`absolute top-2 right-2 w-9 h-9 rounded-full backdrop-blur-sm hanji-noise flex items-center justify-center transition-colors disabled:opacity-60 outline-none focus-visible:ring-2 focus-visible:ring-ivory ${
+                          saved ? "bg-primary text-primary-foreground" : "bg-navy/50 text-ivory hover:bg-navy/70"
+                        }`}
+                      >
+                        <Bookmark className={`w-4 h-4 ${saved ? "fill-current" : ""}`} />
+                      </button>
+                    </div>
+                    <div className="px-3 py-2.5">
+                      <p className="font-bold text-sm line-clamp-1">{p.name}</p>
+                      {p.category !== "미분류" && (
+                        <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">{p.category}</p>
+                      )}
+                    </div>
+                  </div>
                 );
               })}
             </div>

@@ -14,7 +14,7 @@ const MAX_CARD_TAGS = 3;
 
 function RouteCard({ post, onOpen }: { post: CommunityPostSummary; onOpen: () => void }) {
   return (
-    <button onClick={onOpen} className="group text-left bg-card rounded-[28px] border border-border shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 overflow-hidden">
+    <button onClick={onOpen} className="group text-left bg-card rounded-[24px] border border-border shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 overflow-hidden">
       {/* 썸네일 + 배지 오버레이 */}
       <div className="relative aspect-[4/3] overflow-hidden bg-muted">
         <PlaceImage
@@ -59,8 +59,8 @@ function RouteCard({ post, onOpen }: { post: CommunityPostSummary; onOpen: () =>
       </div>
 
       {/* 본문 */}
-      <div className="px-5 pt-5 pb-5">
-        <p className="font-heading text-[18px] font-black mb-3 line-clamp-2 leading-snug">{post.title}</p>
+      <div className="px-4 pt-4 pb-4">
+        <p className="font-heading text-[16px] font-black mb-2.5 line-clamp-2 leading-snug">{post.title}</p>
         <div className="flex items-center gap-2 mb-2">
           <img
             src={getProxiedImageUrl(getAvatarUrl(post.author_profile_url, post.author_nickname))}
@@ -118,7 +118,7 @@ export default function Community() {
             <PageTitle title="커뮤니티" />
           </div>
           <div className="flex items-center justify-between gap-4">
-            <div className="relative max-w-2xl flex-1">
+            <div className="relative max-w-3xl flex-1">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input
                 placeholder="작품 이름, 루트 제목, 작성자, 지역을 검색해보세요"
@@ -167,7 +167,7 @@ export default function Community() {
         )}
 
         {status === "done" && posts.length > 0 && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
             {posts.map((post) => (
               <RouteCard
                 key={post.itinerary_id}

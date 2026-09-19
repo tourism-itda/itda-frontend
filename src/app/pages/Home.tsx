@@ -69,7 +69,7 @@ export default function Home() {
               </p>
 
               {/* 검색바 (pill) */}
-              <div className="flex items-center gap-2 bg-card border border-border rounded-full shadow-sm h-[52px] p-1.5 lg:h-16 lg:p-2 max-w-2xl mb-4">
+              <div className="flex items-center gap-2 bg-card border border-border rounded-full shadow-sm h-[52px] p-1.5 lg:h-16 lg:p-2 max-w-3xl mb-4">
                 <div className="w-12 h-12 rounded-full bg-primary flex items-center justify-center shrink-0">
                   <Search className="w-5 h-5 text-white" />
                 </div>
@@ -95,7 +95,7 @@ export default function Home() {
             </div>
             <button
               onClick={() => navigate("/app/popular")}
-              className="text-sm text-primary font-bold hover:underline flex items-center gap-0.5 shrink-0"
+              className="text-base text-primary font-bold hover:underline flex items-center gap-0.5 shrink-0"
             >
               전체보기
               <ChevronRight className="w-4 h-4" />
@@ -103,7 +103,7 @@ export default function Home() {
           </div>
 
           {popular.status === "loading" && (
-            <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 lg:gap-5">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 lg:gap-5">
               {Array.from({ length: 6 }).map((_, i) => (
                 <div key={i}>
                   <Skeleton className="aspect-[3/4] rounded-sm mb-2" />
@@ -126,7 +126,7 @@ export default function Home() {
             </div>
           )}
           {popular.status === "done" && (popular.data?.data.length ?? 0) > 0 && (
-            <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 lg:gap-5">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 lg:gap-5">
               {popular.data!.data.map((item) => (
                 <ContentCard
                   key={item.content_id}

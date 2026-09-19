@@ -8,7 +8,8 @@ export function DesktopNav({ user }: { user: UserResponse | null }) {
     { to: "/app", label: "홈", end: true },
     { to: "/app/planner", label: "플래너" },
     { to: "/app/community", label: "커뮤니티" },
-    { to: "/app/mypage", label: "마이페이지" },
+    // 마이페이지는 로그인한 사용자에게만 노출한다.
+    ...(user ? [{ to: "/app/mypage", label: "마이페이지" }] : []),
   ];
 
   return (
