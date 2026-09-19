@@ -1,5 +1,6 @@
 import { apiFetch } from "./api";
 import { ContentPlaceListItem, getContentRelatedPlaces } from "./contents";
+import type { AnchorSource } from "./itineraryRecommend";
 
 /**
  * "하루 루트 만들기" 신규 흐름(권승훈 파트, 명세서 v4에 없는 신규 엔드포인트 — 팀 합의 필요 상태).
@@ -20,8 +21,17 @@ export const getContentPlaces = getContentRelatedPlaces;
 // 인증 불필요, DB 저장 안 함. spot_place_ids를 비우면(또는 생략하면) 자동추천.
 
 export type RoutePlaceType = "SPOT" | "RESTAURANT" | "CAFE";
-export type RouteSlotFilledBy = "USER" | "CURATED" | "SCORED" | "EMPTY";
+/**
+ * 이 칸의 장소가 어떻게 정해졌는지.
+ *
+ * USER·CURATED·SCORED 는 전부 **작품 관련 명소**(앵커)다. GENERAL 은 앵커가 모자란 칸을 메운
+ * 주변 일반 관광명소라, 작품과 연결된 곳이 아니므로 작품 관련 문구·배지를 붙이면 안 된다.
+ */
+export type RouteSlotFilledBy = "USER" | "CURATED" | "SCORED" | "GENERAL" | "EMPTY";
 export type PlaceSource = "TOUR_API" | "KAKAO";
+
+// 근거 등급은 recommend 응답과 같은 값이라 한 곳(itineraryRecommend.ts)에만 정의하고 여기서 다시 내보낸다.
+export type { AnchorSource };
 
 export interface RoutePlace {
   place_id: number;
@@ -51,6 +61,20 @@ export interface RouteSlot {
   segment_index?: number;
 }
 
+/**
+ * 작품 관련 명소로 채워진 칸인가.
+ *
+ * 하루 루트의 명소 3칸은 "작품 관련 1~2곳 + 주변 일반 1~2곳"으로 섞여 있다. 근거 배지는
+ * 이 함수가 true 인 칸에만 붙는다 — 모르는 filled_by 값이 오면 false 를 돌려주므로,
+ * 근거를 확인하지 못한 장소에 작품 배지가 붙는 일은 없다.
+ */
+export function isRelatedSpot(slot: RouteSlot): boolean {
+  return (
+    slot.slot_type === "SPOT" &&
+    (slot.filled_by === "USER" || slot.filled_by === "CURATED" || slot.filled_by === "SCORED")
+  );
+}
+
 export interface RouteSegment {
   segment_index: number;
   start_place_id: number;
@@ -71,6 +95,12 @@ export interface RoutePlanResult {
   region: string;
   spot_count: number;
   allowance_meters: number;
+  /**
+   * 이 루트의 명소를 어떤 근거로 얻었는지. 앵커가 0곳이면 이 엔드포인트는 404를 내므로
+   * (RoutePlanner: "이 작품과 연결된 명소가 없습니다") 성공 응답에 NONE이 실려 오지는 않는다.
+   * 그래도 타입에는 남겨 둔다 — recommend 응답과 같은 값이고, 배지 쪽에서 함께 다룬다.
+   */
+  anchor_source: AnchorSource;
   slots: RouteSlot[];
   segments: RouteSegment[];
 }

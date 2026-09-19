@@ -20,8 +20,10 @@ import { Button } from "../components/ui/button";
 import { ApiError, isLoginRequiredError } from "../lib/api";
 import { ItinerarySavePlace, saveItinerary } from "../lib/itineraryRecommend";
 import { htmlToText } from "../lib/text";
+import { AnchorSourceBadge } from "../components/AnchorSourceBadge";
 import { PlaceImage } from "../components/PlaceImage";
 import {
+  AnchorSource,
   ContentPlaceListItem,
   RouteCandidate,
   RouteFillableType,
@@ -33,6 +35,7 @@ import {
   getContentPlaces,
   getRouteCandidates,
   importPlaceFromCandidate,
+  isRelatedSpot,
 } from "../lib/routeBuilder";
 
 /**
@@ -65,10 +68,13 @@ const slotTypeLabelFallback: Record<string, string> = {
 
 function RouteSlotCard({
   slot,
+  anchorSource,
   onOpenCandidates,
   onClear,
 }: {
   slot: RouteSlot;
+  /** 이 루트의 작품 관련 명소가 어떤 근거로 뽑혔는지. 근거 배지의 문구를 가른다. */
+  anchorSource: AnchorSource;
   onOpenCandidates: (slot: RouteSlot) => void;
   onClear: (slot: RouteSlot) => void;
 }) {
@@ -135,9 +141,14 @@ function RouteSlotCard({
           className="w-20 h-20 rounded-lg object-cover shrink-0"
         />
         <div className="flex-1 min-w-0">
-          <span className="inline-block text-xs px-2 py-0.5 rounded-full mb-1.5 bg-muted text-foreground">
-            {place.category}
-          </span>
+          {/* 분류 옆에 근거 배지를 붙인다 — 같은 루트의 명소 3곳 중 어느 곳이 작품과 연결된
+              곳인지를 장소마다 표시한다. 주변 일반 명소(GENERAL)와 식당·카페에는 붙지 않는다. */}
+          <div className="flex flex-wrap items-center gap-1.5 mb-1.5">
+            <span className="inline-block text-xs px-2 py-0.5 rounded-full bg-muted text-foreground">
+              {place.category}
+            </span>
+            {isRelatedSpot(slot) && <AnchorSourceBadge source={anchorSource} />}
+          </div>
           <h3 className="font-medium mb-1 leading-tight">{place.name}</h3>
           <p className="text-sm text-muted-foreground line-clamp-1 mb-1">{place.address}</p>
           <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted-foreground">
@@ -739,6 +750,13 @@ export default function RouteBuilder() {
             <span>허용거리 {(route.allowance_meters / 1000).toFixed(1)}km</span>
           </div>
 
+          {/* 인물 연고지는 촬영지가 아니다. 배지만으로 부족한 설명을 한 줄 덧붙인다. */}
+          {route.anchor_source === "PERSON_CHAIN" && (
+            <p className="text-xs text-muted-foreground bg-muted/50 rounded-lg px-3 py-2">
+              「작품 속 인물과 연결된 곳」은 작품에 나오는 실존 인물의 연고지예요. 실제 촬영지가 아닐 수 있어요.
+            </p>
+          )}
+
           {hasPartialCoverage && (
             <div className="flex items-start gap-2 rounded-xl bg-accent/10 text-accent text-sm p-3">
               <TriangleAlert className="w-4 h-4 shrink-0 mt-0.5" />
@@ -751,6 +769,7 @@ export default function RouteBuilder() {
               <RouteSlotCard
                 key={slot.visit_order}
                 slot={slot}
+                anchorSource={route.anchor_source}
                 onOpenCandidates={openCandidates}
                 onClear={handleClearSlot}
               />
