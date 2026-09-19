@@ -703,7 +703,7 @@ export default function CommunityDetail() {
                 </div>
                 <div className="flex items-center gap-3 py-3">
                   <Clock className="w-4 h-4 text-muted-foreground shrink-0" />
-                  <p className="text-sm">{stopDetail?.hours ?? selectedStop.hours}</p>
+                  <p className="text-sm whitespace-pre-line">{htmlToText(stopDetail?.hours ?? selectedStop.hours)}</p>
                 </div>
               </div>
 

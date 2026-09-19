@@ -92,7 +92,7 @@ export function PlaceSheet({ place, onClose }: PlaceSheetProps) {
   }
 
   const address = detail.data?.address ?? lookup.data?.address ?? place.address;
-  const hours = detail.data?.opening_hours ?? lookup.data?.hours ?? place.hours;
+  const hours = htmlToText(detail.data?.opening_hours ?? lookup.data?.hours ?? place.hours);
   const image = primaryImage?.image_url ?? lookup.data?.image ?? place.image;
   const description = htmlToText(
     detail.data?.description ?? lookup.data?.description ?? place.description
@@ -201,7 +201,7 @@ export function PlaceSheet({ place, onClose }: PlaceSheetProps) {
             </div>
             <div className="flex items-center gap-3 py-3">
               <Clock className="w-4 h-4 text-muted-foreground shrink-0" />
-              <p className="text-sm">{hours}</p>
+              <p className="text-sm whitespace-pre-line">{hours}</p>
             </div>
           </div>
 

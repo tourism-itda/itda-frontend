@@ -19,6 +19,7 @@ import {
 import { Button } from "../components/ui/button";
 import { ApiError, isLoginRequiredError } from "../lib/api";
 import { ItinerarySavePlace, saveItinerary } from "../lib/itineraryRecommend";
+import { htmlToText } from "../lib/text";
 import { PlaceImage } from "../components/PlaceImage";
 import {
   ContentPlaceListItem,
@@ -142,7 +143,7 @@ function RouteSlotCard({
             {place.opening_hours && (
               <span className="flex items-center gap-1">
                 <Clock className="w-3 h-3" />
-                {place.opening_hours}
+                {htmlToText(place.opening_hours)}
               </span>
             )}
             {place.night_open && (

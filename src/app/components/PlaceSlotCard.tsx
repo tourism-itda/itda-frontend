@@ -170,7 +170,7 @@ export function PlaceSlotCard({
             <div className="flex flex-wrap gap-x-3 gap-y-1 text-sm text-muted-foreground">
               <span className="flex items-center gap-1">
                 <Clock className="w-3 h-3" />
-                {place.opening_hours}
+                {htmlToText(place.opening_hours)}
               </span>
             </div>
           )}

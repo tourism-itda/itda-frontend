@@ -69,6 +69,6 @@ export async function resolvePlaceByName(
     description: htmlToText(common.overview) || undefined,
     mapX: common.mapx || undefined,
     mapY: common.mapy || undefined,
-    hours: intro ? pickHours(intro) : undefined,
+    hours: intro ? htmlToText(pickHours(intro)) || undefined : undefined,
   };
 }
