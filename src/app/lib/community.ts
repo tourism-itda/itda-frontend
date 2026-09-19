@@ -109,6 +109,7 @@ export function getCommunityPostDetail(itineraryId: number | string) {
 }
 
 export interface ShareItineraryPayload {
+  description?: string;
   region?: string;
   tags?: string[];
 }

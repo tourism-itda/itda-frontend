@@ -407,9 +407,11 @@ export default function CommunityDetail() {
             {/* 루트 탭 */}
             {activeTab === "route" && (
               <div className="space-y-1">
-                <p className="text-[15px] leading-relaxed text-muted-foreground mb-6">
-                  {post.description || "아직 등록된 소개가 없습니다."}
-                </p>
+                {post.description?.trim() && (
+                  <p className="text-[15px] leading-relaxed text-muted-foreground mb-6 whitespace-pre-line">
+                    {post.description}
+                  </p>
+                )}
                 {dayGroups.map((dayStops, dayIdx) => (
                   <div key={dayIdx} className={dayIdx > 0 ? "mt-6" : ""}>
                     {dayGroups.length > 1 && (

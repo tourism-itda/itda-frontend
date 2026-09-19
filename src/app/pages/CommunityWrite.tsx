@@ -26,6 +26,7 @@ export default function CommunityWrite() {
   const [status, setStatus] = useState<Status>("loading");
   const [itineraries, setItineraries] = useState<ItinerarySummary[]>([]);
   const [selectedId, setSelectedId] = useState<number | null>(null);
+  const [description, setDescription] = useState("");
   const [region, setRegion] = useState("");
   const [tags, setTags] = useState<string[]>([]);
   const [tagInput, setTagInput] = useState("");
@@ -57,6 +58,7 @@ export default function CommunityWrite() {
 
   function handleSelect(item: ItinerarySummary) {
     setSelectedId(item.itinerary_id);
+    setDescription("");
     setRegion(item.region ?? "");
     setTags([]);
     setTagInput("");
@@ -99,6 +101,7 @@ export default function CommunityWrite() {
 
     try {
       const result = await shareItinerary(selectedId, {
+        description: description.trim() || undefined,
         region: region.trim() || undefined,
         tags: tags.length > 0 ? tags : undefined,
       });
@@ -217,6 +220,18 @@ export default function CommunityWrite() {
 
             {selectedItem && (
               <div className="space-y-5">
+                <div>
+                  <p className="text-xs text-muted-foreground mb-2">소개</p>
+                  <textarea
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    rows={4}
+                    placeholder="이 루트를 소개해주세요 (예: 드라마 속 궁궐을 따라 걷는 하루 코스)"
+                    className="w-full px-3 py-3 rounded-xl border border-border bg-input-background text-sm leading-relaxed outline-none resize-none placeholder:text-muted-foreground"
+                  />
+                  <p className="text-xs text-muted-foreground/60 mt-1.5">비워두면 기존 소개가 그대로 유지됩니다</p>
+                </div>
+
                 <div>
                   <p className="text-xs text-muted-foreground mb-2">지역</p>
                   <div className="flex items-center gap-2 h-12 px-3 rounded-xl border border-border bg-input-background">
