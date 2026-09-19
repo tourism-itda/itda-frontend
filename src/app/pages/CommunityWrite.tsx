@@ -63,9 +63,24 @@ export default function CommunityWrite() {
   }
 
   function addTag(raw: string) {
-    const value = raw.trim();
-    if (!value || tags.includes(value)) return;
-    setTags((prev) => [...prev, value]);
+    // 화면에서 "#"를 붙여 보여주므로 사용자가 직접 친 "#"는 떼고 저장한다.
+    const value = raw.trim().replace(/^#+/, "");
+    if (!value) return;
+    setTags((prev) => (prev.includes(value) ? prev : [...prev, value]));
+  }
+
+  // 공백(스페이스)이 들어오면 그 앞까지를 태그로 확정한다 — 태그 하나에는 공백이 들어갈 수 없다.
+  // keydown이 아니라 change에서 처리해야 한글 IME 조합 중에도 마지막 글자가 중복/누락되지 않고,
+  // 붙여넣기로 여러 단어가 한 번에 들어와도 공백 단위로 나눠 각각 태그가 된다.
+  function handleTagInputChange(value: string) {
+    if (!/\s/.test(value)) {
+      setTagInput(value);
+      return;
+    }
+    const parts = value.split(/\s+/);
+    const rest = parts.pop() ?? "";
+    parts.forEach(addTag);
+    setTagInput(rest);
   }
 
   function handleTagKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
@@ -234,13 +249,13 @@ export default function CommunityWrite() {
                     ))}
                     <input
                       value={tagInput}
-                      onChange={(e) => setTagInput(e.target.value)}
+                      onChange={(e) => handleTagInputChange(e.target.value)}
                       onKeyDown={handleTagKeyDown}
                       onBlur={() => {
                         addTag(tagInput);
                         setTagInput("");
                       }}
-                      placeholder={tags.length === 0 ? "태그 입력 후 Enter (예: 사극, 궁궐)" : "추가"}
+                      placeholder={tags.length === 0 ? "태그 입력 후 스페이스 또는 Enter (예: 사극 궁궐)" : "추가"}
                       className="flex-1 min-w-[80px] bg-transparent text-sm outline-none placeholder:text-muted-foreground"
                     />
                   </div>

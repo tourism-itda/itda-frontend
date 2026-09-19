@@ -303,9 +303,13 @@ export default function CommunityDetail() {
         </button>
         <div className="absolute bottom-5 lg:bottom-10 left-5 right-5 lg:left-0 lg:right-0">
           <div className="lg:max-w-[1280px] lg:mx-auto lg:px-8">
-            <div className="flex items-center gap-1.5 mb-1">
+            {/* 사진 위에서도 읽히도록 목록 카드의 지역/평점 배지와 같은 어두운 반투명 배경 + 흰 글자 */}
+            <div className="flex flex-wrap items-center gap-1.5 mb-2">
               {post.tags.map((t) => (
-                <span key={t} className="text-xs font-bold text-ivory/70 bg-ivory/15 rounded-full px-2 py-0.5">
+                <span
+                  key={t}
+                  className="text-xs font-bold text-white bg-neutral-900/70 backdrop-blur-sm rounded-full px-2.5 py-1"
+                >
                   #{t}
                 </span>
               ))}

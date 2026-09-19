@@ -9,6 +9,9 @@ import { PlaceImage } from "../components/PlaceImage";
 
 type Status = "loading" | "done" | "error";
 
+// 카드 높이가 들쭉날쭉해지지 않도록 목록에서는 태그를 이만큼만 보여주고 나머지는 "+N"으로 줄인다.
+const MAX_CARD_TAGS = 3;
+
 function RouteCard({ post, onOpen }: { post: CommunityPostSummary; onOpen: () => void }) {
   return (
     <button onClick={onOpen} className="group text-left bg-card rounded-[28px] border border-border shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 overflow-hidden">
@@ -50,6 +53,20 @@ function RouteCard({ post, onOpen }: { post: CommunityPostSummary; onOpen: () =>
           <span className="text-muted-foreground/40">·</span>
           <span>리뷰 {post.review_count}개</span>
         </div>
+        {post.tags.length > 0 && (
+          <div className="flex flex-wrap gap-1.5 mt-3">
+            {post.tags.slice(0, MAX_CARD_TAGS).map((t) => (
+              <span key={t} className="text-xs font-medium text-primary bg-primary/10 rounded-full px-2.5 py-1">
+                #{t}
+              </span>
+            ))}
+            {post.tags.length > MAX_CARD_TAGS && (
+              <span className="text-xs font-medium text-muted-foreground px-1 py-1">
+                +{post.tags.length - MAX_CARD_TAGS}
+              </span>
+            )}
+          </div>
+        )}
       </div>
     </button>
   );
