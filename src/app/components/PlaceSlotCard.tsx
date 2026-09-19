@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { Bookmark, Clock, Info, Loader2, Navigation, Shuffle } from "lucide-react";
 import { ApiError, isLoginRequiredError } from "../lib/api";
 import { createBookmark, deleteBookmark, findBookmarkId } from "../lib/bookmarksApi";
+import { htmlToText } from "../lib/text";
 import { PlaceImage } from "./PlaceImage";
 
 /**
@@ -164,7 +165,7 @@ export function PlaceSlotCard({
             </span>
           )}
           <h3 className="font-medium mb-1 leading-tight">{place.name ?? "이름 미상"}</h3>
-          <p className="text-sm text-muted-foreground line-clamp-2 mb-2">{place.description}</p>
+          <p className="text-sm text-muted-foreground line-clamp-2 mb-2">{htmlToText(place.description)}</p>
           {place.opening_hours && (
             <div className="flex flex-wrap gap-x-3 gap-y-1 text-sm text-muted-foreground">
               <span className="flex items-center gap-1">

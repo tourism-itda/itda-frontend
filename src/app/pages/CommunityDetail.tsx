@@ -18,6 +18,7 @@ import { toast } from "sonner";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { usePlaceLookup } from "../lib/usePlaceLookup";
+import { htmlToText } from "../lib/text";
 import { ApiError, isLoginRequiredError } from "../lib/api";
 import { CommunityPostDetail, CommunityStop, getCommunityPostDetail, importItinerary } from "../lib/community";
 import { Review, createReview, getReviews, toggleReviewLike } from "../lib/reviews";
@@ -52,7 +53,7 @@ function toRouteStops(stops: CommunityStop[]): RouteStop[] {
     name: s.name ?? "이름 미상",
     category: s.category ?? "",
     image: s.image_url ?? "",
-    description: s.description ?? "",
+    description: htmlToText(s.description),
     address: s.address ?? "",
     hours: s.opening_hours ?? "",
     lat: s.latitude,
@@ -680,7 +681,7 @@ export default function CommunityDetail() {
               <div>
                 <p className="text-sm text-muted-foreground mb-0.5">{selectedStop.category}</p>
                 <h3 className="text-lg font-semibold">{selectedStop.name}</h3>
-                <p className="text-sm text-muted-foreground mt-1">{stopDetail?.description ?? selectedStop.description}</p>
+                <p className="text-sm text-muted-foreground mt-1">{htmlToText(stopDetail?.description ?? selectedStop.description)}</p>
               </div>
 
               {stopLookupStatus === "loading" && (

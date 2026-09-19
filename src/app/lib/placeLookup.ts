@@ -4,6 +4,7 @@ import {
   getPlaceDetailIntro,
   searchPlacesByKeyword,
 } from "./places";
+import { htmlToText } from "./text";
 
 export interface ResolvedPlaceDetail {
   contentId: string;
@@ -65,7 +66,7 @@ export async function resolvePlaceByName(
     contentId: hit.contentid,
     address: [common.addr1, common.addr2].filter(Boolean).join(" ") || undefined,
     image: common.firstimage || common.firstimage2 || undefined,
-    description: common.overview || undefined,
+    description: htmlToText(common.overview) || undefined,
     mapX: common.mapx || undefined,
     mapY: common.mapy || undefined,
     hours: intro ? pickHours(intro) : undefined,

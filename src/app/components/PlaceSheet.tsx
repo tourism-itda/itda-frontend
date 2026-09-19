@@ -6,6 +6,7 @@ import { ApiError, isLoginRequiredError } from "../lib/api";
 import { createBookmark, deleteBookmark, findBookmarkId } from "../lib/bookmarksApi";
 import { usePlaceLookup } from "../lib/usePlaceLookup";
 import { usePlaceDetail } from "../lib/usePlaceDetail";
+import { htmlToText } from "../lib/text";
 import { MapView } from "./MapView";
 
 export interface PlaceSheetData {
@@ -93,7 +94,9 @@ export function PlaceSheet({ place, onClose }: PlaceSheetProps) {
   const address = detail.data?.address ?? lookup.data?.address ?? place.address;
   const hours = detail.data?.opening_hours ?? lookup.data?.hours ?? place.hours;
   const image = primaryImage?.image_url ?? lookup.data?.image ?? place.image;
-  const description = detail.data?.description ?? lookup.data?.description ?? place.description;
+  const description = htmlToText(
+    detail.data?.description ?? lookup.data?.description ?? place.description
+  );
   const category = detail.data?.category ?? place.category;
   const mapHref = detail.data
     ? `https://maps.google.com/?q=${detail.data.latitude},${detail.data.longitude}`
@@ -176,7 +179,7 @@ export function PlaceSheet({ place, onClose }: PlaceSheetProps) {
           <div>
             <p className="text-xs text-muted-foreground mb-0.5">{category}</p>
             <h3 className="text-lg font-semibold">{place.name}</h3>
-            <p className="text-sm text-muted-foreground mt-1">{description}</p>
+            <p className="text-sm text-muted-foreground mt-1 whitespace-pre-line">{description}</p>
           </div>
 
           {status === "loading" && (

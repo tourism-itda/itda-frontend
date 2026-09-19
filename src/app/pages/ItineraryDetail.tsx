@@ -10,6 +10,7 @@ import { PlaceSlotCard } from "../components/PlaceSlotCard";
 import { ApiError, isLoginRequiredError } from "../lib/api";
 import { AlternativePlace, getAlternativePlace } from "../lib/itineraryRecommend";
 import { splitIntoPeriods } from "../lib/periodSplit";
+import { htmlToText } from "../lib/text";
 import {
   ItineraryDetail as ItineraryDetailData,
   ItineraryDetailPlace,
@@ -675,7 +676,7 @@ export default function ItineraryDetail() {
                           {candidate.category}
                         </span>
                         <p className="font-medium text-sm leading-tight line-clamp-1">{candidate.name}</p>
-                        <p className="text-sm text-muted-foreground line-clamp-1">{candidate.description}</p>
+                        <p className="text-sm text-muted-foreground line-clamp-1">{htmlToText(candidate.description)}</p>
                       </div>
                       {applyingSwapPlaceId === candidate.place_id && (
                         <Loader2 className="w-4 h-4 animate-spin shrink-0" />
