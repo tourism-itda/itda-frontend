@@ -474,8 +474,8 @@ export default function CommunityDetail() {
                       {splitIntoPeriods(dayStops).map((period, periodIdx) => (
                         <div key={periodIdx} className="space-y-1">
                           {period.label && (
-                            <div className="flex items-center gap-2 pt-1 pb-2">
-                              <span className="text-xs font-medium text-muted-foreground shrink-0">{period.label}</span>
+                            <div className="flex items-center gap-2.5 pt-2 pb-3">
+                              <span className="text-[15px] font-bold text-foreground shrink-0">{period.label}</span>
                               <div className="flex-1 h-px bg-border/60" />
                             </div>
                           )}
@@ -483,18 +483,18 @@ export default function CommunityDetail() {
                             <div key={stop.order}>
                               <button
                                 onClick={() => setSelectedStop(stop)}
-                                className="w-full bg-card border border-border rounded-[24px] overflow-hidden flex gap-4 p-5 text-left hover:bg-muted/30 hover:shadow-sm transition-all"
+                                className="w-full bg-card border border-border rounded-[24px] overflow-hidden flex gap-5 p-6 text-left hover:bg-muted/30 hover:shadow-sm transition-all"
                               >
                                 <PlaceImage
                                   src={stop.image}
                                   alt={stop.name}
                                   category={stop.category}
-                                  className="w-20 h-20 rounded-2xl object-cover shrink-0"
+                                  className="w-24 h-24 rounded-2xl object-cover shrink-0"
                                 />
-                                <div className="flex-1 min-w-0">
+                                <div className="flex-1 min-w-0 py-0.5">
                                   <span className="text-sm text-muted-foreground">{stop.category}</span>
-                                  <p className="font-black text-[16px] mt-1 mb-1.5">{stop.name}</p>
-                                  <p className="text-sm text-muted-foreground line-clamp-2">{stop.description}</p>
+                                  <p className="font-black text-[17px] mt-1.5 mb-2">{stop.name}</p>
+                                  <p className="text-sm text-muted-foreground line-clamp-2 leading-relaxed">{stop.description}</p>
                                 </div>
                                 <ChevronRight className="w-4 h-4 text-muted-foreground shrink-0 self-center" />
                               </button>

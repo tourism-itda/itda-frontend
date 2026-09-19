@@ -1,5 +1,4 @@
 import { Link, useLocation } from "react-router";
-import { LogOut } from "lucide-react";
 import { logout } from "../lib/auth";
 import type { UserResponse } from "../lib/auth";
 
@@ -30,21 +29,25 @@ export function AuthActions({ user, className = "" }: AuthActionsProps) {
     <div className={`flex items-center gap-3 text-sm ${className}`}>
       {user ? (
         <>
-          <Link
-            to="/app/mypage"
-            className="max-w-[120px] sm:max-w-[160px] truncate font-medium text-foreground hover:text-primary transition-colors"
-            title="마이페이지"
+          <span
+            className="max-w-[120px] sm:max-w-[160px] truncate font-medium text-foreground"
+            title={user.nickname}
           >
             {user.nickname}님
+          </span>
+          <Link
+            to="/app/mypage"
+            className="shrink-0 text-muted-foreground hover:text-foreground transition-colors"
+          >
+            마이페이지
           </Link>
+          {/* button은 base 스타일(text-base/800)이 걸려 링크보다 커 보이므로 text-sm/font-normal로 맞춘다. */}
           <button
             type="button"
             onClick={handleLogout}
-            className="flex items-center gap-1 text-muted-foreground hover:text-foreground transition-colors shrink-0"
-            title="로그아웃"
+            className="shrink-0 text-sm font-normal text-muted-foreground hover:text-foreground transition-colors"
           >
-            <LogOut className="w-4 h-4" />
-            <span className="hidden sm:inline">로그아웃</span>
+            로그아웃
           </button>
         </>
       ) : (
