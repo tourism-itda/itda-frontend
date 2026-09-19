@@ -19,9 +19,9 @@ export function CommunityContentBox({ title, thumbnailUrl, caption, onClick }: C
     <button
       type="button"
       onClick={onClick}
-      className="w-full flex items-center gap-2.5 text-left rounded-xl border border-border bg-muted/40 hover:bg-muted p-2 transition-colors"
+      className="w-full flex items-center gap-3.5 text-left rounded-2xl border border-border bg-muted/40 hover:bg-muted p-3 transition-colors"
     >
-      <div className="w-9 h-12 rounded-md overflow-hidden bg-muted shrink-0">
+      <div className="w-14 h-20 rounded-lg overflow-hidden bg-muted shrink-0">
         {thumbnailUrl && (
           <img
             src={getProxiedImageUrl(thumbnailUrl)}
@@ -34,8 +34,8 @@ export function CommunityContentBox({ title, thumbnailUrl, caption, onClick }: C
         )}
       </div>
       <div className="flex-1 min-w-0">
-        <p className="font-heading text-[13px] font-black line-clamp-1">{title}</p>
-        <p className="text-[11px] text-muted-foreground">{caption}</p>
+        <p className="font-heading text-[16px] font-black line-clamp-2 leading-snug mb-0.5">{title}</p>
+        <p className="text-[13px] text-muted-foreground">{caption}</p>
       </div>
       <ChevronRight className="w-4 h-4 text-muted-foreground shrink-0" />
     </button>
