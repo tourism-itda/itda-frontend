@@ -214,10 +214,11 @@ export default function Planner() {
 
                   {/* 콘텐츠명 + 제목 오버레이 */}
                   <div className="absolute bottom-3 left-3 right-3">
+                    {/* 영화 제목은 부제로 작고 흐리게, 루트 제목이 먼저 눈에 들어오도록 크고 굵게 둔다. */}
                     {item.content_title && (
-                      <p className="text-ivory/90 text-sm mb-0.5">{item.content_title}</p>
+                      <p className="text-ivory/70 text-xs mb-1 line-clamp-1">{item.content_title}</p>
                     )}
-                    <p className="font-heading text-ivory text-sm leading-snug line-clamp-2">{item.title}</p>
+                    <p className="font-heading text-ivory text-lg font-black leading-snug line-clamp-2">{item.title}</p>
                   </div>
                 </div>
 

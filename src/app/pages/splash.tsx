@@ -16,7 +16,7 @@ export default function Splash() {
 
     const timer = setTimeout(() => {
       if (!cancelled) navigate("/app", { replace: true });
-    }, 2000);
+    }, 1000);
 
     return () => {
       cancelled = true;

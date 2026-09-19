@@ -1,12 +1,14 @@
 import { NavLink } from "react-router";
 import { Home, Calendar, Users, User } from "lucide-react";
+import type { UserResponse } from "../lib/auth";
 
-export function MobileNav() {
+export function MobileNav({ user }: { user: UserResponse | null }) {
   const navItems = [
     { to: "/app", label: "홈", icon: Home, end: true },
     { to: "/app/planner", label: "플래너", icon: Calendar },
     { to: "/app/community", label: "커뮤니티", icon: Users },
-    { to: "/app/mypage", label: "마이페이지", icon: User },
+    // 마이페이지는 로그인한 사용자에게만 노출한다.
+    ...(user ? [{ to: "/app/mypage", label: "마이페이지", icon: User }] : []),
   ];
 
   return (

@@ -40,11 +40,11 @@ export function ContentCard({ content }: ContentCardProps) {
         )}
       </div>
       <div className="px-3 pt-3 pb-3">
-        <p className="font-heading text-[14px] font-black mb-1 line-clamp-1">{content.title}</p>
-        {content.era && <p className="text-xs text-muted-foreground mb-2">{content.era}</p>}
-        <span className="inline-flex items-center gap-0.5 text-xs text-primary font-bold group-hover:gap-1.5 transition-all">
+        <p className="font-heading text-[16px] font-black mb-1 line-clamp-1">{content.title}</p>
+        {content.era && <p className="text-sm text-muted-foreground mb-2">{content.era}</p>}
+        <span className="inline-flex items-center gap-0.5 text-sm text-primary font-bold group-hover:gap-1.5 transition-all">
           상세 정보 보기
-          <ChevronRight className="w-3 h-3" />
+          <ChevronRight className="w-3.5 h-3.5" />
         </span>
       </div>
     </button>
