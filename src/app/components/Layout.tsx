@@ -2,11 +2,14 @@ import { useEffect } from "react";
 import { Outlet, useLocation } from "react-router";
 import { MobileNav } from "./MobileNav";
 import { DesktopNav } from "./DesktopNav";
+import { MobileHeader } from "./MobileHeader";
 import { getCurrentUser, getMyProfile } from "../lib/auth";
 import { applyDarkMode } from "../lib/theme";
+import { useCurrentUser } from "../lib/useCurrentUser";
 
 export default function Layout() {
   const location = useLocation();
+  const user = useCurrentUser();
 
   // 로그인 상태면 서버에 저장된 다크 모드 설정으로 맞춘다. 실패해도 캐시된 설정을 그대로 두면 되므로
   // 조용히 무시한다(비로그인/네트워크 오류로 화면이 바뀌면 안 된다).
@@ -34,7 +37,12 @@ export default function Layout() {
     <div className="min-h-screen bg-background">
       {/* 데스크탑 상단 내비게이션 (≥1025px) */}
       <header className="hidden lg:block sticky top-0 h-16 border-b border-border bg-background/95 backdrop-blur-sm z-50 hanji-noise">
-        <DesktopNav />
+        <DesktopNav user={user} />
+      </header>
+
+      {/* 모바일 상단 바 (≤1024px) — 스크롤과 함께 올라간다(페이지별 sticky 서브헤더와 겹치지 않게 고정하지 않음) */}
+      <header className="lg:hidden border-b border-border bg-background hanji-noise">
+        <MobileHeader user={user} />
       </header>
 
       {/* 메인 콘텐츠 영역 */}
