@@ -1,43 +1,20 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
-import { Loader2, Search, Star, PenLine, MapPinned, X } from "lucide-react";
+import { Loader2, Search, Star, PenLine, MapPinned } from "lucide-react";
 import { Input } from "../components/ui/input";
 import { PageTitle } from "../components/PageTitle";
 import { CommunityPostSummary, getCommunityPosts } from "../lib/community";
 import { getAvatarUrl, getProxiedImageUrl } from "../lib/imageProxy";
 import { PlaceImage } from "../components/PlaceImage";
-import { CommunityContentBox } from "../components/CommunityContentBox";
 
 type Status = "loading" | "done" | "error";
 
 // 카드 높이가 들쭉날쭉해지지 않도록 목록에서는 태그를 이만큼만 보여주고 나머지는 "+N"으로 줄인다.
 const MAX_CARD_TAGS = 3;
 
-function RouteCard({
-  post,
-  onOpen,
-  onFilterContent,
-}: {
-  post: CommunityPostSummary;
-  onOpen: () => void;
-  onFilterContent: (contentId: number, title: string) => void;
-}) {
-  // 카드 안에 작품 박스(<button>)가 들어가서 바깥을 <button>으로 두면 button 중첩이 된다.
-  // 그래서 div role="button"으로 두고 키보드(Enter/Space)를 직접 처리한다.
+function RouteCard({ post, onOpen }: { post: CommunityPostSummary; onOpen: () => void }) {
   return (
-    <div
-      role="button"
-      tabIndex={0}
-      onClick={onOpen}
-      onKeyDown={(e) => {
-        if (e.target !== e.currentTarget) return; // 안쪽 버튼의 키 입력은 그 버튼이 처리한다
-        if (e.key === "Enter" || e.key === " ") {
-          e.preventDefault();
-          onOpen();
-        }
-      }}
-      className="group text-left bg-card rounded-[28px] border border-border shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 overflow-hidden cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-primary"
-    >
+    <button onClick={onOpen} className="group text-left bg-card rounded-[28px] border border-border shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 overflow-hidden">
       {/* 썸네일 + 배지 오버레이 */}
       <div className="relative aspect-[4/3] overflow-hidden bg-muted">
         <PlaceImage
@@ -97,22 +74,8 @@ function RouteCard({
           <span className="text-muted-foreground/40">·</span>
           <span>리뷰 {post.review_count}개</span>
         </div>
-        {/* 어떤 작품으로 만든 루트인지 — 작품 없이 만든 루트는 박스를 그리지 않는다. */}
-        {post.content_id != null && post.content_title && (
-          <div className="mt-3">
-            <CommunityContentBox
-              title={post.content_title}
-              thumbnailUrl={post.content_thumbnail_url}
-              caption="이 작품 루트만 보기"
-              onClick={(e) => {
-                e.stopPropagation(); // 카드 상세 이동으로 번지지 않게
-                onFilterContent(post.content_id!, post.content_title!);
-              }}
-            />
-          </div>
-        )}
       </div>
-    </div>
+    </button>
   );
 }
 
@@ -121,8 +84,6 @@ export default function Community() {
   const [searchQuery, setSearchQuery] = useState("");
   const [status, setStatus] = useState<Status>("loading");
   const [posts, setPosts] = useState<CommunityPostSummary[]>([]);
-  // 카드의 작품 박스를 눌러 "이 작품으로 만든 루트만" 보는 중일 때만 채워진다.
-  const [contentFilter, setContentFilter] = useState<{ id: number; title: string } | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -130,7 +91,7 @@ export default function Community() {
 
     // 타이핑마다 바로 요청하지 않도록 짧게 디바운스한다.
     const timer = setTimeout(() => {
-      getCommunityPosts({ q: searchQuery.trim() || undefined, content_id: contentFilter?.id })
+      getCommunityPosts({ q: searchQuery.trim() || undefined })
         .then((result) => {
           if (cancelled) return;
           setPosts(result);
@@ -146,7 +107,7 @@ export default function Community() {
       cancelled = true;
       clearTimeout(timer);
     };
-  }, [searchQuery, contentFilter]);
+  }, [searchQuery]);
 
   return (
     <div className="min-h-screen">
@@ -178,21 +139,6 @@ export default function Community() {
       </div>
 
       <div className="max-w-[1280px] mx-auto px-4 lg:px-8 py-8 space-y-12">
-        {contentFilter && (
-          <div className="-mb-6">
-            <button
-              onClick={() => setContentFilter(null)}
-              className="inline-flex items-center gap-2 h-9 pl-4 pr-3 rounded-full border border-border bg-card text-sm font-bold hover:bg-muted transition-colors"
-            >
-              <span className="line-clamp-1">‘{contentFilter.title}’ 루트만 보는 중</span>
-              <span className="flex items-center gap-0.5 text-xs text-muted-foreground shrink-0">
-                전체 보기
-                <X className="w-3.5 h-3.5" />
-              </span>
-            </button>
-          </div>
-        )}
-
         {status === "loading" && (
           <div className="flex flex-col items-center justify-center gap-3 py-24 text-muted-foreground">
             <Loader2 className="w-6 h-6 animate-spin" />
@@ -227,7 +173,6 @@ export default function Community() {
                 key={post.itinerary_id}
                 post={post}
                 onOpen={() => navigate(`/app/community/${post.itinerary_id}`)}
-                onFilterContent={(id, title) => setContentFilter({ id, title })}
               />
             ))}
           </div>
