@@ -20,6 +20,7 @@ import { Input } from "../components/ui/input";
 import { usePlaceLookup } from "../lib/usePlaceLookup";
 import { htmlToText } from "../lib/text";
 import { splitIntoPeriods } from "../lib/periodSplit";
+import { CommunityContentBox } from "../components/CommunityContentBox";
 import { ApiError, isLoginRequiredError } from "../lib/api";
 import { CommunityPostDetail, CommunityStop, getCommunityPostDetail, importItinerary } from "../lib/community";
 import { Review, createReview, getReviews, toggleReviewLike } from "../lib/reviews";
@@ -372,6 +373,18 @@ export default function CommunityDetail() {
                 </div>
               </div>
             </div>
+
+            {/* 어떤 작품으로 만든 루트인지 — 작품 없이 만든 루트는 박스를 그리지 않는다. */}
+            {post.content_id != null && post.content_title && (
+              <div className="lg:max-w-md">
+                <CommunityContentBox
+                  title={post.content_title}
+                  thumbnailUrl={post.content_thumbnail_url}
+                  caption="작품 상세 보기"
+                  onClick={() => navigate(`/app/content/${post.content_id}`)}
+                />
+              </div>
+            )}
 
             {/* 탭 */}
             <div className="flex border-b border-border">

@@ -18,6 +18,11 @@ export interface CommunityPostSummary {
   place_count: number;
   region: string | null;
   duration_label: string | null;
+  // 이 루트가 만들어진 작품. 작품 없이 만든 일정은 null(또는 키 없음)이고, 백엔드 배포 전에는
+  // 아예 안 내려오므로 optional로 둔다.
+  content_id?: number | null;
+  content_title?: string | null;
+  content_thumbnail_url?: string | null;
   thumbnail_url: string | null;
   tags: string[];
 }
@@ -25,7 +30,10 @@ export interface CommunityPostSummary {
 export type CommunitySort = "recent" | "popular" | "rating";
 
 export interface CommunityPostListParams {
+  /** 일정 제목 또는 작품 제목에 매칭된다. */
   q?: string;
+  /** 특정 작품으로 만든 루트만. */
+  content_id?: number;
   sort?: CommunitySort;
   /** 0부터 시작 (백엔드 PageRequest 기준) */
   page?: number;
@@ -46,6 +54,7 @@ export function getCommunityPosts(params: CommunityPostListParams = {}) {
   return apiFetch<CommunityPostSummary[]>(
     `/api/community/posts${buildQuery({
       q: params.q,
+      content_id: params.content_id,
       sort: params.sort,
       page: params.page,
       limit: params.limit,
@@ -83,6 +92,11 @@ export interface CommunityPostDetail {
   place_count: number;
   region: string | null;
   duration_label: string | null;
+  // 이 루트가 만들어진 작품. 작품 없이 만든 일정은 null(또는 키 없음)이고, 백엔드 배포 전에는
+  // 아예 안 내려오므로 optional로 둔다.
+  content_id?: number | null;
+  content_title?: string | null;
+  content_thumbnail_url?: string | null;
   tags: string[];
   thumbnail_url: string | null;
   stops: CommunityStop[];
