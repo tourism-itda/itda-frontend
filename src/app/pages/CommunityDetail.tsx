@@ -304,17 +304,29 @@ export default function CommunityDetail() {
         </button>
         <div className="absolute bottom-5 lg:bottom-10 left-5 right-5 lg:left-0 lg:right-0">
           <div className="lg:max-w-[1280px] lg:mx-auto lg:px-8">
-            {/* 사진 위에서도 읽히도록 목록 카드의 지역/평점 배지와 같은 어두운 반투명 배경 + 흰 글자 */}
-            <div className="flex flex-wrap items-center gap-1.5 mb-2">
-              {post.tags.map((t) => (
-                <span
-                  key={t}
-                  className="text-xs font-bold text-white bg-neutral-900/70 backdrop-blur-sm rounded-full px-2.5 py-1"
-                >
-                  #{t}
-                </span>
-              ))}
-            </div>
+            {/* 목록 카드(Community.tsx)와 같은 구성 — 지역 배지를 위에, 그 아래에 태그.
+                지역은 어두운 반투명 배경 + 흰 글자, 태그는 흰 배경 + 검정 테두리. */}
+            {(post.region || post.tags.length > 0) && (
+              <div className="flex flex-col items-start gap-1.5 mb-2">
+                {post.region && (
+                  <span className="px-2.5 py-1 rounded-full bg-neutral-900/70 backdrop-blur-sm text-white text-xs font-bold tracking-wide">
+                    {post.region}
+                  </span>
+                )}
+                {post.tags.length > 0 && (
+                  <div className="flex flex-wrap gap-1">
+                    {post.tags.map((t) => (
+                      <span
+                        key={t}
+                        className="max-w-full truncate px-2 py-0.5 rounded-full bg-white border border-black text-black text-xs font-medium"
+                      >
+                        #{t}
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
             <h1 className="font-heading text-ivory text-2xl lg:text-4xl font-black leading-tight max-w-3xl">{post.title}</h1>
           </div>
         </div>
