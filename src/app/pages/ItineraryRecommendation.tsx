@@ -91,7 +91,7 @@ export default function ItineraryRecommendation() {
                 <PlaceSlotCard
                   key={slots[idx].place.place_id}
                   place={slots[idx].place}
-                  visitOrder={slots[idx].visit_order}
+                  visitOrder={idx + 1}
                   confirmed={confirmedIds.has(slots[idx].place.place_id)}
                   isSelected={selectedId === String(slots[idx].place.place_id)}
                   onSelect={() => setSelectedId(String(slots[idx].place.place_id))}
@@ -221,9 +221,11 @@ export default function ItineraryRecommendation() {
     }
   }
 
-  const mapPlaces = slots.map((s) => ({
+  // 백엔드 visit_order는 0부터 시작한다 — 저장/대체 추천 API 키로는 그대로 쓰되, 화면에
+  // 보이는 번호(카드·지도 마커)는 목록 순서 기준 1부터 매긴다.
+  const mapPlaces = slots.map((s, idx) => ({
     id: String(s.place.place_id),
-    order: s.visit_order,
+    order: idx + 1,
     name: s.place.name,
     lat: s.place.latitude,
     lng: s.place.longitude,

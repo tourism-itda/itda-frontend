@@ -349,9 +349,17 @@ export default function ItineraryDetail() {
   // day_number 오름차순으로 이미 정렬돼서 오지만(백엔드 buildDetail), 일차별로 묶어서 보여준다.
   const dayNumbers = Array.from(new Set(places.map((p) => p.day_number))).sort((a, b) => a - b);
 
+  // 저장된 visit_order는 추천에서 온 건 0부터, 수정 화면을 거친 건 1부터라 값이 섞여 있다.
+  // 화면 번호(카드·지도 마커)는 값 대신 (일차, visit_order) 정렬 순서 기준 1부터 매긴다.
+  const displayOrderById = new Map(
+    [...places]
+      .sort((a, b) => a.day_number - b.day_number || a.visit_order - b.visit_order)
+      .map((p, i) => [p.itinerary_place_id, i + 1] as const)
+  );
+
   const mapPlaces = places.map((p) => ({
     id: String(p.place_id),
-    order: p.visit_order,
+    order: displayOrderById.get(p.itinerary_place_id) ?? p.visit_order + 1,
     name: p.name ?? "",
     lat: p.latitude,
     lng: p.longitude,
@@ -389,7 +397,7 @@ export default function ItineraryDetail() {
                 <PlaceSlotCard
                   key={p.itinerary_place_id}
                   place={p}
-                  visitOrder={p.visit_order}
+                  visitOrder={displayOrderById.get(p.itinerary_place_id) ?? p.visit_order + 1}
                   isSelected={selectedId === String(p.place_id)}
                   onSelect={() => setSelectedId(String(p.place_id))}
                   onOpenDetail={() => openPlaceDetail(p)}

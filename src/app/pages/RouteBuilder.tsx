@@ -774,7 +774,7 @@ export default function RouteBuilder() {
                 {route.slots.map((s) => (
                   <div key={s.visit_order} className="flex items-center gap-2 text-sm">
                     <span className="w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold shrink-0 bg-primary text-primary-foreground">
-                      {s.visit_order}
+                      {s.visit_order + 1}
                     </span>
                     <span className="text-foreground">{s.place?.name ?? "-"}</span>
                   </div>

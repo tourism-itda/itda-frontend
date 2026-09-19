@@ -636,7 +636,7 @@ export default function CommunityDetail() {
                   places={[
                     {
                       id: String(selectedStop.order),
-                      order: selectedStop.order,
+                      order: stops.findIndex((s) => s.order === selectedStop.order) + 1 || selectedStop.order + 1,
                       name: selectedStop.name,
                       lat: selectedStop.lat,
                       lng: selectedStop.lng,
