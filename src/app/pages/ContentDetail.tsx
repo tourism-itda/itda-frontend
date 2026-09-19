@@ -3,6 +3,7 @@ import { useNavigate, useParams, useLocation } from "react-router";
 import { toast } from "sonner";
 import { ArrowLeft, Bookmark, Loader2, MapPinOff } from "lucide-react";
 import { Button } from "../components/ui/button";
+import { StorySourceBadge } from "../components/StorySourceBadge";
 import { ApiError, isLoginRequiredError } from "../lib/api";
 import { useContentDetail } from "../lib/useContentDetail";
 import { useContentPlaces } from "../lib/useContentPlaces";
@@ -156,6 +157,10 @@ export default function ContentDetail() {
             생성 텍스트)는 채워져 있는 콘텐츠가 있어, 그 경우 원문 텍스트를 대신 보여준다. */}
         <div className="mb-10">
           <h2 className="text-[16px] font-extrabold mb-4">역사 이야기</h2>
+          {/* 본문이 있을 때만 출처를 보여준다("준비 중" 안내에는 출처가 의미 없다). */}
+          {(data.story_sections.length > 0 || data.story_body) && (
+            <StorySourceBadge source={data.story_source ?? null} />
+          )}
           {data.story_sections.length > 0 ? (
             <div className="rounded-[28px] bg-card border border-border/60 shadow-[var(--shadow-md)] p-6 sm:p-8">
               <p className="text-muted-foreground text-sm text-center mb-7 font-semibold">

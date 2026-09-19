@@ -49,6 +49,10 @@ export interface ContentDetailRelatedPlace {
   region: string | null;
 }
 
+// 줄거리(story) 생성 출처. CHRONICLE은 국사편찬위원회 연표를 근거로 생성, AI_GENERATED는 매칭된 연표가
+// 없어 작품 정보만으로 생성한 이야기다. 백엔드 StorySource enum과 동일하다.
+export type StorySource = "CHRONICLE" | "AI_GENERATED";
+
 export interface ContentDetail {
   content_id: number;
   title: string;
@@ -58,6 +62,8 @@ export interface ContentDetail {
   summary: string | null;
   story_intro: string | null;
   story_body: string | null;
+  // 아직 재처리되지 않은 콘텐츠는 null. 상세 응답(GET /api/contents/{id})에만 있고 목록에는 없다.
+  story_source: StorySource | null;
   media: ContentMediaSummary | null;
   categories: ContentCategorySummary[];
   characters: ContentCharacter[];
