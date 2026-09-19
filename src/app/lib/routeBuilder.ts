@@ -7,8 +7,8 @@ import { ContentPlaceListItem, getContentRelatedPlaces } from "./contents";
  * 2026-08-22 dev 소스(RouteController/RoutePlanner) 기준으로 직접 확인함.
  */
 
-// ─── 1단계: 촬영지 선택 (GET /api/contents/:content_id/places) ───
-// contents.ts의 관련 촬영지 조회와 동일 엔드포인트라 그대로 재사용한다(중복 구현 방지).
+// ─── 1단계: 관련 명소 선택 (GET /api/contents/:content_id/places) ───
+// contents.ts의 관련 명소 조회와 동일 엔드포인트라 그대로 재사용한다(중복 구현 방지).
 export type { ContentPlaceListItem };
 export const getContentPlaces = getContentRelatedPlaces;
 
@@ -77,7 +77,7 @@ export interface RoutePlanResult {
 
 export interface CreateRoutePayload {
   content_id: number;
-  /** 사용자가 직접 고른 촬영지. 최대 3개. 비우면(또는 생략하면) 서버가 자동으로 3곳을 고른다. */
+  /** 사용자가 직접 고른 관련 명소. 최대 3개. 비우면(또는 생략하면) 서버가 자동으로 3곳을 고른다. */
   spot_place_ids?: number[];
   /**
    * "다른 조합 보기"(루트 재생성) 시 지금까지 본 루트의 place_id 전부를 누적해서 보낸다.

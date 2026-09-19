@@ -260,16 +260,9 @@ export default function ContentDetail() {
       {/* 하단 고정 CTA */}
       <div className="fixed bottom-16 lg:bottom-0 left-0 right-0 z-40 px-4 pb-4 pt-3 bg-background border-t border-border space-y-2">
         <div className="max-w-2xl mx-auto space-y-2">
-          <Button onClick={() => navigate(`/app/itinerary/${data.content_id}`)} className="w-full h-12 text-[14px] font-black">
-            여행 일정 보기
-          </Button>
-          {/* 신규 흐름(하루 루트 만들기, No.27과 별개) — 촬영지를 직접 골라 루트를 짜고 싶을 때 */}
-          <Button
-            variant="outline"
-            onClick={() => navigate(`/app/route-builder/${data.content_id}`)}
-            className="w-full h-11 text-[13px]"
-          >
-            촬영지 직접 골라 루트 만들기
+          {/* 신규 흐름(하루 루트 만들기, No.27과 별개) — 관련 명소를 골라 루트를 짜고 싶을 때 */}
+          <Button onClick={() => navigate(`/app/route-builder/${data.content_id}`)} className="w-full h-12 text-[14px] font-black">
+            관련 명소 골라 루트 만들기
           </Button>
         </div>
       </div>

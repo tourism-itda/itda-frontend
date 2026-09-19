@@ -36,7 +36,7 @@ import {
 } from "../lib/routeBuilder";
 
 /**
- * "하루 루트 만들기" 1~4단계 — 촬영지 선택 → 루트 생성 미리보기 → 빈 슬롯(식당/카페) 후보 조회 →
+ * "하루 루트 만들기" 1~4단계 — 관련 명소 선택 → 루트 생성 미리보기 → 빈 슬롯(식당/카페) 후보 조회 →
  * 후보를 place로 확정 → 플래너에 저장. 명세서 v4에 없는 신규 흐름이라 기존 No.27 기반
  * ItineraryRecommendation.tsx(콘텐츠 자동 추천)와는 완전히 별개 화면/라우트다. 저장은 그 화면의
  * handleSave()와 동일하게 기존 No.28 POST /api/itineraries(saveItinerary, lib/itineraryRecommend.ts)를
@@ -324,7 +324,7 @@ export default function RouteBuilder() {
   const [isCreating, setIsCreating] = useState(false);
 
   const [route, setRoute] = useState<RoutePlanResult | null>(null);
-  // "다른 조합 보기"용 — 지금까지 본 루트의 촬영지 place_id를 누적한다(직전 루트 것만 보내면 A↔B로 왔다갔다 함).
+  // "다른 조합 보기"용 — 지금까지 본 루트의 관련 명소 place_id를 누적한다(직전 루트 것만 보내면 A↔B로 왔다갔다 함).
   const [excludedPlaceIds, setExcludedPlaceIds] = useState<number[]>([]);
   const [isRegenerating, setIsRegenerating] = useState(false);
 
@@ -389,7 +389,7 @@ export default function RouteBuilder() {
     }
   }
 
-  // "다른 조합 보기" — 같은 spot_place_ids로, 지금까지 본 촬영지를 전부 제외하고 재생성한다.
+  // "다른 조합 보기" — 같은 spot_place_ids로, 지금까지 본 관련 명소를 전부 제외하고 재생성한다.
   async function handleRegenerateRoute() {
     if (contentId === undefined || !route || isRegenerating) return;
     setIsRegenerating(true);
@@ -411,7 +411,7 @@ export default function RouteBuilder() {
         return;
       }
 
-      // 직전 루트에서 사용자가 고른 식당·카페는, 같은 구간(시작~끝 촬영지)이 새 루트에도 그대로
+      // 직전 루트에서 사용자가 고른 식당·카페는, 같은 구간(시작~끝 관련 명소)이 새 루트에도 그대로
       // 남아있을 때만 이어붙인다. 관련명소 자체가 바뀌는 작품은 구간이 안 맞아 자연히 초기화된다.
       const prevFills = new Map<string, RoutePlace>();
       for (const slot of route.slots) {

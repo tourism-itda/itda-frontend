@@ -288,11 +288,11 @@ export default function ItineraryRecommendation() {
 
       {status === "done" && slots.length > 0 && (
         <>
-          {/* PERSON_CHAIN(인물 연고지)은 실제 촬영지가 아니므로 구분해서 안내한다 */}
+          {/* PERSON_CHAIN(인물 연고지)은 작품의 관련 명소가 아니므로 구분해서 안내한다 */}
           {data?.anchor_source === "PERSON_CHAIN" && (
             <div className="max-w-2xl mx-auto px-4 pt-3">
               <p className="text-xs text-muted-foreground bg-muted/50 rounded-lg px-3 py-2">
-                이 장소들은 작품 속 실존 인물과 연결된 곳이에요. 실제 촬영지가 아닐 수 있어요.
+                이 장소들은 작품 속 실존 인물과 연결된 곳이에요. 작품의 관련 명소가 아닐 수 있어요.
               </p>
             </div>
           )}

@@ -121,7 +121,7 @@ export default function Community() {
             <div className="relative max-w-2xl flex-1">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input
-                placeholder="작품 이름, 루트 제목"
+                placeholder="작품 이름, 루트 제목, 작성자, 지역을 검색해보세요"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-11 h-12 rounded-full bg-input-background text-[16px] font-semibold"

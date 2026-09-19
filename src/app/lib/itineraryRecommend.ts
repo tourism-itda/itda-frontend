@@ -26,7 +26,7 @@ export interface ItineraryRecommendSlot {
 }
 
 // 장소를 어디서 얻었는지. CONTENT_PLACE만 "작품의 장소"라고 말할 수 있다 — PERSON_CHAIN은
-// 작품 속 실존 인물의 연고지일 뿐이라 "촬영지"라고 쓰면 안 된다. NONE이면 slots가 비어 있고
+// 작품 속 실존 인물의 연고지일 뿐이라 "관련 명소"라고 단정하면 안 된다. NONE이면 slots가 비어 있고
 // "아직 준비 중"으로 안내해야 한다(더 이상 404가 아니다).
 export type AnchorSource = "CONTENT_PLACE" | "PERSON_CHAIN" | "NONE";
 
