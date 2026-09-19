@@ -103,7 +103,7 @@ export default function Home() {
           </div>
 
           {popular.status === "loading" && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 lg:gap-5">
               {Array.from({ length: 6 }).map((_, i) => (
                 <div key={i}>
                   <Skeleton className="aspect-[3/4] rounded-sm mb-2" />
@@ -126,7 +126,7 @@ export default function Home() {
             </div>
           )}
           {popular.status === "done" && (popular.data?.data.length ?? 0) > 0 && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 lg:gap-5">
               {popular.data!.data.map((item) => (
                 <ContentCard
                   key={item.content_id}
