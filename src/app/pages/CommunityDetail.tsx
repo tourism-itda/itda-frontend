@@ -291,6 +291,18 @@ export default function CommunityDetail() {
   const avgRating = post.rating ?? 0;
   const dayGroups = splitStopsByDay(stops, resolveDayCount(post.duration_label));
 
+  // 어떤 작품으로 만든 루트인지 — 작품 없이 만든 루트는 박스를 그리지 않는다.
+  // 모바일은 왼쪽 열(작성자 바로 아래), 데스크톱은 우측 사이드바의 프로필 카드 아래에 각각 그린다.
+  const contentBox =
+    post.content_id != null && post.content_title ? (
+      <CommunityContentBox
+        title={post.content_title}
+        thumbnailUrl={post.content_thumbnail_url}
+        caption="작품 상세 보기"
+        onClick={() => navigate(`/app/content/${post.content_id}`)}
+      />
+    ) : null;
+
   return (
     <div className="min-h-screen pb-8">
       {/* 히어로 */}
@@ -374,17 +386,8 @@ export default function CommunityDetail() {
               </div>
             </div>
 
-            {/* 어떤 작품으로 만든 루트인지 — 작품 없이 만든 루트는 박스를 그리지 않는다. */}
-            {post.content_id != null && post.content_title && (
-              <div className="lg:max-w-md">
-                <CommunityContentBox
-                  title={post.content_title}
-                  thumbnailUrl={post.content_thumbnail_url}
-                  caption="작품 상세 보기"
-                  onClick={() => navigate(`/app/content/${post.content_id}`)}
-                />
-              </div>
-            )}
+            {/* 작품 박스 — 모바일 전용 (데스크톱은 우측 사이드바 프로필 카드 아래에 표시) */}
+            {contentBox && <div className="lg:hidden">{contentBox}</div>}
 
             {/* 탭 */}
             <div className="flex border-b border-border">
@@ -634,6 +637,7 @@ export default function CommunityDetail() {
                 )}
               </div>
             </div>
+            {contentBox}
           </div>
 
         </div>
