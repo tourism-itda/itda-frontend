@@ -10,18 +10,18 @@ interface CommunityContentBoxProps {
 }
 
 /**
- * 커뮤니티 루트가 "어떤 작품으로 만든 것인지" 보여주는 작은 가로형 박스(작은 포스터 + 제목).
- * 메인 페이지의 ContentCard(3:4 큰 카드)를 목록 카드 안에 그대로 넣으면 카드가 두 배로 길어져서
- * 같은 정보만 가로형으로 줄였다. 목록 카드(작품 루트만 모아보기)와 상세(작품 페이지로 이동)가 함께 쓴다.
+ * 커뮤니티 루트가 "어떤 작품으로 만든 것인지" 보여주는 가로형 카드.
+ * 왼쪽에 4:3 사진을 크게 두고, 그 옆에 작품 제목/안내를 둔다.
+ * 커뮤니티 상세(모바일: 작성자 아래 / 데스크톱: 우측 프로필 카드 아래)에서 쓴다.
  */
 export function CommunityContentBox({ title, thumbnailUrl, caption, onClick }: CommunityContentBoxProps) {
   return (
     <button
       type="button"
       onClick={onClick}
-      className="w-full flex items-center gap-3.5 text-left rounded-2xl border border-border bg-muted/40 hover:bg-muted p-3 transition-colors"
+      className="group w-full flex items-center gap-4 text-left rounded-2xl border border-border bg-card hover:bg-muted/40 p-3 transition-colors"
     >
-      <div className="w-14 h-20 rounded-lg overflow-hidden bg-muted shrink-0">
+      <div className="w-32 aspect-[4/3] rounded-lg overflow-hidden bg-muted shrink-0">
         {thumbnailUrl && (
           <img
             src={getProxiedImageUrl(thumbnailUrl)}
@@ -29,13 +29,13 @@ export function CommunityContentBox({ title, thumbnailUrl, caption, onClick }: C
             loading="lazy"
             decoding="async"
             referrerPolicy="no-referrer"
-            className="w-full h-full object-cover"
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
           />
         )}
       </div>
       <div className="flex-1 min-w-0">
-        <p className="font-heading text-[16px] font-black line-clamp-2 leading-snug mb-0.5">{title}</p>
-        <p className="text-[13px] text-muted-foreground">{caption}</p>
+        <p className="font-heading text-[16px] font-black line-clamp-2 leading-snug">{title}</p>
+        <p className="text-[13px] text-muted-foreground mt-0.5">{caption}</p>
       </div>
       <ChevronRight className="w-4 h-4 text-muted-foreground shrink-0" />
     </button>
