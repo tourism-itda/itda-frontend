@@ -7,7 +7,7 @@ import { PageTitle } from "../components/PageTitle";
 import { ConfirmDeleteModal } from "../components/ConfirmDeleteModal";
 import { ApiError, isLoginRequiredError } from "../lib/api";
 import { ItinerarySummary, deleteItinerary, getMyItineraries } from "../lib/itineraries";
-import { shareItinerary, unshareItinerary } from "../lib/community";
+import { unshareItinerary } from "../lib/community";
 import { getProxiedImageUrl } from "../lib/imageProxy";
 
 type Status = "loading" | "done" | "unauthenticated" | "error";
@@ -49,37 +49,41 @@ export default function Planner() {
 
   async function handleToggleShare(e: React.MouseEvent, item: ItinerarySummary) {
     e.stopPropagation();
+
+    // 공유는 바로 처리하지 않고 소개/지역/태그를 입력하는 공유 페이지로 넘긴다.
+    if (!item.is_shared) {
+      navigate(`/app/community/write?itinerary=${item.itinerary_id}`);
+      return;
+    }
+
     if (pendingShareIds.has(item.itinerary_id)) return;
 
-    const prevIsShared = item.is_shared;
     setPendingShareIds((ids) => new Set(ids).add(item.itinerary_id));
     setItineraries((prev) =>
       prev.map((it) =>
-        it.itinerary_id === item.itinerary_id ? { ...it, is_shared: !prevIsShared } : it
+        it.itinerary_id === item.itinerary_id ? { ...it, is_shared: false } : it
       )
     );
 
     try {
-      const result = prevIsShared
-        ? await unshareItinerary(item.itinerary_id)
-        : await shareItinerary(item.itinerary_id);
+      const result = await unshareItinerary(item.itinerary_id);
       setItineraries((prev) =>
         prev.map((it) =>
           it.itinerary_id === item.itinerary_id ? { ...it, is_shared: result.is_shared } : it
         )
       );
-      toast(result.is_shared ? "커뮤니티에 공유되었습니다!" : "공유가 해제되었습니다.");
+      toast("공유가 해제되었습니다.");
     } catch (err) {
       setItineraries((prev) =>
         prev.map((it) =>
-          it.itinerary_id === item.itinerary_id ? { ...it, is_shared: prevIsShared } : it
+          it.itinerary_id === item.itinerary_id ? { ...it, is_shared: true } : it
         )
       );
       if (isLoginRequiredError(err)) {
         toast("로그인이 필요한 기능이에요. 로그인 후 다시 시도해주세요.");
         navigate("/login", { replace: true, state: { from: location.pathname + location.search } });
       } else {
-        toast(err instanceof ApiError ? err.message : "공유 처리에 실패했어요. 잠시 후 다시 시도해주세요.");
+        toast(err instanceof ApiError ? err.message : "공유 해제에 실패했어요. 잠시 후 다시 시도해주세요.");
       }
     } finally {
       setPendingShareIds((ids) => {

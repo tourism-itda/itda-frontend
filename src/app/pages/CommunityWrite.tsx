@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useLocation, useNavigate } from "react-router";
+import { useLocation, useNavigate, useSearchParams } from "react-router";
 import { toast } from "sonner";
 import { ArrowLeft, Check, Loader2, LogIn, MapPin, X } from "lucide-react";
 import { Button } from "../components/ui/button";
@@ -23,6 +23,9 @@ type Status = "loading" | "done" | "unauthenticated" | "error";
 export default function CommunityWrite() {
   const navigate = useNavigate();
   const location = useLocation();
+  // 플래너에서 공유 버튼으로 넘어오면 ?itinerary=ID로 해당 일정을 미리 선택해둔다.
+  const [searchParams] = useSearchParams();
+  const preselectId = Number(searchParams.get("itinerary")) || null;
   const [status, setStatus] = useState<Status>("loading");
   const [itineraries, setItineraries] = useState<ItinerarySummary[]>([]);
   const [selectedId, setSelectedId] = useState<number | null>(null);
@@ -40,6 +43,8 @@ export default function CommunityWrite() {
       .then((result) => {
         if (cancelled) return;
         setItineraries(result);
+        const preselected = preselectId !== null ? result.find((it) => it.itinerary_id === preselectId) : undefined;
+        if (preselected) handleSelect(preselected);
         setStatus("done");
       })
       .catch((err) => {
