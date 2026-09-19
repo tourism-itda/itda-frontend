@@ -19,6 +19,7 @@ import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { usePlaceLookup } from "../lib/usePlaceLookup";
 import { htmlToText } from "../lib/text";
+import { splitIntoPeriods } from "../lib/periodSplit";
 import { ApiError, isLoginRequiredError } from "../lib/api";
 import { CommunityPostDetail, CommunityStop, getCommunityPostDetail, importItinerary } from "../lib/community";
 import { Review, createReview, getReviews, toggleReviewLike } from "../lib/reviews";
@@ -392,41 +393,46 @@ export default function CommunityDetail() {
                         <div className="flex-1 h-px bg-border" />
                       </div>
                     )}
-                    <div
-                      className={
-                        dayGroups.length > 1
-                          ? "space-y-1"
-                          : "lg:grid lg:grid-cols-2 lg:gap-4 lg:space-y-0 space-y-1"
-                      }
-                    >
-                      {dayStops.map((stop, idx) => (
-                        <div key={stop.order}>
-                          <button
-                            onClick={() => setSelectedStop(stop)}
-                            className="w-full bg-card border border-border rounded-[24px] overflow-hidden flex gap-4 p-5 text-left hover:bg-muted/30 hover:shadow-sm transition-all"
-                          >
-                            <PlaceImage
-                              src={stop.image}
-                              alt={stop.name}
-                              category={stop.category}
-                              className="w-20 h-20 rounded-2xl object-cover shrink-0"
-                            />
-                            <div className="flex-1 min-w-0">
-                              <span className="text-sm text-muted-foreground">{stop.category}</span>
-                              <p className="font-black text-[16px] mt-1 mb-1.5">{stop.name}</p>
-                              <p className="text-sm text-muted-foreground line-clamp-2">{stop.description}</p>
-                            </div>
-                            <ChevronRight className="w-4 h-4 text-muted-foreground shrink-0 self-center" />
-                          </button>
-                          {idx < dayStops.length - 1 && (
-                            <div
-                              className={`${dayGroups.length > 1 ? "flex" : "lg:hidden flex"} items-center justify-center gap-2 py-1.5`}
-                            >
-                              <div className="h-px w-8 bg-border" />
-                              <span className="text-muted-foreground/50 text-xs">↓</span>
-                              <div className="h-px w-8 bg-border" />
+                    {/* 루트는 항상 1열 세로로 이어 보여준다. 하루 안에서는 방문 순서대로 아침/점심/저녁
+                        구간으로 나눠(루트 만들기 화면과 동일) 흐름이 보이게 하고, ↓ 연결선은 구간이
+                        바뀌어도 이어진다. */}
+                    <div className="space-y-3">
+                      {splitIntoPeriods(dayStops).map((period, periodIdx) => (
+                        <div key={periodIdx} className="space-y-1">
+                          {period.label && (
+                            <div className="flex items-center gap-2 pt-1 pb-2">
+                              <span className="text-xs font-medium text-muted-foreground shrink-0">{period.label}</span>
+                              <div className="flex-1 h-px bg-border/60" />
                             </div>
                           )}
+                          {period.items.map((stop) => (
+                            <div key={stop.order}>
+                              <button
+                                onClick={() => setSelectedStop(stop)}
+                                className="w-full bg-card border border-border rounded-[24px] overflow-hidden flex gap-4 p-5 text-left hover:bg-muted/30 hover:shadow-sm transition-all"
+                              >
+                                <PlaceImage
+                                  src={stop.image}
+                                  alt={stop.name}
+                                  category={stop.category}
+                                  className="w-20 h-20 rounded-2xl object-cover shrink-0"
+                                />
+                                <div className="flex-1 min-w-0">
+                                  <span className="text-sm text-muted-foreground">{stop.category}</span>
+                                  <p className="font-black text-[16px] mt-1 mb-1.5">{stop.name}</p>
+                                  <p className="text-sm text-muted-foreground line-clamp-2">{stop.description}</p>
+                                </div>
+                                <ChevronRight className="w-4 h-4 text-muted-foreground shrink-0 self-center" />
+                              </button>
+                              {stop !== dayStops[dayStops.length - 1] && (
+                                <div className="flex items-center justify-center gap-2 py-1.5">
+                                  <div className="h-px w-8 bg-border" />
+                                  <span className="text-muted-foreground/50 text-xs">↓</span>
+                                  <div className="h-px w-8 bg-border" />
+                                </div>
+                              )}
+                            </div>
+                          ))}
                         </div>
                       ))}
                     </div>
