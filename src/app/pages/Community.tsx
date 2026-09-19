@@ -36,13 +36,13 @@ function RouteCard({ post, onOpen }: { post: CommunityPostSummary; onOpen: () =>
                   // 스페이스 입력 규칙이 생기기 전에는 공백이 든 긴 태그도 저장할 수 있었다 — 카드를 넘치지 않게 말줄임.
                   <span
                     key={t}
-                    className="max-w-full truncate px-2 py-0.5 rounded-full bg-neutral-900/70 backdrop-blur-sm text-white text-xs font-medium"
+                    className="max-w-full truncate px-2 py-0.5 rounded-full bg-white border border-black text-black text-xs font-medium"
                   >
                     #{t}
                   </span>
                 ))}
                 {post.tags.length > MAX_CARD_TAGS && (
-                  <span className="px-2 py-0.5 rounded-full bg-neutral-900/70 backdrop-blur-sm text-white/80 text-xs font-medium">
+                  <span className="px-2 py-0.5 rounded-full bg-white border border-black text-black text-xs font-medium">
                     +{post.tags.length - MAX_CARD_TAGS}
                   </span>
                 )}
