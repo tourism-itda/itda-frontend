@@ -58,7 +58,7 @@ const filledByBadge: Record<string, { label: string; icon: typeof User; classNam
 };
 
 const slotTypeLabelFallback: Record<string, string> = {
-  SPOT: "촬영지",
+  SPOT: "명소",
   RESTAURANT: "식당",
   CAFE: "카페",
 };
@@ -96,7 +96,8 @@ function RouteSlotCard({
     <div className="rounded-xl border border-border overflow-hidden">
       <div className="flex items-center justify-between gap-2 px-4 pt-3">
         <div className="flex items-center gap-2 min-w-0">
-          <span className="text-sm font-semibold shrink-0">{slot.label}</span>
+          {/* 백엔드 label이 SPOT에는 "촬영지"로 오는데, 일반 명소에도 붙어서 오해를 준다 — SPOT은 라벨을 숨긴다. */}
+          {slot.slot_type !== "SPOT" && <span className="text-sm font-semibold shrink-0">{slot.label}</span>}
           {slot.estimated_time && (
             <span className="flex items-center gap-1 text-xs text-muted-foreground shrink-0">
               <Clock className="w-3 h-3" />
@@ -237,7 +238,7 @@ function CandidateSheet({
           {partialCoverage && (
             <div className="flex items-start gap-2 rounded-xl bg-accent/10 text-accent text-sm p-3 mb-3">
               <TriangleAlert className="w-4 h-4 shrink-0 mt-0.5" />
-              <p>두 촬영지가 멀리 떨어져 있어 중간 지역의 후보는 찾지 못했어요.</p>
+              <p>두 명소가 멀리 떨어져 있어 중간 지역의 후보는 찾지 못했어요.</p>
             </div>
           )}
 
@@ -614,7 +615,7 @@ export default function RouteBuilder() {
           </button>
           <div className="flex-1 min-w-0">
             <h1 className="text-base leading-tight">
-              {step === "select" ? "촬영지 선택" : "루트 미리보기"}
+              {step === "select" ? "명소 선택" : "루트 미리보기"}
             </h1>
             {route && step === "preview" && (
               <p className="text-sm text-muted-foreground truncate">
@@ -630,7 +631,7 @@ export default function RouteBuilder() {
           {selectStatus === "loading" && (
             <div className="flex flex-col items-center justify-center gap-3 py-24 text-muted-foreground">
               <Loader2 className="w-6 h-6 animate-spin" />
-              <p className="text-sm">촬영지를 불러오는 중이에요...</p>
+              <p className="text-sm">명소를 불러오는 중이에요...</p>
             </div>
           )}
 
@@ -645,21 +646,21 @@ export default function RouteBuilder() {
           {selectStatus === "error" && (
             <div className="flex flex-col items-center justify-center gap-3 py-24 px-6 text-center">
               <MapPinOff className="w-8 h-8 text-muted-foreground" />
-              <p className="text-sm text-muted-foreground">촬영지를 불러오지 못했어요. 잠시 후 다시 시도해주세요.</p>
+              <p className="text-sm text-muted-foreground">명소를 불러오지 못했어요. 잠시 후 다시 시도해주세요.</p>
             </div>
           )}
 
           {selectStatus === "done" && places.length === 0 && (
             <div className="flex flex-col items-center justify-center gap-3 py-24 px-6 text-center">
               <MapPinOff className="w-8 h-8 text-muted-foreground" />
-              <p className="text-sm text-muted-foreground">이 콘텐츠에 등록된 촬영지가 없어요.</p>
+              <p className="text-sm text-muted-foreground">이 콘텐츠에 등록된 명소가 없어요.</p>
             </div>
           )}
 
           {selectStatus === "done" && places.length > 0 && (
             <>
               <p className="text-sm text-muted-foreground mb-4">
-                꼭 가고 싶은 촬영지를 최대 {MAX_SPOTS}곳까지 골라주세요. 고르지 않으면 자동으로 추천해드려요.
+                꼭 가고 싶은 명소를 최대 {MAX_SPOTS}곳까지 골라주세요. 고르지 않으면 자동으로 추천해드려요.
               </p>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-24">
@@ -733,7 +734,7 @@ export default function RouteBuilder() {
       {step === "preview" && route && (
         <div className="max-w-2xl mx-auto px-4 pt-5 pb-28 space-y-4">
           <div className="flex items-center gap-3 text-sm text-muted-foreground pb-2 border-b border-border">
-            <span>촬영지 {route.spot_count}곳</span>
+            <span>명소 {route.spot_count}곳</span>
             <span>·</span>
             <span>허용거리 {(route.allowance_meters / 1000).toFixed(1)}km</span>
           </div>
@@ -741,7 +742,7 @@ export default function RouteBuilder() {
           {hasPartialCoverage && (
             <div className="flex items-start gap-2 rounded-xl bg-accent/10 text-accent text-sm p-3">
               <TriangleAlert className="w-4 h-4 shrink-0 mt-0.5" />
-              <p>두 촬영지가 멀리 떨어져 있어 일부 구간은 중간 지역의 식당·카페를 찾지 못했어요.</p>
+              <p>두 명소가 멀리 떨어져 있어 일부 구간은 중간 지역의 식당·카페를 찾지 못했어요.</p>
             </div>
           )}
 
