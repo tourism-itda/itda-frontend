@@ -62,7 +62,15 @@ const slotTypeLabelFallback: Record<string, string> = {
   CAFE: "카페",
 };
 
-function RouteSlotCard({ slot, onOpenCandidates }: { slot: RouteSlot; onOpenCandidates: (slot: RouteSlot) => void }) {
+function RouteSlotCard({
+  slot,
+  onOpenCandidates,
+  onClear,
+}: {
+  slot: RouteSlot;
+  onOpenCandidates: (slot: RouteSlot) => void;
+  onClear: (slot: RouteSlot) => void;
+}) {
   if (slot.filled_by === "EMPTY" || !slot.place) {
     return (
       <div className="rounded-xl border border-dashed border-border p-4 flex items-center justify-between gap-3 bg-muted/30">
@@ -95,12 +103,25 @@ function RouteSlotCard({ slot, onOpenCandidates }: { slot: RouteSlot; onOpenCand
             </span>
           )}
         </div>
-        {badge && (
-          <span className={`flex items-center gap-1 text-xs px-2 py-0.5 rounded-full shrink-0 ${badge.className}`}>
-            <badge.icon className="w-3 h-3" />
-            {badge.label}
-          </span>
-        )}
+        <div className="flex items-center gap-2 shrink-0">
+          {badge && (
+            <span className={`flex items-center gap-1 text-xs px-2 py-0.5 rounded-full ${badge.className}`}>
+              <badge.icon className="w-3 h-3" />
+              {badge.label}
+            </span>
+          )}
+          {/* 사용자가 후보에서 직접 고른 식당/카페만 되돌릴 수 있다(AI 추천·자동 선택은 해당 없음). */}
+          {slot.filled_by === "USER" && slot.slot_type !== "SPOT" && (
+            <button
+              type="button"
+              onClick={() => onClear(slot)}
+              className="flex items-center gap-1 text-xs px-2 py-0.5 rounded-full border border-border text-muted-foreground hover:bg-muted transition-colors"
+            >
+              <X className="w-3 h-3" />
+              선택 취소
+            </button>
+          )}
+        </div>
       </div>
 
       <div className="flex gap-3 p-4">
@@ -500,7 +521,7 @@ export default function RouteBuilder() {
               ...prev,
               slots: prev.slots.map((s) =>
                 s.visit_order === candidateSheet.visitOrder
-                  ? { ...s, place, filled_by: "USER", segment_index: undefined }
+                  ? { ...s, place, filled_by: "USER" }
                   : s
               ),
             }
@@ -513,6 +534,23 @@ export default function RouteBuilder() {
     } finally {
       setImportingExternalId(null);
     }
+  }
+
+  // 후보에서 고른 식당/카페를 취소해 빈 슬롯으로 되돌린다. segment_index를 유지해 두었으므로
+  // 되돌린 뒤 "후보 보기"로 다시 고를 수 있다.
+  function handleClearSlot(slot: RouteSlot) {
+    setRoute((prev) =>
+      prev
+        ? {
+            ...prev,
+            slots: prev.slots.map((s) =>
+              s.visit_order === slot.visit_order
+                ? { ...s, place: undefined, filled_by: "EMPTY", reason: undefined }
+                : s
+            ),
+          }
+        : prev
+    );
   }
 
   // ─── 저장 (POST /api/itineraries, 기존 No.28 — ItineraryRecommendation.tsx의 handleSave와 동일) ───
@@ -708,7 +746,12 @@ export default function RouteBuilder() {
 
           <div className="space-y-3">
             {route.slots.map((slot) => (
-              <RouteSlotCard key={slot.visit_order} slot={slot} onOpenCandidates={openCandidates} />
+              <RouteSlotCard
+                key={slot.visit_order}
+                slot={slot}
+                onOpenCandidates={openCandidates}
+                onClear={handleClearSlot}
+              />
             ))}
           </div>
 
