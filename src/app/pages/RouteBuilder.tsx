@@ -705,7 +705,7 @@ export default function RouteBuilder() {
               </div>
 
               {/* 하단 고정 액션 */}
-              <div className="fixed bottom-16 left-0 right-0 z-40 px-4 pb-3 pt-2 bg-background/95 backdrop-blur-sm hanji-noise border-t border-border">
+              <div className="fixed bottom-16 lg:bottom-0 left-0 right-0 z-40 px-4 pb-3 pt-2 bg-background/95 backdrop-blur-sm hanji-noise border-t border-border">
                 <div className="max-w-2xl mx-auto space-y-2">
                   <Button
                     onClick={() => handleCreateRoute(selectedIds)}
@@ -732,7 +732,7 @@ export default function RouteBuilder() {
       )}
 
       {step === "preview" && route && (
-        <div className="max-w-2xl mx-auto px-4 pt-5 pb-28 space-y-4">
+        <div className="max-w-2xl mx-auto px-4 pt-5 pb-32 space-y-4">
           <div className="flex items-center gap-3 text-sm text-muted-foreground pb-2 border-b border-border">
             <span>명소 {route.spot_count}곳</span>
             <span>·</span>
@@ -758,37 +758,40 @@ export default function RouteBuilder() {
           </div>
 
           {/* 하단 고정 액션 */}
-          <div className="fixed bottom-16 left-0 right-0 z-40 px-4 pb-3 pt-2 bg-background/95 backdrop-blur-sm hanji-noise border-t border-border">
-            <div className="max-w-2xl mx-auto space-y-2">
-              <Button
-                variant="outline"
-                onClick={handleRegenerateRoute}
-                disabled={isRegenerating}
-                className="w-full h-11"
-              >
-                {isRegenerating ? (
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                ) : (
-                  <RefreshCw className="w-4 h-4 mr-2" />
-                )}
-                다른 조합 보기
-              </Button>
-              <Button
-                onClick={() => {
-                  setSaveTitle("");
-                  setSaveTravelDate("");
-                  setShowSaveSheet(true);
-                }}
-                disabled={hasEmptySlot}
-                className="w-full h-12"
-              >
-                저장하기
-              </Button>
+          {/* 모바일은 하단 탭바(h-16) 바로 위, 데스크탑은 화면 맨 아래에 붙인다. 버튼은 한 줄로 두어 높이를 줄인다. */}
+          <div className="fixed bottom-16 lg:bottom-0 left-0 right-0 z-40 px-4 pb-3 pt-2 bg-background/95 backdrop-blur-sm hanji-noise border-t border-border">
+            <div className="max-w-2xl mx-auto">
               {hasEmptySlot && (
-                <p className="text-xs text-muted-foreground text-center mt-1.5">
+                <p className="text-xs text-muted-foreground text-center mb-2">
                   아직 다 채우지 않은 칸이 있어요. 식당·카페 후보를 모두 골라주세요.
                 </p>
               )}
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  onClick={handleRegenerateRoute}
+                  disabled={isRegenerating}
+                  className="flex-1 h-12"
+                >
+                  {isRegenerating ? (
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  ) : (
+                    <RefreshCw className="w-4 h-4 mr-2" />
+                  )}
+                  다른 조합 보기
+                </Button>
+                <Button
+                  onClick={() => {
+                    setSaveTitle("");
+                    setSaveTravelDate("");
+                    setShowSaveSheet(true);
+                  }}
+                  disabled={hasEmptySlot}
+                  className="flex-1 h-12"
+                >
+                  저장하기
+                </Button>
+              </div>
             </div>
           </div>
         </div>
