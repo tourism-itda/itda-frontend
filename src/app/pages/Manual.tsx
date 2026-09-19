@@ -37,7 +37,7 @@ export default function Manual() {
           >
             <ArrowLeft className="w-4.5 h-4.5" />
           </button>
-          <h1 className="text-xl">사용설명서</h1>
+          <h1 className="font-heading text-xl">사용설명서</h1>
         </div>
       </div>
 

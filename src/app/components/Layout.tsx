@@ -2,9 +2,26 @@ import { useEffect } from "react";
 import { Outlet, useLocation } from "react-router";
 import { MobileNav } from "./MobileNav";
 import { DesktopNav } from "./DesktopNav";
+import { getCurrentUser, getMyProfile } from "../lib/auth";
+import { applyDarkMode } from "../lib/theme";
 
 export default function Layout() {
   const location = useLocation();
+
+  // 로그인 상태면 서버에 저장된 다크 모드 설정으로 맞춘다. 실패해도 캐시된 설정을 그대로 두면 되므로
+  // 조용히 무시한다(비로그인/네트워크 오류로 화면이 바뀌면 안 된다).
+  useEffect(() => {
+    if (!getCurrentUser()) return;
+    let cancelled = false;
+    getMyProfile()
+      .then((me) => {
+        if (!cancelled) applyDarkMode(me.darkMode);
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   useEffect(() => {
     window.scrollTo(0, 0);

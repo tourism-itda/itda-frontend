@@ -29,7 +29,12 @@ import {
   UserProfileResponse,
 } from "../lib/auth";
 import { ApiError, isLoginRequiredError } from "../lib/api";
-import { getProxiedImageUrl } from "../lib/imageProxy";
+import { getAvatarUrl, getProxiedImageUrl } from "../lib/imageProxy";
+import { applyDarkMode, resetDarkMode } from "../lib/theme";
+
+// 카메라 버튼은 아바타에 얹는 28px 배지라 그대로는 터치 영역이 작다. ::before로 44px까지 넓힌다.
+const CAMERA_BUTTON_CLASS =
+  "absolute bottom-0 right-0 w-7 h-7 bg-primary text-primary-foreground rounded-full flex items-center justify-center disabled:opacity-60 before:absolute before:-inset-2";
 
 interface ProfileFormProps {
   suffix?: string;
@@ -104,6 +109,8 @@ export default function MyPage() {
   const location = useLocation();
   const [profile, setProfile] = useState<UserProfileResponse | null>(null);
   const [loading, setLoading] = useState(true);
+  const [loadFailed, setLoadFailed] = useState(false);
+  const [reloadKey, setReloadKey] = useState(0);
   const [isEditing, setIsEditing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [nicknameInput, setNicknameInput] = useState("");
@@ -114,19 +121,22 @@ export default function MyPage() {
 
   useEffect(() => {
     let cancelled = false;
+    setLoading(true);
+    setLoadFailed(false);
 
     getMyProfile()
       .then((me) => {
         if (cancelled) return;
         setProfile(me);
         setNicknameInput(me.nickname);
-        document.documentElement.classList.toggle("dark", me.darkMode);
+        applyDarkMode(me.darkMode);
       })
       .catch((err) => {
         if (cancelled) return;
         if (isLoginRequiredError(err)) {
           navigate("/login", { replace: true, state: { from: location.pathname + location.search } });
         } else {
+          setLoadFailed(true);
           toast(err instanceof ApiError ? err.message : "내 정보를 불러오지 못했어요.");
         }
       })
@@ -137,7 +147,7 @@ export default function MyPage() {
     return () => {
       cancelled = true;
     };
-  }, [navigate]);
+  }, [navigate, reloadKey]);
 
   const handleSave = async () => {
     if (!profile) return;
@@ -198,13 +208,13 @@ export default function MyPage() {
 
   const toggleDarkMode = async (checked: boolean) => {
     if (!profile) return;
-    document.documentElement.classList.toggle("dark", checked);
+    applyDarkMode(checked);
     setProfile((prev) => (prev ? { ...prev, darkMode: checked } : prev));
     try {
       const updated = await updateMyProfile({ darkMode: checked });
       setProfile(updated);
     } catch (err) {
-      document.documentElement.classList.toggle("dark", !checked);
+      applyDarkMode(!checked);
       setProfile((prev) => (prev ? { ...prev, darkMode: !checked } : prev));
       if (isLoginRequiredError(err)) {
         navigate("/login", { replace: true, state: { from: location.pathname + location.search } });
@@ -218,6 +228,7 @@ export default function MyPage() {
     try {
       await logout();
     } finally {
+      resetDarkMode();
       navigate("/login", { replace: true });
     }
   };
@@ -226,6 +237,7 @@ export default function MyPage() {
     setWithdrawing(true);
     try {
       await deleteMyAccount();
+      resetDarkMode();
       setShowWithdrawConfirm(false);
       navigate("/login", { replace: true });
     } catch (err) {
@@ -240,7 +252,8 @@ export default function MyPage() {
     }
   };
 
-  if (loading || !profile) {
+  // profile이 없는데 실패도 아니면 로그인 화면으로 이동 중인 것이므로 로딩 화면을 유지한다.
+  if (loading || (!profile && !loadFailed)) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <p className="text-sm text-muted-foreground">불러오는 중...</p>
@@ -248,7 +261,18 @@ export default function MyPage() {
     );
   }
 
-  const avatarUrl = profile.profileUrl || `https://api.dicebear.com/7.x/avataaars/svg?seed=${profile.nickname}`;
+  // 로그인 오류가 아닌 조회 실패(서버 오류 등) — 로딩 문구에 갇히지 않게 재시도 버튼을 준다.
+  if (loadFailed || !profile) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center text-center px-6">
+        <p className="text-muted-foreground mb-1">내 정보를 불러오지 못했어요</p>
+        <p className="text-sm text-muted-foreground/70 mb-5">잠시 후 다시 시도해주세요</p>
+        <Button variant="outline" onClick={() => setReloadKey((k) => k + 1)}>다시 시도</Button>
+      </div>
+    );
+  }
+
+  const avatarUrl = getAvatarUrl(profile.profileUrl, profile.nickname);
 
   const menuItems = [
     { icon: Bookmark, label: "내 북마크", path: "/app/bookmarks" },
@@ -290,7 +314,8 @@ export default function MyPage() {
                 <button
                   onClick={handleAvatarClick}
                   disabled={uploadingAvatar}
-                  className="absolute bottom-0 right-0 w-7 h-7 bg-primary text-primary-foreground rounded-full flex items-center justify-center disabled:opacity-60"
+                  aria-label="프로필 사진 변경"
+                  className={CAMERA_BUTTON_CLASS}
                 >
                   <Camera className="w-3.5 h-3.5" />
                 </button>
@@ -384,7 +409,9 @@ export default function MyPage() {
                   <img src={getProxiedImageUrl(avatarUrl)} alt={profile.nickname} referrerPolicy="no-referrer" className="w-20 h-20 rounded-full border-2 border-gold" />
                   <button
                     onClick={handleAvatarClick}
-                    className="absolute bottom-0 right-0 w-7 h-7 bg-primary text-primary-foreground rounded-full flex items-center justify-center"
+                    disabled={uploadingAvatar}
+                    aria-label="프로필 사진 변경"
+                    className={CAMERA_BUTTON_CLASS}
                   >
                     <Camera className="w-3.5 h-3.5" />
                   </button>
@@ -473,7 +500,7 @@ export default function MyPage() {
       <ConfirmDeleteModal
         open={showWithdrawConfirm}
         title="정말 탈퇴하시겠습니까?"
-        description="탈퇴하면 저장된 정보와 플래너, 북마크가 모두 삭제되며 복구할 수 없습니다."
+        description="탈퇴하면 같은 계정으로 다시 로그인할 수 없습니다. 커뮤니티에 공유한 루트와 작성한 리뷰는 남아 있을 수 있으니, 공유한 루트는 탈퇴 전에 플래너에서 공유를 해제해 주세요."
         confirmLabel={withdrawing ? "탈퇴 처리 중..." : "탈퇴"}
         onConfirm={handleWithdraw}
         onCancel={() => setShowWithdrawConfirm(false)}
