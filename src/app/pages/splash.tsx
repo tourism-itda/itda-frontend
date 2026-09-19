@@ -10,14 +10,12 @@ export default function Splash() {
   useEffect(() => {
     let cancelled = false;
 
-    const timer = setTimeout(async () => {
-      try {
-        const session = await getSession();
-        if (cancelled) return;
-        navigate(session.user ? "/app" : "/login");
-      } catch {
-        if (!cancelled) navigate("/login");
-      }
+    // 홈은 비로그인도 볼 수 있는 공개 화면이라 로그인 여부와 무관하게 항상 /app으로 보낸다.
+    // 세션 확인은 만료된 토큰/user 캐시를 정리하려고 백그라운드로만 돌리고, 결과는 기다리지 않는다.
+    getSession().catch(() => {});
+
+    const timer = setTimeout(() => {
+      if (!cancelled) navigate("/app", { replace: true });
     }, 2000);
 
     return () => {

@@ -1,7 +1,9 @@
 import { NavLink } from "react-router";
 import { BrandMark } from "./BrandMark";
+import { AuthActions } from "./AuthActions";
+import type { UserResponse } from "../lib/auth";
 
-export function DesktopNav() {
+export function DesktopNav({ user }: { user: UserResponse | null }) {
   const navItems = [
     { to: "/app", label: "홈", end: true },
     { to: "/app/planner", label: "플래너" },
@@ -41,6 +43,9 @@ export function DesktopNav() {
           </NavLink>
         ))}
       </nav>
+
+      {/* 로그인/회원가입 또는 사용자 이름 — 우측 끝 */}
+      <AuthActions user={user} className="ml-auto gap-4" />
     </div>
   );
 }
