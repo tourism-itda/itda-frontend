@@ -27,6 +27,9 @@ export default function Layout() {
     window.scrollTo(0, 0);
   }, [location.pathname]);
 
+  // 루트 만들기는 화면 맨 아래에 고정 액션 푸터가 붙는 페이지라 모바일 탭바를 숨긴다(푸터와 겹침 방지).
+  const hideMobileNav = location.pathname.startsWith("/app/route-builder/");
+
   return (
     <div className="min-h-screen bg-background">
       {/* 데스크탑 상단 내비게이션 (≥1025px) */}
@@ -35,14 +38,16 @@ export default function Layout() {
       </header>
 
       {/* 메인 콘텐츠 영역 */}
-      <main className="min-h-screen pb-20 lg:pb-0">
+      <main className={`min-h-screen lg:pb-0 ${hideMobileNav ? "" : "pb-20"}`}>
         <Outlet />
       </main>
 
       {/* 모바일 하단 탭바 (≤1024px) */}
-      <div className="lg:hidden fixed bottom-0 left-0 right-0 border-t border-border bg-card/95 backdrop-blur-sm z-50 hanji-noise">
-        <MobileNav />
-      </div>
+      {!hideMobileNav && (
+        <div className="lg:hidden fixed bottom-0 left-0 right-0 border-t border-border bg-card/95 backdrop-blur-sm z-50 hanji-noise">
+          <MobileNav />
+        </div>
+      )}
     </div>
   );
 }

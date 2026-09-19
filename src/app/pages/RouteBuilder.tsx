@@ -705,7 +705,7 @@ export default function RouteBuilder() {
               </div>
 
               {/* 하단 고정 액션 */}
-              <div className="fixed bottom-16 lg:bottom-0 left-0 right-0 z-40 px-4 pb-3 pt-2 bg-background/95 backdrop-blur-sm hanji-noise border-t border-border">
+              <div className="fixed bottom-0 left-0 right-0 z-40 px-4 pb-3 pt-2 bg-background/95 backdrop-blur-sm hanji-noise border-t border-border">
                 <div className="max-w-2xl mx-auto space-y-2">
                   <Button
                     onClick={() => handleCreateRoute(selectedIds)}
@@ -758,8 +758,8 @@ export default function RouteBuilder() {
           </div>
 
           {/* 하단 고정 액션 */}
-          {/* 모바일은 하단 탭바(h-16) 바로 위, 데스크탑은 화면 맨 아래에 붙인다. 버튼은 한 줄로 두어 높이를 줄인다. */}
-          <div className="fixed bottom-16 lg:bottom-0 left-0 right-0 z-40 px-4 pb-3 pt-2 bg-background/95 backdrop-blur-sm hanji-noise border-t border-border">
+          {/* 이 페이지는 모바일 탭바를 숨기므로(Layout.tsx) 모바일·데스크탑 모두 화면 맨 아래에 붙인다. 버튼은 한 줄로 두어 높이를 줄인다. */}
+          <div className="fixed bottom-0 left-0 right-0 z-40 px-4 pb-3 pt-2 bg-background/95 backdrop-blur-sm hanji-noise border-t border-border">
             <div className="max-w-2xl mx-auto">
               {hasEmptySlot && (
                 <p className="text-xs text-muted-foreground text-center mb-2">
