@@ -273,7 +273,9 @@ export default function Signup() {
                   checked={agreedToTerms}
                   onCheckedChange={(checked) => setAgreedToTerms(checked as boolean)}
                 />
-                <Label htmlFor="terms" className="text-sm leading-relaxed cursor-pointer">
+                {/* Label 기본이 flex gap-2라 span/텍스트 조각 사이가 벌어진다("처리방침 에 동의합니다").
+                    block으로 바꿔 문장으로 이어지게 한다. */}
+                <Label htmlFor="terms" className="block text-sm leading-relaxed cursor-pointer">
                   <span className="text-foreground">서비스 이용약관</span> 및{" "}
                   <span className="text-foreground">개인정보 처리방침</span>에 동의합니다
                 </Label>
