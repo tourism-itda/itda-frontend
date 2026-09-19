@@ -35,7 +35,7 @@ const faqs = [
   {
     question: "회원 탈퇴는 어떻게 하나요?",
     answer:
-      "마이페이지 > 계정 관리에서 '회원 탈퇴'를 선택하면 탈퇴할 수 있습니다. 탈퇴 시 저장된 플래너와 작성한 리뷰는 모두 삭제됩니다.",
+      "마이페이지에서 '회원 탈퇴'를 선택하면 탈퇴할 수 있습니다. 탈퇴 후에는 같은 계정으로 다시 로그인할 수 없으며, 공유한 루트와 작성한 리뷰는 남아 있을 수 있어요. 공유한 루트는 탈퇴 전에 플래너에서 공유를 해제해 주세요.",
   },
 ];
 
@@ -52,7 +52,7 @@ export default function QnA() {
           >
             <ArrowLeft className="w-4.5 h-4.5" />
           </button>
-          <h1 className="text-xl">Q&A</h1>
+          <h1 className="font-heading text-xl">Q&A</h1>
         </div>
       </div>
 

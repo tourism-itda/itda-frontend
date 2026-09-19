@@ -276,8 +276,25 @@ export default function Signup() {
                 {/* Label 기본이 flex gap-2라 span/텍스트 조각 사이가 벌어진다("처리방침 에 동의합니다").
                     block으로 바꿔 문장으로 이어지게 한다. */}
                 <Label htmlFor="terms" className="block text-sm leading-relaxed cursor-pointer">
-                  <span className="text-foreground">서비스 이용약관</span> 및{" "}
-                  <span className="text-foreground">개인정보 처리방침</span>에 동의합니다
+                  {/* 가입 폼 입력을 잃지 않도록 새 탭으로 연다. label 안의 링크는 체크박스를 토글하지 않는다. */}
+                  <a
+                    href="/app/terms"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-foreground underline underline-offset-2"
+                  >
+                    서비스 이용약관
+                  </a>{" "}
+                  및{" "}
+                  <a
+                    href="/app/terms#privacy"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-foreground underline underline-offset-2"
+                  >
+                    개인정보 처리방침
+                  </a>
+                  에 동의합니다
                 </Label>
               </div>
               {errors.terms && (

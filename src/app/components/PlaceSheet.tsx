@@ -14,6 +14,9 @@ export interface PlaceSheetData {
   // 백엔드 장소 PK. 있으면 GET /api/places/:place_id로 실제 상세 정보를 조회한다.
   // 없는 큐레이션 콘텐츠(인물/왕조 등)는 기존처럼 이름 기반 조회로 보강한다.
   placeId?: number;
+  // 이미 북마크된 장소를 열 때(내 북마크 목록) 넘긴다. 있으면 저장된 상태로 시작하고, 해제할 때
+  // findBookmarkId로 목록을 다시 뒤지지 않는다.
+  bookmarkId?: number;
   name: string;
   category: string;
   address: string;
@@ -43,8 +46,8 @@ export function PlaceSheet({ place, onClose }: PlaceSheetProps) {
     detail.data?.images.find((img) => img.is_primary) ?? detail.data?.images[0];
 
   useEffect(() => {
-    setSaved(false);
-    setBookmarkId(undefined);
+    setSaved(place?.bookmarkId !== undefined);
+    setBookmarkId(place?.bookmarkId);
   }, [place?.id]);
 
   // is_bookmarked는 로그인 시에만 개인화되어 내려오므로, 서버가 true를 알려주는 경우에만 반영한다.

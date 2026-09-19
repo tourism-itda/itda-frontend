@@ -6,6 +6,7 @@ import { Button } from "../components/ui/button";
 import { ApiError, isLoginRequiredError } from "../lib/api";
 import { BookmarkListItem, deleteBookmark, getMyBookmarks } from "../lib/bookmarksApi";
 import { PlaceImage } from "../components/PlaceImage";
+import { PlaceSheet, PlaceSheetData } from "../components/PlaceSheet";
 
 type Status = "loading" | "done" | "unauthenticated" | "error";
 
@@ -15,6 +16,7 @@ export default function Bookmarks() {
   const [status, setStatus] = useState<Status>("loading");
   const [bookmarks, setBookmarks] = useState<BookmarkListItem[]>([]);
   const [removingIds, setRemovingIds] = useState<Set<number>>(new Set());
+  const [sheetPlace, setSheetPlace] = useState<PlaceSheetData | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -41,6 +43,29 @@ export default function Bookmarks() {
       cancelled = true;
     };
   }, []);
+
+  function openPlace(place: BookmarkListItem) {
+    // 주소·운영시간·설명은 시트가 placeId로 장소 상세 API를 조회해 채운다.
+    setSheetPlace({
+      id: String(place.place_id),
+      placeId: place.place_id,
+      bookmarkId: place.bookmark_id,
+      name: place.name,
+      category: place.category,
+      address: place.region ?? "",
+      hours: "",
+      image: place.image_url ?? "",
+      description: "",
+    });
+  }
+
+  // 시트 안에서도 북마크를 해제할 수 있으므로, 닫을 때 목록을 다시 불러와 맞춘다(실패하면 기존 목록 유지).
+  function closeSheet() {
+    setSheetPlace(null);
+    getMyBookmarks()
+      .then(setBookmarks)
+      .catch(() => {});
+  }
 
   async function handleRemove(bookmarkId: number) {
     if (removingIds.has(bookmarkId)) return;
@@ -78,7 +103,7 @@ export default function Bookmarks() {
           >
             <ArrowLeft className="w-4.5 h-4.5" />
           </button>
-          <h1 className="text-xl">내 북마크</h1>
+          <h1 className="font-heading text-xl">내 북마크</h1>
         </div>
       </div>
 
@@ -119,26 +144,33 @@ export default function Bookmarks() {
           <div className="divide-y divide-border border-t border-border">
             {bookmarks.map((place) => (
               <div key={place.bookmark_id} className="flex gap-3 py-4">
-                <PlaceImage
-                  src={place.image_url}
-                  alt={place.name}
-                  category={place.category}
-                  className="w-20 h-20 rounded-sm object-cover border border-border shrink-0"
-                />
-                <div className="flex-1 min-w-0 py-0.5">
-                  <p className="text-sm text-muted-foreground mb-1">{place.category}</p>
-                  <p className="font-heading mb-1.5 truncate">{place.name}</p>
-                  {place.region && (
-                    <div className="flex items-start gap-1 text-sm text-muted-foreground">
-                      <MapPin className="w-3.5 h-3.5 shrink-0 mt-0.5" />
-                      <span className="line-clamp-1">{place.region}</span>
-                    </div>
-                  )}
-                </div>
+                <button
+                  type="button"
+                  onClick={() => openPlace(place)}
+                  className="flex flex-1 min-w-0 gap-3 text-left"
+                >
+                  <PlaceImage
+                    src={place.image_url}
+                    alt={place.name}
+                    category={place.category}
+                    className="w-20 h-20 rounded-sm object-cover border border-border shrink-0"
+                  />
+                  <div className="flex-1 min-w-0 py-0.5">
+                    <p className="text-sm text-muted-foreground mb-1">{place.category}</p>
+                    <p className="font-heading mb-1.5 truncate">{place.name}</p>
+                    {place.region && (
+                      <div className="flex items-start gap-1 text-sm text-muted-foreground">
+                        <MapPin className="w-3.5 h-3.5 shrink-0 mt-0.5" />
+                        <span className="line-clamp-1">{place.region}</span>
+                      </div>
+                    )}
+                  </div>
+                </button>
                 <button
                   onClick={() => handleRemove(place.bookmark_id)}
                   disabled={removingIds.has(place.bookmark_id)}
-                  className="self-center p-2 rounded-full hover:bg-muted transition-colors shrink-0 disabled:opacity-60"
+                  aria-label="북마크 삭제"
+                  className="self-center w-11 h-11 -mr-2 flex items-center justify-center rounded-full hover:bg-muted transition-colors shrink-0 disabled:opacity-60"
                 >
                   <Bookmark className="w-4 h-4 fill-primary text-primary" />
                 </button>
@@ -147,6 +179,8 @@ export default function Bookmarks() {
           </div>
         )}
       </div>
+
+      <PlaceSheet place={sheetPlace} onClose={closeSheet} />
     </div>
   );
 }
