@@ -7,6 +7,8 @@ export interface EventSummary {
   address: string | null;
   event_start_date: string;   // "YYYY-MM-DD"
   event_end_date: string | null;
+  latitude: number | null;
+  longitude: number | null;
   // 축제 사이트 링크. 관광API에 등록이 안 된 축제도 많아 null일 수 있다.
   event_homepage: string | null;
 }
