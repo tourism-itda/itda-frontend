@@ -145,7 +145,7 @@ export default function Home() {
 
         {/* 하단 2단 그리드 */}
         <section className="grid lg:grid-cols-3 gap-5 mb-10">
-          <div className="lg:col-span-2 bg-card rounded-[28px] border border-border shadow-sm p-6">
+          <div className="lg:col-span-2 rounded-[28px] border border-border/40 bg-card/15 backdrop-blur-md hanji-noise p-6 shadow-sm">
             <div className="flex items-center justify-between mb-4">
               <h3 className="font-heading text-lg font-black">다가오는 일정</h3>
               {upcomingStatus === "done" && upcomingEvents.length > 0 && (
@@ -220,18 +220,15 @@ export default function Home() {
             )}
           </div>
 
-          <div
-            className="rounded-[28px] p-8 flex flex-col justify-between text-ivory shadow-md"
-            style={{ background: "linear-gradient(135deg, var(--terracotta), var(--gold))" }}
-          >
+          <div className="rounded-[28px] border border-border/40 bg-card/15 backdrop-blur-md hanji-noise p-8 flex flex-col justify-between text-foreground shadow-sm">
             <div>
-              <Footprints className="w-7 h-7 mb-3" />
+              <Footprints className="w-7 h-7 mb-3 text-primary" />
               <h3 className="font-heading text-2xl lg:text-[28px] font-black mb-2">나만의 역사 여행 코스 만들기</h3>
-              <p className="text-base text-ivory/85">관심 시대와 인물을 고르면 잇다가 여행 코스를 추천해드려요.</p>
+              <p className="text-base text-muted-foreground">관심 시대와 인물을 고르면 잇다가 여행 코스를 추천해드려요.</p>
             </div>
             <button
               onClick={() => navigate("/app/planner")}
-              className="mt-6 self-start h-12 px-5 rounded-full bg-white text-neutral-900 text-sm font-black hover:bg-white/90 transition-colors flex items-center"
+              className="mt-6 self-start h-12 px-5 rounded-lg border border-primary bg-transparent text-primary text-sm font-black hover:bg-primary hover:text-primary-foreground transition-colors flex items-center"
             >
               플래너 시작하기
             </button>
