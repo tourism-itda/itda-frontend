@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useNavigate } from "react-router";
+import { useLocation, useNavigate } from "react-router";
 import { ArrowLeft, Calendar, MapPinOff, Search, X } from "lucide-react";
 import { Skeleton } from "../components/ui/skeleton";
 import { MapView } from "../components/MapView";
@@ -13,7 +13,8 @@ const FETCH_LIMIT = 100;
 // "앞으로 한 달"까지만 보여준다(요청 사항). 화면에서 오늘 날짜 기준으로 자른다 —
 // 백엔드는 limit 개수 기준으로만 잘라 주고 기간 필터는 없어서 프론트에서 처리한다.
 const MONTHS_AHEAD = 1;
-const INITIAL_MAP_EVENT_LIMIT = 5;
+// 지도에는 한 번에 5개씩(1~5, 6~10, …) 끊어서 보여준다. 선택한 행사가 속한 묶음을 표시한다.
+const MAP_CHUNK_SIZE = 5;
 
 function addMonthsToToday(months: number): Date {
   const d = new Date();
@@ -36,9 +37,13 @@ function monthLabel(yyyyMm: string): string {
 
 export default function UpcomingEvents() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [status, setStatus] = useState<"loading" | "done" | "error">("loading");
   const [events, setEvents] = useState<EventSummary[]>([]);
-  const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
+  // 홈의 "다가오는 일정"에서 넘어오면 그 행사를 지도에 바로 선택해 보여준다.
+  const [selectedEventId, setSelectedEventId] = useState<string | null>(
+    (location.state as { eventId?: string } | null)?.eventId ?? null,
+  );
   const [regionQuery, setRegionQuery] = useState("");
   const eventItemRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
@@ -73,27 +78,35 @@ export default function UpcomingEvents() {
   }, [events, cutoff, regionQuery]);
 
   useEffect(() => {
-    if (selectedEventId && !visibleEvents.some((event) => event.content_id === selectedEventId)) {
+    // 로딩 중(목록이 아직 빈 상태)엔 넘어온 선택을 지우지 않는다. 목록이 채워진 뒤에도 없으면 해제.
+    if (
+      selectedEventId &&
+      visibleEvents.length > 0 &&
+      !visibleEvents.some((event) => event.content_id === selectedEventId)
+    ) {
       setSelectedEventId(null);
     }
   }, [selectedEventId, visibleEvents]);
 
-  const mapEvents = useMemo(
-    () =>
-      visibleEvents.flatMap((event, index) => {
-        if (index >= INITIAL_MAP_EVENT_LIMIT && event.content_id !== selectedEventId) return [];
-        if (!Number.isFinite(event.latitude) || !Number.isFinite(event.longitude)) return [];
-        return [{
-          id: event.content_id,
-          order: index + 1,
-          name: event.title,
-          lat: event.latitude,
-          lng: event.longitude,
-          image: event.image_url ?? "",
-        }];
-      }),
-    [visibleEvents, selectedEventId],
-  );
+  const mapEvents = useMemo(() => {
+    // 선택한 행사의 위치(0-based)가 속한 5칸 묶음을 계산한다. 선택이 없으면 첫 묶음(1~5).
+    const selectedIndex = selectedEventId
+      ? visibleEvents.findIndex((event) => event.content_id === selectedEventId)
+      : -1;
+    const chunkStart = selectedIndex >= 0 ? Math.floor(selectedIndex / MAP_CHUNK_SIZE) * MAP_CHUNK_SIZE : 0;
+    return visibleEvents.flatMap((event, index) => {
+      if (index < chunkStart || index >= chunkStart + MAP_CHUNK_SIZE) return [];
+      if (!Number.isFinite(event.latitude) || !Number.isFinite(event.longitude)) return [];
+      return [{
+        id: event.content_id,
+        order: index + 1,
+        name: event.title,
+        lat: event.latitude,
+        lng: event.longitude,
+        image: event.image_url ?? "",
+      }];
+    });
+  }, [visibleEvents, selectedEventId]);
 
   useEffect(() => {
     if (!selectedEventId) return;

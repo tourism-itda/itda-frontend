@@ -24,32 +24,12 @@ function RouteCard({ post, onOpen }: { post: CommunityPostSummary; onOpen: () =>
           alt={post.title}
           className="w-full h-full scale-[1.06] object-cover group-hover:scale-110 transition-transform duration-500"
         />
-        {/* 이미지 왼쪽 아래: 지역 배지를 위에, 그 아래에 태그를 쌓는다. */}
-        {(post.region || post.tags.length > 0) && (
-          <div className="absolute left-3 right-3 bottom-3 flex flex-col items-start gap-1.5">
-            {post.region && (
-              <span className="px-2.5 py-1 rounded-full bg-neutral-900/70 backdrop-blur-sm text-white text-xs font-bold tracking-wide">
-                {post.region}
-              </span>
-            )}
-            {post.tags.length > 0 && (
-              <div className="flex flex-wrap gap-1 max-w-full">
-                {post.tags.slice(0, MAX_CARD_TAGS).map((t) => (
-                  // 스페이스 입력 규칙이 생기기 전에는 공백이 든 긴 태그도 저장할 수 있었다 — 카드를 넘치지 않게 말줄임.
-                  <span
-                    key={t}
-                    className="max-w-full truncate px-2 py-0.5 rounded-full bg-white border border-black text-black text-xs font-medium"
-                  >
-                    #{t}
-                  </span>
-                ))}
-                {post.tags.length > MAX_CARD_TAGS && (
-                  <span className="px-2 py-0.5 rounded-full bg-white border border-black text-black text-xs font-medium">
-                    +{post.tags.length - MAX_CARD_TAGS}
-                  </span>
-                )}
-              </div>
-            )}
+        {/* 이미지 왼쪽 아래: 지역 배지만. 태그는 본문 아래로 내렸다. */}
+        {post.region && (
+          <div className="absolute left-3 bottom-3">
+            <span className="px-2.5 py-1 rounded-full bg-neutral-900/70 backdrop-blur-sm text-white text-xs font-bold tracking-wide">
+              {post.region}
+            </span>
           </div>
         )}
         {post.rating != null && (
@@ -78,6 +58,24 @@ function RouteCard({ post, onOpen }: { post: CommunityPostSummary; onOpen: () =>
           <span className="text-muted-foreground/40">·</span>
           <span>리뷰 {post.review_count}개</span>
         </div>
+        {/* 태그 — 장소·리뷰 요약 아래에 표기 */}
+        {post.tags.length > 0 && (
+          <div className="flex flex-wrap gap-1 mt-2.5">
+            {post.tags.slice(0, MAX_CARD_TAGS).map((t) => (
+              <span
+                key={t}
+                className="max-w-full truncate px-2 py-0.5 rounded-full bg-muted text-muted-foreground text-xs font-medium"
+              >
+                #{t}
+              </span>
+            ))}
+            {post.tags.length > MAX_CARD_TAGS && (
+              <span className="px-2 py-0.5 rounded-full bg-muted text-muted-foreground text-xs font-medium">
+                +{post.tags.length - MAX_CARD_TAGS}
+              </span>
+            )}
+          </div>
+        )}
       </div>
     </button>
   );
