@@ -47,7 +47,8 @@ export default function Layout() {
       </header>
 
       {/* 메인 콘텐츠 영역 */}
-      <main className={`min-h-screen lg:pb-0 ${hideMobileNav ? "" : "pb-20"}`}>
+      {/* 모바일 탭바(h-16)에 가려지는 하단 여백은 푸터의 padding(py-8 + pb-8)이 맡는다. */}
+      <main className="min-h-screen">
         <Outlet />
       </main>
 

@@ -245,8 +245,9 @@ export default function ContentDetail() {
   );
 
   return (
-    <div className="min-h-screen pb-24 lg:pb-24">
-      <div className="max-w-[1120px] mx-auto px-4 lg:px-8">
+    // flex-col: 콘텐츠가 짧아도 루트 만들기 바가 이 영역 맨 아래(= 푸터 바로 위)에 놓이도록 콘텐츠 영역이 남는 높이를 채운다.
+    <div className="flex min-h-screen flex-col">
+      <div className="w-full flex-1 max-w-[1120px] mx-auto px-4 lg:px-8 pb-8">
         {/* 뒤로가기 — 스크롤해도 계속 보이도록 sticky 글라스 바. 데스크톱은 상단 헤더(h-16) 아래에 붙는다. */}
         <div className="sticky top-0 lg:top-16 z-30 -mx-4 lg:-mx-8 px-4 lg:px-8 pt-3 pb-2 bg-background/80 backdrop-blur-md hanji-noise">
           <button
@@ -404,7 +405,7 @@ export default function ContentDetail() {
       {/* 하단 고정 루트 만들기 바 — 관련 장소를 본 뒤 다음 단계로 자연스레 넘어가도록 항상 보이게 강조한다.
           모바일은 하단 탭바(h-16) 위에, 데스크톱은 화면 맨 아래에 붙는다. */}
       {places.status === "done" && relatedPlaces && relatedPlaces.length > 0 && (
-        <div className="sticky bottom-16 lg:bottom-0 z-40 -mx-4 lg:-mx-8 border-t border-border bg-background/90 backdrop-blur-md hanji-noise">
+        <div className="sticky bottom-16 lg:bottom-0 z-40 border-t border-border bg-background/90 backdrop-blur-md hanji-noise">
           <div className="max-w-[1120px] mx-auto px-4 lg:px-8 py-3 flex items-center gap-4">
             <p className="hidden sm:block flex-1 min-w-0 text-sm text-muted-foreground truncate">
               {selectedPlaceIds.length > 0
