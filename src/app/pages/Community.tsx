@@ -112,7 +112,7 @@ export default function Community() {
   return (
     <div className="min-h-screen">
       {/* 헤더 */}
-      <div className="border-b border-border bg-card sticky top-0 lg:top-16 z-40">
+      <div className="border-b border-border bg-card/70 backdrop-blur-md hanji-noise sticky top-0 lg:top-16 z-40">
         <div className="max-w-[1280px] mx-auto px-4 lg:px-8 py-6">
           <div className="mb-5">
             <PageTitle title="커뮤니티" />
@@ -167,7 +167,7 @@ export default function Community() {
         )}
 
         {status === "done" && posts.length > 0 && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-7">
             {posts.map((post) => (
               <RouteCard
                 key={post.itinerary_id}

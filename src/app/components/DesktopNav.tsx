@@ -4,12 +4,11 @@ import { AuthActions } from "./AuthActions";
 import type { UserResponse } from "../lib/auth";
 
 export function DesktopNav({ user }: { user: UserResponse | null }) {
+  // 마이페이지는 우측 계정 클러스터(AuthActions)에서 노출하므로 가운데 내비에는 두지 않는다(중복 방지).
   const navItems = [
     { to: "/app", label: "홈", end: true },
     { to: "/app/planner", label: "플래너" },
     { to: "/app/community", label: "커뮤니티" },
-    // 마이페이지는 로그인한 사용자에게만 노출한다.
-    ...(user ? [{ to: "/app/mypage", label: "마이페이지" }] : []),
   ];
 
   return (

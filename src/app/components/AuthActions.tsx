@@ -35,9 +35,10 @@ export function AuthActions({ user, className = "" }: AuthActionsProps) {
           >
             {user.nickname}님
           </span>
+          {/* 모바일은 하단 탭바에 마이페이지가 있으므로 여기서는 데스크톱에서만 노출한다(중복 방지). */}
           <Link
             to="/app/mypage"
-            className="shrink-0 text-muted-foreground hover:text-foreground transition-colors"
+            className="hidden lg:inline shrink-0 text-muted-foreground hover:text-foreground transition-colors"
           >
             마이페이지
           </Link>

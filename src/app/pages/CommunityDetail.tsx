@@ -666,7 +666,7 @@ export default function CommunityDetail() {
 
           {/* 우측: 요약 사이드바 — 데스크톱 전용 */}
           <div className="hidden lg:block sticky top-24 mt-16 space-y-4">
-            <div className="bg-card border border-border rounded-[28px] p-6">
+            <div className="bg-card/70 backdrop-blur-md hanji-noise border border-border rounded-[28px] p-6">
               <div className="flex items-center gap-3 pb-5 mb-5 border-b border-border">
                 <img
                   src={getProxiedImageUrl(getAvatarUrl(post.author.profile_url, post.author.nickname))}
