@@ -699,7 +699,7 @@ export default function CommunityDetail() {
             onClick={() => setSelectedStop(null)}
           />
 
-          <div className="relative bg-card w-full max-w-lg max-h-[85vh] rounded-t-3xl overflow-hidden shadow-2xl flex flex-col">
+          <div className="relative bg-card w-full max-w-2xl max-h-[92vh] rounded-t-3xl overflow-hidden shadow-2xl flex flex-col">
             {/* 핸들 */}
             <div className="flex justify-center pt-3 pb-1 shrink-0">
               <div className="w-10 h-1 rounded-full bg-border" />
@@ -708,19 +708,21 @@ export default function CommunityDetail() {
             {/* 닫기 */}
             {/* 북마크 버튼은 뺐다 — 이 stop 응답엔 place_id가 없어서 실제 /api/bookmarks 연동이
                 불가능하다(백엔드 확인 대기 중). */}
-            <div className="absolute top-4 right-4 flex items-center gap-2">
+            {/* z-20: 아래 지도(relative)가 DOM 순서상 뒤라서 z-index 없이는 이 버튼을 덮어 가린다. 지도 위에서도 보이게 카드색 배경+그림자. */}
+            <div className="absolute top-4 right-4 z-20 flex items-center gap-2">
               <button
                 onClick={() => setSelectedStop(null)}
-                className="w-11 h-11 rounded-full bg-muted flex items-center justify-center outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                aria-label="닫기"
+                className="w-11 h-11 rounded-full bg-card border border-border shadow-md flex items-center justify-center outline-none hover:bg-muted transition-colors focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
               >
-                <X className="w-4 h-4 text-muted-foreground" />
+                <X className="w-5 h-5 text-foreground" />
               </button>
             </div>
 
             {/* 지도 — stop 데이터에 이미 좌표(latitude/longitude)가 있으니 바로 실제 카카오맵을
                 보여준다. 좌표가 없을 때만(비정상 데이터) 플레이스홀더로 대체한다. */}
             {Number.isFinite(selectedStop.lat) && Number.isFinite(selectedStop.lng) ? (
-              <div className="relative h-44 overflow-hidden shrink-0">
+              <div className="relative h-64 overflow-hidden shrink-0">
                 <MapView
                   places={[
                     {
@@ -740,7 +742,7 @@ export default function CommunityDetail() {
               </div>
             ) : (
               <div
-                className="relative h-44 bg-muted overflow-hidden shrink-0"
+                className="relative h-64 bg-muted overflow-hidden shrink-0"
                 style={{
                   backgroundImage:
                     "linear-gradient(rgba(0,0,0,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(0,0,0,0.03) 1px, transparent 1px)",
