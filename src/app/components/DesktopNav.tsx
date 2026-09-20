@@ -28,7 +28,7 @@ export function DesktopNav({ user }: { user: UserResponse | null }) {
             end={item.end}
             className={({ isActive }) =>
               `relative py-1 text-sm transition-colors ${
-                isActive ? "text-foreground font-medium" : "text-muted-foreground hover:text-foreground"
+                isActive ? "text-foreground font-bold" : "text-foreground/70 hover:text-foreground"
               }`
             }
           >

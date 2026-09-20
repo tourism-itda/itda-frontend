@@ -3,8 +3,8 @@ import type { LucideIcon } from "lucide-react";
 import type { StorySource } from "../lib/contents";
 
 const STORY_SOURCE_CAPTION: Record<StorySource, { text: string; icon: LucideIcon }> = {
-  CHRONICLE: { text: "국사편찬위원회 연표를 기반으로 생성된 역사 이야기예요", icon: Landmark },
-  AI_GENERATED: { text: "AI가 생성한 역사 이야기예요", icon: Sparkles },
+  CHRONICLE: { text: "국사편찬위원회 연표 기반 · AI 정리", icon: Landmark },
+  AI_GENERATED: { text: "AI가 생성한 이야기", icon: Sparkles },
 };
 
 /**
@@ -17,8 +17,8 @@ export function StorySourceBadge({ source }: { source: StorySource | null }) {
 
   const Icon = caption.icon;
   return (
-    <p className="flex items-center gap-1.5 text-xs text-muted-foreground -mt-2 mb-3">
-      <Icon className="w-3.5 h-3.5 shrink-0" />
+    <p className="flex items-center gap-1.5 text-[13px] text-muted-foreground mb-4">
+      <Icon className="w-4 h-4 shrink-0" />
       {caption.text}
     </p>
   );
