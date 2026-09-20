@@ -122,7 +122,7 @@ export default function Planner() {
   return (
     <div className="min-h-screen">
       {/* 헤더: 내 플래너 + 일정 수 한 줄 */}
-      <div className="border-b border-border bg-card sticky top-0 lg:top-16 z-40">
+      <div className="border-b border-border bg-card/70 backdrop-blur-md hanji-noise sticky top-0 lg:top-16 z-40">
         <div className="max-w-7xl mx-auto px-5 py-4">
           <PageTitle
             title="내 플래너"
@@ -168,7 +168,7 @@ export default function Planner() {
         )}
 
         {status === "done" && itineraries.length > 0 && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-7">
             {itineraries.map((item) => (
               <div
                 key={item.itinerary_id}

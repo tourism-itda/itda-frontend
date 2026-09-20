@@ -62,6 +62,11 @@ export interface ContentDetail {
   summary: string | null;
   story_intro: string | null;
   story_body: string | null;
+  // TMDB 원본 필드. overview(원본 줄거리)는 항상 내려오고, tagline(원본 태그라인)은 값이 있는
+  // 작품에만 key가 포함된다(없으면 아예 빠짐) — 화면에서는 존재할 때만 렌더링한다.
+  // 참고: summary/story_intro/story_body는 AI 생성, overview/tagline은 TMDB 원본이다.
+  overview: string | null;
+  tagline?: string;
   // 아직 재처리되지 않은 콘텐츠는 null. 상세 응답(GET /api/contents/{id})에만 있고 목록에는 없다.
   story_source: StorySource | null;
   media: ContentMediaSummary | null;

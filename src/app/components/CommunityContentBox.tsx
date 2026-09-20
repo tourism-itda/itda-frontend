@@ -19,9 +19,9 @@ export function CommunityContentBox({ title, thumbnailUrl, caption, onClick }: C
     <button
       type="button"
       onClick={onClick}
-      className="group w-full flex items-center gap-4 text-left rounded-2xl border border-border bg-card hover:bg-muted/40 p-3 transition-colors"
+      className="group w-full flex items-center gap-4 text-left rounded-2xl border border-border bg-card/60 backdrop-blur-md hanji-noise hover:bg-card/80 p-3 transition-colors"
     >
-      <div className="w-32 aspect-[4/3] rounded-lg overflow-hidden bg-muted shrink-0">
+      <div className="w-28 aspect-[4/5] rounded-lg overflow-hidden bg-muted shrink-0">
         {thumbnailUrl && (
           <img
             src={getProxiedImageUrl(thumbnailUrl)}
