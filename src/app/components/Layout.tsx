@@ -53,7 +53,7 @@ export default function Layout() {
           <img
             src="/images/point.png"
             alt=""
-            className="w-[180px] lg:w-[560px] max-w-none -translate-y-[12%] translate-x-[10%] select-none"
+            className="w-[180px] lg:w-[560px] max-w-none -translate-y-[12%] select-none"
           />
         </div>
       )}
