@@ -16,7 +16,7 @@ function RouteCard({ post, onOpen }: { post: CommunityPostSummary; onOpen: () =>
   return (
     // <button>은 내용을 세로 가운데 정렬한다. 그리드가 카드를 같은 줄의 가장 큰 카드 높이로 늘리면(제목이 2줄인 카드 옆 등)
     // 이미지가 위로 붙지 않고 가운데로 밀려 위·아래에 빈 공간이 생기므로, flex-col로 내용을 위에서부터 채운다.
-    <button onClick={onOpen} className="group flex flex-col text-left bg-card rounded-[24px] border border-border shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 overflow-hidden">
+    <button onClick={onOpen} className="group flex flex-col h-full min-w-0 text-left bg-card rounded-[24px] border border-border shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 overflow-hidden">
       {/* 썸네일 + 배지 오버레이 */}
       <div className="relative w-full shrink-0 aspect-[4/3] overflow-hidden bg-muted">
         <PosterImage
@@ -61,9 +61,11 @@ function RouteCard({ post, onOpen }: { post: CommunityPostSummary; onOpen: () =>
       </div>
 
       {/* 본문 */}
-      <div className="flex flex-1 flex-col w-full px-4 py-4">
-        <p className="font-heading text-[16px] font-black mb-2.5 line-clamp-2 leading-snug">{post.title}</p>
-        <div className="flex items-center gap-2 mb-2">
+      {/* 같은 줄 카드끼리 높이가 맞춰져 남는 세로 공간이 생기면, 제목·작성자·장소/리뷰 수 사이와 위아래 가장자리에 균등하게 나눈다.
+          gap-3·py-3(가장자리와 요소 사이 최소 간격을 같게)은 남는 공간이 없을 때(제목 2줄 등)도 지켜지고, 남는 공간은 그 위에 똑같이 더해진다. 요소에 margin-top:auto·고정 margin을 두지 않는다. */}
+      <div className="flex flex-1 flex-col justify-evenly gap-3 w-full px-4 py-3">
+        <p className="font-heading text-[16px] font-black line-clamp-2 leading-snug">{post.title}</p>
+        <div className="flex items-center gap-2">
           <img
             src={getProxiedImageUrl(getAvatarUrl(post.author_profile_url, post.author_nickname))}
             referrerPolicy="no-referrer"
@@ -71,8 +73,7 @@ function RouteCard({ post, onOpen }: { post: CommunityPostSummary; onOpen: () =>
           />
           <span className="text-sm font-semibold text-foreground truncate">{post.author_nickname ?? "알 수 없음"}</span>
         </div>
-        {/* 남는 높이는 작성자와 이 줄 사이로 보내, 같은 줄 카드끼리 하단 정보가 나란히 붙고 아래에 빈 공간이 남지 않게 한다. */}
-        <div className="mt-auto flex items-center gap-2 text-sm text-muted-foreground">
+        <div className="flex items-center gap-2 text-sm text-muted-foreground">
           <span>장소 {post.place_count}곳</span>
           <span className="text-muted-foreground/40">·</span>
           <span>리뷰 {post.review_count}개</span>
