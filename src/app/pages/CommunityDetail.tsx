@@ -473,7 +473,7 @@ export default function CommunityDetail() {
                                   src={stop.image}
                                   alt={stop.name}
                                   category={stop.category}
-                                  className="w-24 h-20 object-cover shrink-0 rounded-xl"
+                                  className="w-24 h-20 object-cover shrink-0 rounded-md"
                                 />
                                 <div className="flex-1 min-w-0 py-0.5">
                                   <span className="text-[11px] uppercase tracking-[0.12em] text-primary">{stop.category}</span>
