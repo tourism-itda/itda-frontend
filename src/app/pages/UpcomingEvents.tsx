@@ -2,8 +2,10 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router";
 import { ArrowLeft, Calendar, MapPinOff } from "lucide-react";
 import { Skeleton } from "../components/ui/skeleton";
+import { MapView } from "../components/MapView";
 import { getUpcomingEvents, getEventLink, EventSummary } from "../lib/events";
 import { getProxiedImageUrl } from "../lib/imageProxy";
+import { loadKakaoMaps } from "../lib/kakaoMaps";
 
 // 백엔드 EventService.FETCH_ROWS(관광API 캐시 크기)와 맞춘 값. 이보다 더 달라고 해도
 // 캐시에 없는 건 못 받아오므로 사실상 이게 상한이다.
@@ -36,6 +38,8 @@ export default function UpcomingEvents() {
   const navigate = useNavigate();
   const [status, setStatus] = useState<"loading" | "done" | "error">("loading");
   const [events, setEvents] = useState<EventSummary[]>([]);
+  const [eventCoordinates, setEventCoordinates] = useState<Record<string, { lat: number; lng: number }>>({});
+  const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -61,6 +65,52 @@ export default function UpcomingEvents() {
   const visibleEvents = useMemo(
     () => events.filter((e) => e.event_start_date <= cutoff),
     [events, cutoff],
+  );
+
+  // 행사 API는 좌표 대신 주소만 내려주므로 카카오 지오코더로 지도용 좌표를 보강한다.
+  useEffect(() => {
+    if (visibleEvents.length === 0) return;
+    let cancelled = false;
+
+    loadKakaoMaps()
+      .then(() => {
+        if (cancelled) return;
+        const geocoder = new window.kakao.maps.services.Geocoder();
+        visibleEvents.forEach((event) => {
+          if (!event.address || eventCoordinates[event.content_id]) return;
+          geocoder.addressSearch(event.address, (result: Array<{ x: string; y: string }>, code: string) => {
+            if (cancelled || code !== window.kakao.maps.services.Status.OK || result.length === 0) return;
+            setEventCoordinates((prev) => ({
+              ...prev,
+              [event.content_id]: { lat: Number(result[0].y), lng: Number(result[0].x) },
+            }));
+          });
+        });
+      })
+      .catch(() => {
+        // 지도 키가 없거나 지오코딩에 실패해도 행사 목록은 정상적으로 사용할 수 있다.
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [visibleEvents, eventCoordinates]);
+
+  const mapEvents = useMemo(
+    () =>
+      visibleEvents.flatMap((event, index) => {
+        const coordinates = eventCoordinates[event.content_id];
+        if (!coordinates) return [];
+        return [{
+          id: event.content_id,
+          order: index + 1,
+          name: event.title,
+          lat: coordinates.lat,
+          lng: coordinates.lng,
+          image: event.image_url ?? "",
+        }];
+      }),
+    [visibleEvents, eventCoordinates],
   );
 
   // 월별로 묶어서 보여준다(정렬은 백엔드에서 이미 event_start_date 오름차순으로 옴).
@@ -126,6 +176,23 @@ export default function UpcomingEvents() {
 
         {status === "done" && groups.length > 0 && (
           <div className="space-y-8">
+            {visibleEvents.length > 0 && (
+              <section className="space-y-3">
+                <div className="flex items-baseline justify-between">
+                  <h2 className="text-sm font-bold text-muted-foreground">행사 위치</h2>
+                  <span className="text-xs text-muted-foreground">
+                    {mapEvents.length > 0 ? `${mapEvents.length}곳 표시` : "위치를 불러오는 중"}
+                  </span>
+                </div>
+                <div className="h-64 lg:h-80 overflow-hidden rounded-xl border border-border">
+                  <MapView
+                    places={mapEvents}
+                    selectedPlace={selectedEventId}
+                    onSelectPlace={setSelectedEventId}
+                  />
+                </div>
+              </section>
+            )}
             {groups.map(([month, items]) => (
               <section key={month}>
                 <h2 className="text-sm font-bold text-muted-foreground mb-3">{monthLabel(month)}</h2>

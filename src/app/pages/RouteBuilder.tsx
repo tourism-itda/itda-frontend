@@ -349,6 +349,12 @@ export default function RouteBuilder() {
         if (cancelled) return;
         setPlaces(result);
         setSelectStatus("done");
+        // 콘텐츠 상세에서 "루트에 담기"로 골라 넘어온 초기 선택값을 반영한다(존재하는 명소만, 최대 MAX_SPOTS곳).
+        const seeded = (location.state as { selectedPlaceIds?: number[] } | null)?.selectedPlaceIds;
+        if (seeded && seeded.length > 0) {
+          const valid = seeded.filter((sid) => result.some((p) => p.place_id === sid)).slice(0, MAX_SPOTS);
+          if (valid.length > 0) setSelectedIds(valid);
+        }
       })
       .catch((err) => {
         if (cancelled) return;

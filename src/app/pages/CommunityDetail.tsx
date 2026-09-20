@@ -349,48 +349,26 @@ export default function CommunityDetail() {
 
   return (
     <div className="min-h-screen pb-8">
-      {/* 히어로 */}
-      <div className="relative h-52 md:h-64 lg:h-80 overflow-hidden bg-muted">
+      {/* route cover */}
+      <div className="relative h-40 md:h-48 lg:h-56 overflow-hidden bg-muted">
         <PlaceImage src={post.thumbnail_url} alt={post.title} className="w-full h-full object-cover" />
-        <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-black/65" />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/25 via-transparent to-black/70" />
         <button
           onClick={() => navigate(-1)}
           className="absolute top-4 left-4 w-11 h-11 rounded-full bg-navy/50 backdrop-blur-sm hanji-noise flex items-center justify-center text-ivory hover:bg-navy/70 transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ivory focus-visible:ring-offset-2 focus-visible:ring-offset-navy"
         >
           <ArrowLeft className="w-4 h-4" />
         </button>
-        <div className="absolute bottom-5 lg:bottom-10 left-5 right-5 lg:left-0 lg:right-0">
+        <div className="absolute bottom-5 left-5 right-5 lg:left-0 lg:right-0">
           <div className="lg:max-w-[1280px] lg:mx-auto lg:px-8">
-            {/* 목록 카드(Community.tsx)와 같은 구성 — 지역 배지를 위에, 그 아래에 태그.
-                지역은 어두운 반투명 배경 + 흰 글자, 태그는 흰 배경 + 검정 테두리. */}
-            {(post.region || post.tags.length > 0) && (
-              <div className="flex flex-col items-start gap-1.5 mb-2">
-                {post.region && (
-                  <span className="px-2.5 py-1 rounded-full bg-neutral-900/70 backdrop-blur-sm text-white text-xs font-bold tracking-wide">
-                    {post.region}
-                  </span>
-                )}
-                {post.tags.length > 0 && (
-                  <div className="flex flex-wrap gap-1">
-                    {post.tags.map((t) => (
-                      <span
-                        key={t}
-                        className="max-w-full truncate px-2 py-0.5 rounded-full bg-white border border-black text-black text-xs font-medium"
-                      >
-                        #{t}
-                      </span>
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
+            <p className="text-ivory/80 text-xs font-semibold tracking-[0.16em] mb-2">{post.region ?? "COMMUNITY ROUTE"}</p>
             <h1 className="font-heading text-ivory text-2xl lg:text-4xl font-black leading-tight max-w-3xl">{post.title}</h1>
           </div>
         </div>
       </div>
 
-      <div className="max-w-[1280px] mx-auto px-4 lg:px-8 mt-6 lg:mt-10 pb-10">
-        <div className="lg:grid lg:grid-cols-[1fr_360px] lg:gap-12 lg:items-start">
+      <div className="max-w-[1120px] mx-auto px-5 lg:px-8 mt-8 lg:mt-12 pb-10">
+        <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_260px] lg:gap-16 lg:items-start">
 
           {/* 좌측: 탭 콘텐츠 */}
           <div className="space-y-6 lg:space-y-8">
@@ -408,7 +386,13 @@ export default function CommunityDetail() {
                     <p className="font-medium text-sm">{post.author.nickname ?? "알 수 없음"}</p>
                   </div>
                 </div>
-                <Button variant="outline" size="sm" className="shrink-0" onClick={handleImport} disabled={importing}>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="shrink-0 border-primary bg-transparent text-primary shadow-none hover:bg-primary hover:text-primary-foreground"
+                  onClick={handleImport}
+                  disabled={importing}
+                >
                   {importing ? <Loader2 className="w-4 h-4 mr-1.5 animate-spin" /> : <Download className="w-4 h-4 mr-1.5" />}
                   가져오기
                 </Button>
@@ -434,7 +418,7 @@ export default function CommunityDetail() {
             {contentBox && <div className="lg:hidden">{contentBox}</div>}
 
             {/* 탭 */}
-            <div className="flex border-b border-border">
+            <div className="flex border-b border-foreground/20">
               {(["route", "review"] as const).map((tab) => (
                 <button
                   key={tab}
@@ -445,7 +429,7 @@ export default function CommunityDetail() {
                 >
                   {tab === "route" ? "루트 경로" : `리뷰 ${post.review_count}`}
                   {activeTab === tab && (
-                    <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary rounded-full" />
+                    <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary" />
                   )}
                 </button>
               ))}
@@ -470,41 +454,34 @@ export default function CommunityDetail() {
                     {/* 루트는 항상 1열 세로로 이어 보여준다. 하루 안에서는 방문 순서대로 아침/점심/저녁
                         구간으로 나눠(루트 만들기 화면과 동일) 흐름이 보이게 하고, ↓ 연결선은 구간이
                         바뀌어도 이어진다. */}
-                    <div className="space-y-3">
+                    <div className="relative ml-3 border-l-2 border-primary/50 pl-7">
                       {splitIntoPeriods(dayStops).map((period, periodIdx) => (
-                        <div key={periodIdx} className="space-y-1">
+                        <div key={periodIdx} className="space-y-2">
                           {period.label && (
-                            <div className="flex items-center gap-2.5 pt-2 pb-3">
-                              <span className="text-[15px] font-bold text-foreground shrink-0">{period.label}</span>
-                              <div className="flex-1 h-px bg-border/60" />
+                            <div className="pt-5 pb-2">
+                              <span className="text-[15px] font-semibold text-foreground">{period.label}</span>
                             </div>
                           )}
                           {period.items.map((stop) => (
                             <div key={stop.order}>
                               <button
                                 onClick={() => setSelectedStop(stop)}
-                                className="w-full bg-card border border-border rounded-[24px] overflow-hidden flex gap-5 p-6 text-left hover:bg-muted/30 hover:shadow-sm transition-all"
+                                className="relative w-full flex gap-4 py-5 text-left border-b border-border hover:bg-muted/30 transition-colors"
                               >
+                                <span className="absolute -left-[2.15rem] top-6 w-3 h-3 rounded-full bg-background border-2 border-primary" />
                                 <PlaceImage
                                   src={stop.image}
                                   alt={stop.name}
                                   category={stop.category}
-                                  className="w-24 h-24 rounded-2xl object-cover shrink-0"
+                                  className="w-24 h-20 object-cover shrink-0"
                                 />
                                 <div className="flex-1 min-w-0 py-0.5">
-                                  <span className="text-sm text-muted-foreground">{stop.category}</span>
-                                  <p className="font-black text-[17px] mt-1.5 mb-2">{stop.name}</p>
-                                  <p className="text-sm text-muted-foreground line-clamp-2 leading-relaxed">{stop.description}</p>
+                                  <span className="text-[11px] uppercase tracking-[0.12em] text-primary">{stop.category}</span>
+                                  <p className="font-semibold text-lg tracking-tight mt-1 mb-1">{stop.name}</p>
+                                  <p className="text-[13px] text-muted-foreground line-clamp-1 leading-5">{stop.description}</p>
                                 </div>
                                 <ChevronRight className="w-4 h-4 text-muted-foreground shrink-0 self-center" />
                               </button>
-                              {stop !== dayStops[dayStops.length - 1] && (
-                                <div className="flex items-center justify-center gap-2 py-1.5">
-                                  <div className="h-px w-8 bg-border" />
-                                  <span className="text-muted-foreground/50 text-xs">↓</span>
-                                  <div className="h-px w-8 bg-border" />
-                                </div>
-                              )}
                             </div>
                           ))}
                         </div>
@@ -513,10 +490,22 @@ export default function CommunityDetail() {
                   </div>
                 ))}
                 <div className="hidden lg:flex gap-3 pt-6">
-                  <Button onClick={handleImport} disabled={importing} className="h-12 px-6 text-[14px] font-black">
+                  <Button
+                    variant="outline"
+                    onClick={handleImport}
+                    disabled={importing}
+                    className="h-12 px-6 border-primary bg-transparent text-primary font-black shadow-none hover:bg-primary hover:text-primary-foreground"
+                  >
                     {importing ? <Loader2 className="w-4 h-4 animate-spin" /> : "가져오기"}
                   </Button>
-                  <Button variant="outline" className="h-12 px-6" onClick={handleShare}><Share2 className="w-4 h-4" /></Button>
+                  <Button
+                    variant="outline"
+                    className="h-12 px-6 border-primary bg-transparent text-primary shadow-none hover:bg-primary hover:text-primary-foreground"
+                    onClick={handleShare}
+                    title="공유하기"
+                  >
+                    <Share2 className="w-4 h-4" />
+                  </Button>
                 </div>
               </div>
             )}
@@ -525,7 +514,7 @@ export default function CommunityDetail() {
             {activeTab === "review" && (
               <div className="space-y-6">
                 {/* 별점 분포 요약 */}
-                <div className="bg-card border border-border rounded-[24px] p-6 flex items-center gap-8">
+                <div className="border-y border-border py-6 flex items-center gap-8">
                   <div className="text-center shrink-0">
                     <p className="text-5xl font-black">{avgRating.toFixed(1)}</p>
                     <StarRating value={avgRating} size="sm" />
@@ -552,7 +541,7 @@ export default function CommunityDetail() {
                 </div>
 
                 {/* 리뷰 작성 */}
-                <div className="bg-card border border-border rounded-[24px] p-6 space-y-3">
+                <div className="border-y border-border py-6 space-y-3">
                   <p className="text-[16px] font-extrabold">리뷰 남기기</p>
                   <div className="flex items-center gap-1">
                     {[1, 2, 3, 4, 5].map((n) => (
@@ -615,7 +604,7 @@ export default function CommunityDetail() {
                 {reviewStatus === "done" && reviews.length > 0 && (
                   <div className="lg:grid lg:grid-cols-2 lg:gap-4 space-y-4 lg:space-y-0">
                     {reviews.map((review) => (
-                      <div key={review.review_id} className="bg-card border border-border rounded-[24px] p-6">
+                      <div key={review.review_id} className="border-b border-border py-5">
                         <div className="flex items-center gap-2.5 mb-3">
                           <img
                             src={getProxiedImageUrl(getAvatarUrl(review.author_profile_url, review.author_nickname))}
@@ -665,8 +654,8 @@ export default function CommunityDetail() {
           </div>
 
           {/* 우측: 요약 사이드바 — 데스크톱 전용 */}
-          <div className="hidden lg:block sticky top-24 mt-16 space-y-4">
-            <div className="bg-card/70 backdrop-blur-md hanji-noise border border-border rounded-[28px] p-6">
+          <div className="hidden lg:block sticky top-24 mt-16 space-y-8">
+            <div className="border-y border-border py-5">
               <div className="flex items-center gap-3 pb-5 mb-5 border-b border-border">
                 <img
                   src={getProxiedImageUrl(getAvatarUrl(post.author.profile_url, post.author.nickname))}
@@ -679,7 +668,7 @@ export default function CommunityDetail() {
                 </div>
               </div>
               <div className="flex items-center gap-2 mb-1">
-                <span className="text-4xl font-black">{avgRating.toFixed(1)}</span>
+                <span className="text-3xl font-black">{avgRating.toFixed(1)}</span>
                 <div className="flex flex-col">
                   <StarRating value={avgRating} size="sm" />
                   <span className="text-sm text-muted-foreground mt-0.5">리뷰 {post.review_count}개</span>
@@ -695,7 +684,7 @@ export default function CommunityDetail() {
                 )}
               </div>
             </div>
-            {contentBox}
+            {contentBox && <div className="border-b border-border pb-5">{contentBox}</div>}
           </div>
 
         </div>
