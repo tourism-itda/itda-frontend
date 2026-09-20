@@ -27,3 +27,16 @@ export function getEventLink(event: Pick<EventSummary, "title" | "address" | "ev
   const query = event.address ? `${event.title} ${event.address}` : event.title;
   return `https://www.google.com/search?q=${encodeURIComponent(query)}`;
 }
+
+// 행사 위치를 "지도가 있는 페이지"(구글 지도)에서 열기 위한 링크. 좌표가 있으면 좌표로 핀을 찍고,
+// 없으면 주소(없으면 행사명)로 지도 검색을 연다. 구글 검색(getEventLink)과 달리 항상 지도를 보여준다.
+export function getEventMapLink(
+  event: Pick<EventSummary, "title" | "address" | "latitude" | "longitude">,
+): string {
+  const base = "https://www.google.com/maps/search/?api=1&query=";
+  if (event.latitude != null && event.longitude != null) {
+    return base + `${event.latitude},${event.longitude}`;
+  }
+  const query = event.address ? `${event.title} ${event.address}` : event.title;
+  return base + encodeURIComponent(query);
+}

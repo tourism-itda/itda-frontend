@@ -6,6 +6,7 @@ import { Button } from "../components/ui/button";
 import { StorySourceBadge } from "../components/StorySourceBadge";
 import { PlaceImage } from "../components/PlaceImage";
 import { PosterImage } from "../components/PosterImage";
+import { PlaceSheet, PlaceSheetData } from "../components/PlaceSheet";
 import { ApiError, isLoginRequiredError } from "../lib/api";
 import { useContentDetail } from "../lib/useContentDetail";
 import { useContentPlaces } from "../lib/useContentPlaces";
@@ -67,6 +68,7 @@ export default function ContentDetail() {
   // 로그인이 필요한 동작을 만났을 때, 사용자를 조용히 다른 화면으로 보내지 않고 "왜 필요한지"를
   // 설명하는 안내를 띄운다. 로그인 이동은 사용자가 버튼을 눌러 직접 선택할 때만 일어난다.
   const [authPrompt, setAuthPrompt] = useState<string | null>(null);
+  const [sheetPlace, setSheetPlace] = useState<PlaceSheetData | null>(null);
 
   useEffect(() => {
     if (places.data) {
@@ -129,6 +131,19 @@ export default function ContentDetail() {
     }
   }
 
+  function openPlaceSheet(place: ContentPlaceListItem) {
+    setSheetPlace({
+      id: String(place.place_id),
+      placeId: place.place_id,
+      name: place.name,
+      category: place.category,
+      address: "",
+      hours: "",
+      image: place.image_url ?? "",
+      description: place.description ?? "",
+    });
+  }
+
   if (status === "loading" || status === "idle") {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center gap-3 py-24 text-muted-foreground">
@@ -173,15 +188,24 @@ export default function ContentDetail() {
     return (
       <div
         key={p.place_id}
+        onClick={() => openPlaceSheet(p)}
+        role="button"
+        tabIndex={0}
+        onKeyDown={(event) => {
+          if (event.key === "Enter" || event.key === " ") openPlaceSheet(p);
+        }}
         className={`rounded-[16px] border overflow-hidden transition-all ${
           selected ? "border-primary ring-1 ring-primary" : "border-border"
-        } ${horizontal ? "flex items-stretch gap-4" : ""}`}
+        } ${horizontal ? "flex items-stretch gap-4" : ""} cursor-pointer hover:border-primary/50`}
       >
         <div className={`relative bg-muted overflow-hidden aspect-[3/2] ${horizontal ? "w-44 shrink-0" : ""}`}>
           <PlaceImage src={p.image_url} alt={p.name} category={p.category} className="w-full h-full object-cover" />
           {/* 북마크 — 루트에 담기와 별개로 내 북마크에 저장/해제 */}
           <button
-            onClick={() => handleToggleBookmark(p.place_id)}
+            onClick={(event) => {
+              event.stopPropagation();
+              handleToggleBookmark(p.place_id);
+            }}
             disabled={pendingIds.has(p.place_id)}
             title={bookmarked ? "북마크 해제" : "북마크"}
             className={`absolute top-2 right-2 w-9 h-9 rounded-full backdrop-blur-sm hanji-noise flex items-center justify-center transition-colors disabled:opacity-60 outline-none focus-visible:ring-2 focus-visible:ring-ivory ${
@@ -202,7 +226,10 @@ export default function ContentDetail() {
           </p>
           {/* 루트에 담기 — 이번 루트 구성용 선택(최대 3곳) */}
           <button
-            onClick={() => toggleSelectPlace(p.place_id)}
+            onClick={(event) => {
+              event.stopPropagation();
+              toggleSelectPlace(p.place_id);
+            }}
             disabled={atLimit}
             className={`mt-2.5 inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-bold transition-colors disabled:opacity-50 ${
               selected ? "bg-primary text-primary-foreground" : "bg-muted text-foreground hover:bg-muted/70"
@@ -260,7 +287,7 @@ export default function ContentDetail() {
 
         {/* 태그라인 — 포스터 위, 좌측정렬로 크게 강조한다. */}
         {data.tagline && (
-          <p className="text-primary font-black text-3xl lg:text-4xl leading-tight tracking-[-0.02em] text-center [text-wrap:balance] pt-3 pb-8 lg:pt-4 lg:pb-10">
+          <p className="text-primary font-black text-2xl lg:text-3xl leading-tight tracking-[-0.02em] text-center [text-wrap:balance] pt-3 pb-8 lg:pt-4 lg:pb-10">
             “{data.tagline}”
           </p>
         )}
@@ -310,7 +337,7 @@ export default function ContentDetail() {
               {storyBadge}
               {data.story_sections.length > 0 || data.story_body ? (
                 <div
-                  className="relative mt-5 overflow-hidden rounded-[16px] px-5 py-7 sm:px-8 sm:py-9"
+                  className="relative mt-5 overflow-hidden rounded-[16px] border border-border bg-card px-5 py-7 shadow-[0_14px_34px_-12px_hsl(var(--shadow-color)/0.35)] sm:px-8 sm:py-9"
                 >
                   <div
                     className="absolute inset-0 bg-[url('/images/history-bg.png')] bg-[length:100%_auto] bg-repeat-y bg-center blur-[1px] before:absolute before:inset-x-0 before:top-0 before:h-24 before:bg-gradient-to-b before:from-background/90 before:to-transparent after:absolute after:inset-x-0 after:bottom-0 after:h-24 after:bg-gradient-to-t after:from-background/90 after:to-transparent lg:bg-[url('/images/history-bg-desktop.png')]"
@@ -449,6 +476,8 @@ export default function ContentDetail() {
           </div>
         </div>
       )}
+
+      <PlaceSheet place={sheetPlace} onClose={() => setSheetPlace(null)} />
     </div>
   );
 }

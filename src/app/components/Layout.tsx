@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Outlet, useLocation } from "react-router";
 import { MobileNav } from "./MobileNav";
 import { DesktopNav } from "./DesktopNav";
@@ -31,18 +31,59 @@ export default function Layout() {
     window.scrollTo(0, 0);
   }, [location.pathname]);
 
+  // 홈에서 스크롤하면 투명 헤더에 배경이 서서히 생기게 하기 위한 스크롤 감지.
+  const [scrolled, setScrolled] = useState(false);
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 8);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
   // 루트 만들기는 화면 맨 아래에 고정 액션 푸터가 붙는 페이지라 모바일 탭바를 숨긴다(푸터와 겹침 방지).
   const hideMobileNav = location.pathname.startsWith("/app/route-builder/");
+  // 매듭 배경 + 투명 헤더의 "이어지는 배경" 연출은 첫 화면(홈)에서만. 나머지는 일반 헤더.
+  const isHome = location.pathname === "/app";
 
   return (
     <div className="min-h-screen bg-transparent">
-      {/* 데스크탑 상단 내비게이션 (≥1025px) */}
-      <header className="hidden lg:block sticky top-0 h-16 border-b border-border bg-background/95 backdrop-blur-sm z-50 hanji-noise">
+      {/* 매듭 문양 배경 — 홈에서만, 헤더/바디 경계 없이 우측 상단에 크게 깔리는 워터마크(고정). */}
+      {isHome && (
+        <div aria-hidden className="pointer-events-none fixed inset-x-0 top-0 -z-10 hidden justify-end overflow-hidden lg:flex">
+          <img
+            src="/images/point.png"
+            alt=""
+            className="w-[180px] lg:w-[560px] max-w-none -translate-y-[12%] translate-x-[10%] select-none"
+          />
+        </div>
+      )}
+
+      {/* 데스크탑 상단 내비게이션 (≥1025px) — 홈에선 처음엔 투명, 스크롤하면 배경이 서서히 생긴다 */}
+      <header
+        className={`hidden lg:block sticky top-0 h-16 z-50 transition-colors duration-300 ${
+          isHome
+            ? scrolled
+              ? "bg-background/80 backdrop-blur-md border-b border-border hanji-noise"
+              : "bg-transparent border-b border-transparent"
+            : "border-b border-border bg-background/95 backdrop-blur-sm hanji-noise"
+        }`}
+      >
         <DesktopNav user={user} />
       </header>
 
-      {/* 모바일 상단 바 (≤1024px) — 스크롤과 함께 올라간다(페이지별 sticky 서브헤더와 겹치지 않게 고정하지 않음) */}
-      <header className="lg:hidden border-b border-border bg-background hanji-noise">
+      {/* 모바일 상단 바 (≤1024px) — 홈에선 sticky로 고정하고 스크롤하면 배경이 서서히 찬다.
+          그 외 페이지는 페이지별 sticky 서브헤더와 겹치지 않게 고정하지 않는다. */}
+      <header
+        className={`lg:hidden transition-colors duration-300 ${
+          isHome
+            ? `sticky top-0 z-50 ${
+                scrolled
+                  ? "bg-background/80 backdrop-blur-md border-b border-border hanji-noise"
+                  : "bg-transparent border-b border-transparent"
+              }`
+            : "border-b border-border bg-background hanji-noise"
+        }`}
+      >
         <MobileHeader user={user} />
       </header>
 

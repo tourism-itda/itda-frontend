@@ -402,7 +402,6 @@ export default function ItineraryDetail() {
                   isSelected={selectedId === String(p.place_id)}
                   onSelect={() => setSelectedId(String(p.place_id))}
                   onOpenDetail={() => openPlaceDetail(p)}
-                  onSwap={detail && detail.content_id !== null ? () => openSwapSheet(p) : undefined}
                 />
               ))}
             </div>

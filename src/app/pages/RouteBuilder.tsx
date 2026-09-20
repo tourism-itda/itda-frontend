@@ -9,8 +9,8 @@ import {
   MapPin,
   MapPinOff,
   Moon,
-  RefreshCw,
   Save,
+  Shuffle,
   Sparkles,
   TriangleAlert,
   User,
@@ -71,12 +71,16 @@ function RouteSlotCard({
   anchorSource,
   onOpenCandidates,
   onClear,
+  onShuffle,
+  shuffling,
 }: {
   slot: RouteSlot;
   /** 이 루트의 작품 관련 명소가 어떤 근거로 뽑혔는지. 근거 배지의 문구를 가른다. */
   anchorSource: AnchorSource;
   onOpenCandidates: (slot: RouteSlot) => void;
   onClear: (slot: RouteSlot) => void;
+  onShuffle: (slot: RouteSlot) => void;
+  shuffling: boolean;
 }) {
   if (slot.filled_by === "EMPTY" || !slot.place) {
     return (
@@ -118,16 +122,32 @@ function RouteSlotCard({
               {badge.label}
             </span>
           )}
-          {/* 사용자가 후보에서 직접 고른 식당/카페만 되돌릴 수 있다(AI 추천·자동 선택은 해당 없음). */}
+          {/* 사용자가 후보에서 직접 고른 식당/카페만 셔플/되돌릴 수 있다(AI 추천·자동 선택은 해당 없음). */}
           {slot.filled_by === "USER" && slot.slot_type !== "SPOT" && (
-            <button
-              type="button"
-              onClick={() => onClear(slot)}
-              className="flex items-center gap-1 text-xs px-2 py-0.5 rounded-full border border-border text-muted-foreground hover:bg-muted transition-colors"
-            >
-              <X className="w-3 h-3" />
-              선택 취소
-            </button>
+            <>
+              {/* 셔플 — 같은 칸의 후보 중 다른 가게를 랜덤으로 뽑아 바로 교체한다. */}
+              <button
+                type="button"
+                onClick={() => onShuffle(slot)}
+                disabled={shuffling}
+                title="다른 가게로 셔플"
+                className="flex items-center justify-center w-7 h-7 rounded-full border border-border text-muted-foreground hover:bg-muted transition-colors disabled:opacity-60"
+              >
+                {shuffling ? (
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                ) : (
+                  <Shuffle className="w-3.5 h-3.5" />
+                )}
+              </button>
+              <button
+                type="button"
+                onClick={() => onClear(slot)}
+                className="flex items-center gap-1 text-xs px-2 py-0.5 rounded-full border border-border text-muted-foreground hover:bg-muted transition-colors"
+              >
+                <X className="w-3 h-3" />
+                선택 취소
+              </button>
+            </>
           )}
         </div>
       </div>
@@ -335,9 +355,6 @@ export default function RouteBuilder() {
   const [isCreating, setIsCreating] = useState(false);
 
   const [route, setRoute] = useState<RoutePlanResult | null>(null);
-  // "다른 조합 보기"용 — 지금까지 본 루트의 관련 명소 place_id를 누적한다(직전 루트 것만 보내면 A↔B로 왔다갔다 함).
-  const [excludedPlaceIds, setExcludedPlaceIds] = useState<number[]>([]);
-  const [isRegenerating, setIsRegenerating] = useState(false);
 
   useEffect(() => {
     if (contentId === undefined) return;
@@ -374,16 +391,6 @@ export default function RouteBuilder() {
     });
   }
 
-  function getSpotPlaceIds(result: RoutePlanResult): number[] {
-    return result.slots
-      .filter((s) => s.slot_type === "SPOT" && s.place)
-      .map((s) => s.place!.place_id);
-  }
-
-  function segmentKey(startId: number, endId: number | undefined, slotType: RoutePlaceType) {
-    return `${startId}:${endId ?? "end"}:${slotType}`;
-  }
-
   async function handleCreateRoute(spotPlaceIds: number[]) {
     if (contentId === undefined || isCreating) return;
     setIsCreating(true);
@@ -393,7 +400,6 @@ export default function RouteBuilder() {
         spot_place_ids: spotPlaceIds.length > 0 ? spotPlaceIds : undefined,
       });
       setRoute(result);
-      setExcludedPlaceIds(getSpotPlaceIds(result));
       setStep("preview");
     } catch (err) {
       toast(
@@ -403,60 +409,6 @@ export default function RouteBuilder() {
       );
     } finally {
       setIsCreating(false);
-    }
-  }
-
-  // "다른 조합 보기" — 같은 spot_place_ids로, 지금까지 본 관련 명소를 전부 제외하고 재생성한다.
-  async function handleRegenerateRoute() {
-    if (contentId === undefined || !route || isRegenerating) return;
-    setIsRegenerating(true);
-    try {
-      const result = await createRoute({
-        content_id: contentId,
-        spot_place_ids: selectedIds.length > 0 ? selectedIds : undefined,
-        exclude_place_ids: excludedPlaceIds,
-        allowance_meters: route.allowance_meters,
-      });
-
-      const prevSpotIds = new Set(getSpotPlaceIds(route));
-      const nextSpotIds = getSpotPlaceIds(result);
-      const sameCombo =
-        nextSpotIds.length === prevSpotIds.size && nextSpotIds.every((id) => prevSpotIds.has(id));
-
-      if (sameCombo) {
-        toast("더 볼 수 있는 코스가 없어요.");
-        return;
-      }
-
-      // 직전 루트에서 사용자가 고른 식당·카페는, 같은 구간(시작~끝 관련 명소)이 새 루트에도 그대로
-      // 남아있을 때만 이어붙인다. 관련명소 자체가 바뀌는 작품은 구간이 안 맞아 자연히 초기화된다.
-      const prevFills = new Map<string, RoutePlace>();
-      for (const slot of route.slots) {
-        if (slot.slot_type === "SPOT" || !slot.place || slot.filled_by !== "USER") continue;
-        if (slot.segment_index === undefined) continue;
-        const segment = route.segments.find((s) => s.segment_index === slot.segment_index);
-        if (!segment) continue;
-        prevFills.set(segmentKey(segment.start_place_id, segment.end_place_id, slot.slot_type), slot.place);
-      }
-
-      const mergedSlots = result.slots.map((slot) => {
-        if (slot.slot_type === "SPOT" || slot.place || slot.segment_index === undefined) return slot;
-        const segment = result.segments.find((s) => s.segment_index === slot.segment_index);
-        if (!segment) return slot;
-        const carried = prevFills.get(segmentKey(segment.start_place_id, segment.end_place_id, slot.slot_type));
-        return carried ? { ...slot, place: carried, filled_by: "USER" as const } : slot;
-      });
-
-      setRoute({ ...result, slots: mergedSlots });
-      setExcludedPlaceIds((prev) => Array.from(new Set([...prev, ...nextSpotIds])));
-    } catch (err) {
-      toast(
-        err instanceof ApiError
-          ? err.message
-          : "다른 조합을 불러오지 못했어요. 잠시 후 다시 시도해주세요."
-      );
-    } finally {
-      setIsRegenerating(false);
     }
   }
 
@@ -489,6 +441,52 @@ export default function RouteBuilder() {
       .catch(() => {
         setCandidateStatus("error");
       });
+  }
+
+  // 셔플 중인 슬롯(visit_order). 그 칸에만 스피너를 돌린다.
+  const [shufflingOrder, setShufflingOrder] = useState<number | null>(null);
+
+  // 셔플 — 그 칸의 후보를 조회해 지금 가게를 뺀 나머지 중 랜덤 하나로 바로 교체한다.
+  async function handleShuffleSlot(slot: RouteSlot) {
+    if (!route || shufflingOrder !== null || slot.segment_index === undefined) return;
+    if (slot.slot_type !== "RESTAURANT" && slot.slot_type !== "CAFE") return;
+    const segment = route.segments.find((s) => s.segment_index === slot.segment_index);
+    if (!segment) return;
+
+    setShufflingOrder(slot.visit_order);
+    try {
+      const result = await getRouteCandidates({
+        startPlaceId: segment.start_place_id,
+        endPlaceId: segment.end_place_id,
+        slotType: slot.slot_type,
+        allowanceMeters: candidateAllowance,
+      });
+      // 지금 채워진 가게는 후보에서 빼서 "같은 곳"이 다시 뽑히지 않게 한다(이름 기준 — place_id와
+      // external_id는 서로 다른 체계라 직접 비교가 안 된다). 남는 후보가 없으면 전체에서 뽑는다.
+      const currentName = slot.place?.name;
+      const pool = currentName ? result.candidates.filter((c) => c.name !== currentName) : result.candidates;
+      const from = pool.length > 0 ? pool : result.candidates;
+      if (from.length === 0) {
+        toast("바꿀 다른 가게가 없어요.");
+        return;
+      }
+      const chosen = from[Math.floor(Math.random() * from.length)];
+      const place = await importPlaceFromCandidate(chosen);
+      setRoute((prev) =>
+        prev
+          ? {
+              ...prev,
+              slots: prev.slots.map((s) =>
+                s.visit_order === slot.visit_order ? { ...s, place, filled_by: "USER" } : s,
+              ),
+            }
+          : prev,
+      );
+    } catch (err) {
+      toast(err instanceof ApiError ? err.message : "다른 가게를 불러오지 못했어요. 잠시 후 다시 시도해주세요.");
+    } finally {
+      setShufflingOrder(null);
+    }
   }
 
   function openCandidates(slot: RouteSlot) {
@@ -678,6 +676,8 @@ export default function RouteBuilder() {
             <>
               <p className="text-sm text-muted-foreground mb-4">
                 꼭 가고 싶은 명소를 최대 {MAX_SPOTS}곳까지 골라주세요. 고르지 않으면 자동으로 추천해드려요.
+                <br />
+                서로 멀어 하루에 다 둘러보기 어려운 곳을 고르면, 그중 한 지역을 골라 루트를 짜드려요.
               </p>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-24">
@@ -778,6 +778,8 @@ export default function RouteBuilder() {
                 anchorSource={route.anchor_source}
                 onOpenCandidates={openCandidates}
                 onClear={handleClearSlot}
+                onShuffle={handleShuffleSlot}
+                shuffling={shufflingOrder === slot.visit_order}
               />
             ))}
           </div>
@@ -791,32 +793,17 @@ export default function RouteBuilder() {
                   아직 다 채우지 않은 칸이 있어요. 식당·카페 후보를 모두 골라주세요.
                 </p>
               )}
-              <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  onClick={handleRegenerateRoute}
-                  disabled={isRegenerating}
-                  className="flex-1 h-12"
-                >
-                  {isRegenerating ? (
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  ) : (
-                    <RefreshCw className="w-4 h-4 mr-2" />
-                  )}
-                  다른 조합 보기
-                </Button>
-                <Button
-                  onClick={() => {
-                    setSaveTitle("");
-                    setSaveTravelDate("");
-                    setShowSaveSheet(true);
-                  }}
-                  disabled={hasEmptySlot}
-                  className="flex-1 h-12"
-                >
-                  저장하기
-                </Button>
-              </div>
+              <Button
+                onClick={() => {
+                  setSaveTitle("");
+                  setSaveTravelDate("");
+                  setShowSaveSheet(true);
+                }}
+                disabled={hasEmptySlot}
+                className="w-full h-12"
+              >
+                저장하기
+              </Button>
             </div>
           </div>
         </div>

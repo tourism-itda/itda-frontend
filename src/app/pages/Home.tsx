@@ -5,7 +5,7 @@ import { Input } from "../components/ui/input";
 import { Skeleton } from "../components/ui/skeleton";
 import { ContentCard } from "../components/ContentCard";
 import { useContents } from "../lib/useContents";
-import { getUpcomingEvents, getEventLink, EventSummary } from "../lib/events";
+import { getUpcomingEvents, EventSummary } from "../lib/events";
 import { getProxiedImageUrl } from "../lib/imageProxy";
 
 const mediaTypeLabel: Record<string, string> = {
@@ -50,20 +50,23 @@ export default function Home() {
   }, []);
 
   return (
-    <div className="min-h-screen pb-16">
+    <div className="min-h-screen pb-6">
       <div className="max-w-[1280px] mx-auto px-4 lg:px-8">
 
         {/* 히어로 섹션 */}
         <section className="pt-10 lg:pt-16 pb-8">
           <div className="flex flex-col gap-8">
-            <div className="flex-1 min-w-0">
+            <div className="min-w-0">
+              <p className="text-primary font-bold text-[15px] lg:text-lg mb-3 lg:mb-4">
+                사극 콘텐츠, 역사, 그리고 여행을 하나의 경험으로 잇다
+              </p>
               <h1 className="font-heading text-[34px] leading-[38.08px] tracking-[-0.04em] lg:text-[64px] lg:leading-[71.68px] mb-3 lg:max-w-[764px]">
                 역사 속 이야기를
                 <br />
                 여행으로 이어보세요
               </h1>
               <p className="text-[16px] font-medium leading-[28px] lg:text-[18px] lg:leading-[32px] text-muted-foreground mt-5 mb-7 lg:whitespace-nowrap">
-                드라마·영화 속 배경지를 실제 여행 코스로,
+                영화 속 배경지를 실제 여행 코스로,
                 <br className="lg:hidden" />
                 {" "}잇다가 시대와 인물의 발자취를 안내합니다.
               </p>
@@ -144,7 +147,7 @@ export default function Home() {
         </section>
 
         {/* 하단 2단 그리드 */}
-        <section className="grid lg:grid-cols-3 gap-5 mb-10">
+        <section className="grid lg:grid-cols-3 gap-5">
           <div className="lg:col-span-2 rounded-[28px] border border-border/40 bg-card/15 backdrop-blur-md hanji-noise p-6 shadow-sm">
             <div className="flex items-center justify-between mb-4">
               <h3 className="font-heading text-lg font-black">다가오는 일정</h3>
@@ -188,12 +191,10 @@ export default function Home() {
             {upcomingStatus === "done" && upcomingEvents.length > 0 && (
               <div className="divide-y divide-border">
                 {upcomingEvents.map((item) => (
-                  <a
+                  <button
                     key={item.content_id}
-                    href={getEventLink(item)}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-4 py-3 first:pt-0 last:pb-0 hover:bg-muted/40 rounded-xl transition-colors -mx-2 px-2"
+                    onClick={() => navigate("/app/events", { state: { eventId: item.content_id } })}
+                    className="w-full text-left flex items-center gap-4 py-3 first:pt-0 last:pb-0 hover:bg-muted/40 rounded-xl transition-colors -mx-2 px-2"
                   >
                     <div className="w-16 h-16 shrink-0 rounded-sm overflow-hidden bg-muted flex items-center justify-center">
                       {item.image_url ? (
@@ -214,7 +215,7 @@ export default function Home() {
                         {item.address.split(" ")[0]}
                       </span>
                     )}
-                  </a>
+                  </button>
                 ))}
               </div>
             )}
