@@ -220,7 +220,13 @@ export default function Home() {
             )}
           </div>
 
-          <div className="rounded-[28px] border border-border/40 bg-card/15 backdrop-blur-md hanji-noise p-8 flex flex-col justify-between text-foreground shadow-sm">
+          <div
+            className="rounded-[28px] border border-primary/15 bg-card/5 backdrop-blur-md hanji-noise p-8 flex flex-col justify-between text-foreground shadow-sm"
+            style={{
+              background:
+                "linear-gradient(135deg, color-mix(in srgb, var(--terracotta) 10%, transparent), color-mix(in srgb, var(--gold) 8%, transparent))",
+            }}
+          >
             <div>
               <Footprints className="w-7 h-7 mb-3 text-primary" />
               <h3 className="font-heading text-2xl lg:text-[28px] font-black mb-2">나만의 역사 여행 코스 만들기</h3>
