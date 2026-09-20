@@ -3,6 +3,7 @@ import { Outlet, useLocation } from "react-router";
 import { MobileNav } from "./MobileNav";
 import { DesktopNav } from "./DesktopNav";
 import { MobileHeader } from "./MobileHeader";
+import { BrandMark } from "./BrandMark";
 import { getCurrentUser, getMyProfile } from "../lib/auth";
 import { applyDarkMode } from "../lib/theme";
 import { useCurrentUser } from "../lib/useCurrentUser";
@@ -34,7 +35,7 @@ export default function Layout() {
   const hideMobileNav = location.pathname.startsWith("/app/route-builder/");
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-transparent">
       {/* 데스크탑 상단 내비게이션 (≥1025px) */}
       <header className="hidden lg:block sticky top-0 h-16 border-b border-border bg-background/95 backdrop-blur-sm z-50 hanji-noise">
         <DesktopNav user={user} />
@@ -49,6 +50,26 @@ export default function Layout() {
       <main className={`min-h-screen lg:pb-0 ${hideMobileNav ? "" : "pb-20"}`}>
         <Outlet />
       </main>
+
+      <footer className="border-t border-border/70 bg-background/85 pb-8 backdrop-blur-sm lg:pb-4">
+        <div className="mx-auto flex max-w-[1280px] flex-col gap-5 px-5 py-8 lg:flex-row lg:items-end lg:justify-between lg:px-8">
+          <div className="flex items-start gap-3">
+            <BrandMark className="h-9 w-9 rounded-[8px]" />
+            <div>
+              <p className="text-sm font-bold tracking-tight">잇다</p>
+              <p className="mt-1 text-xs leading-5 text-muted-foreground">
+                작품 속 이야기와 여행지를 이어주는 역사 여행 서비스
+              </p>
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-2 text-xs text-muted-foreground lg:items-end">
+            <p className="font-semibold text-foreground/80">Data &amp; Sources</p>
+            <p>한국관광공사 관광 데이터 · TMDB · 국사편찬위원회 연표</p>
+            <p className="text-muted-foreground/70">© 2026 ITDA. Built for historical journeys.</p>
+          </div>
+        </div>
+      </footer>
 
       {/* 모바일 하단 탭바 (≤1024px) */}
       {!hideMobileNav && (

@@ -25,7 +25,7 @@ export default function Home() {
     return () => clearTimeout(timer);
   }, [query]);
 
-  const popular = useContents({ sort: "popular", limit: 6, q: debouncedQuery || undefined });
+  const popular = useContents({ sort: "popular", limit: 8, q: debouncedQuery || undefined });
 
   const [upcomingStatus, setUpcomingStatus] = useState<"loading" | "done" | "error">("loading");
   const [upcomingEvents, setUpcomingEvents] = useState<EventSummary[]>([]);
@@ -104,7 +104,7 @@ export default function Home() {
 
           {popular.status === "loading" && (
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 lg:gap-7">
-              {Array.from({ length: 6 }).map((_, i) => (
+              {Array.from({ length: 8 }).map((_, i) => (
                 <div key={i}>
                   <Skeleton className="aspect-[3/4] rounded-sm mb-2" />
                   <Skeleton className="h-4 w-3/4 mb-1.5" />
@@ -127,7 +127,7 @@ export default function Home() {
           )}
           {popular.status === "done" && (popular.data?.data.length ?? 0) > 0 && (
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 lg:gap-7">
-              {popular.data!.data.map((item) => (
+              {popular.data!.data.slice(0, 8).map((item) => (
                 <ContentCard
                   key={item.content_id}
                   content={{

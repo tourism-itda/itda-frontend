@@ -245,7 +245,7 @@ export default function ContentDetail() {
   );
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen pb-24 lg:pb-24">
       <div className="max-w-[1120px] mx-auto px-4 lg:px-8">
         {/* 뒤로가기 — 스크롤해도 계속 보이도록 sticky 글라스 바. 데스크톱은 상단 헤더(h-16) 아래에 붙는다. */}
         <div className="sticky top-0 lg:top-16 z-30 -mx-4 lg:-mx-8 px-4 lg:px-8 pt-3 pb-2 bg-background/80 backdrop-blur-md hanji-noise">
@@ -308,20 +308,32 @@ export default function ContentDetail() {
               </div>
               {/* 출처 배지 — 제목 아래 한 줄 */}
               {storyBadge}
-              {data.story_sections.length > 0 ? (
-                <div>
-                  {/* 훅 한 줄 */}
-                  {data.story_intro && (
-                    <p className="text-[21px] lg:text-[24px] leading-[1.55] font-semibold text-foreground mb-10 max-w-[640px]">
-                      {data.story_intro}
-                    </p>
+              {data.story_sections.length > 0 || data.story_body ? (
+                <div
+                  className="relative mt-5 overflow-hidden rounded-[16px] px-5 py-7 sm:px-8 sm:py-9"
+                >
+                  <div
+                    className="absolute inset-0 bg-[url('/images/history-bg.png')] bg-[length:100%_auto] bg-repeat-y bg-center blur-[1px] before:absolute before:inset-x-0 before:top-0 before:h-24 before:bg-gradient-to-b before:from-background/90 before:to-transparent after:absolute after:inset-x-0 after:bottom-0 after:h-24 after:bg-gradient-to-t after:from-background/90 after:to-transparent lg:bg-[url('/images/history-bg-desktop.png')]"
+                    aria-hidden="true"
+                  />
+                  <div className="relative z-10">
+                  {data.story_sections.length > 0 ? (
+                    <div>
+                      {/* 훅 한 줄 */}
+                      {data.story_intro && (
+                        <p className="text-[21px] lg:text-[24px] leading-[1.55] font-semibold text-foreground mb-10 max-w-[640px]">
+                          {data.story_intro}
+                        </p>
+                      )}
+                      {/* 챕터 — 흰 카드 없이 여백으로 구분 */}
+                      {storySectionsList}
+                    </div>
+                  ) : (
+                    <div>
+                      {renderProse(data.story_body!, "text-foreground/90 text-[15px] leading-[1.8]")}
+                    </div>
                   )}
-                  {/* 챕터 — 흰 카드 없이 여백으로 구분 */}
-                  {storySectionsList}
-                </div>
-              ) : data.story_body ? (
-                <div className="border-l-2 border-primary/35 pl-6">
-                  {renderProse(data.story_body, "text-foreground/90 text-[15px] leading-[1.8]")}
+                  </div>
                 </div>
               ) : (
                 <p className="text-sm text-muted-foreground">역사 이야기를 준비 중입니다.</p>
@@ -384,43 +396,32 @@ export default function ContentDetail() {
               {relatedPlaces.map((p) => renderPlaceCard(p, false))}
             </div>
           )}
-
-          {/* 탐색 다음 단계 — 담은 장소로 루트 만들기. 장소를 이해·선택한 뒤에 오도록 이 위치에 둔다. */}
-          {places.status === "done" && relatedPlaces && relatedPlaces.length > 0 && (
-            <div className="mt-8 flex flex-col items-start border-t border-border/60 pt-6">
-              <Button
-                onClick={goRouteBuilder}
-                className="
-                  h-11
-                  rounded-lg
-                  border border-primary
-                  bg-transparent
-                  px-5
-                  text-sm font-semibold
-                  text-primary
-                  shadow-none
-                  transition-all
-                  hover:bg-primary
-                  hover:text-white
-                "
-              >
-                {selectedPlaceIds.length > 0
-                  ? `담은 ${selectedPlaceIds.length}곳으로 루트 만들기`
-                  : "이 콘텐츠로 루트 만들기"}
-                <span className="ml-3 text-base font-normal">→</span>
-              </Button>
-
-              {selectedPlaceIds.length === 0 && (
-                <p className="mt-2.5 text-xs leading-5 text-muted-foreground">
-                  장소를 선택하지 않아도 잇다가 어울리는 여행지를 골라드려요.
-                </p>
-              )}
-            </div>
-          )}
         </div>
           </div>
         </div>
       </div>
+
+      {/* 하단 고정 루트 만들기 바 — 관련 장소를 본 뒤 다음 단계로 자연스레 넘어가도록 항상 보이게 강조한다.
+          모바일은 하단 탭바(h-16) 위에, 데스크톱은 화면 맨 아래에 붙는다. */}
+      {places.status === "done" && relatedPlaces && relatedPlaces.length > 0 && (
+        <div className="sticky bottom-16 lg:bottom-0 z-40 -mx-4 lg:-mx-8 border-t border-border bg-background/90 backdrop-blur-md hanji-noise">
+          <div className="max-w-[1120px] mx-auto px-4 lg:px-8 py-3 flex items-center gap-4">
+            <p className="hidden sm:block flex-1 min-w-0 text-sm text-muted-foreground truncate">
+              {selectedPlaceIds.length > 0
+                ? `${selectedPlaceIds.length}곳을 담았어요. 바로 하루 루트로 이어보세요.`
+                : "가보고 싶은 장소를 담아 하루 루트를 만들어보세요."}
+            </p>
+            <Button
+              onClick={goRouteBuilder}
+              className="h-12 px-6 text-[14px] font-medium flex-1 sm:flex-none shrink-0 border border-primary bg-transparent text-primary shadow-none transition-all hover:bg-primary hover:text-white"
+            >
+              {selectedPlaceIds.length > 0
+                ? `담은 ${selectedPlaceIds.length}곳으로 루트 만들기`
+                : "이 콘텐츠로 루트 만들기"}
+            </Button>
+          </div>
+        </div>
+      )}
 
       {/* 로그인 안내 — 자동으로 화면을 떠나지 않고, 왜 필요한지 설명한 뒤 사용자가 직접 선택하게 한다 */}
       {authPrompt && (

@@ -111,6 +111,31 @@ export function MapView({ places, selectedPlace, onSelectPlace }: MapViewProps) 
         }</div>
       `;
 
+      if (isSelected) {
+        const label = document.createElement("span");
+        label.textContent = place.name;
+        label.style.cssText = `
+          position: absolute;
+          left: 50%;
+          top: 3rem;
+          transform: translateX(-50%);
+          max-width: 12rem;
+          padding: 0.35rem 0.6rem;
+          border: 1px solid var(--primary);
+          border-radius: 0.5rem;
+          background: var(--card);
+          color: var(--foreground);
+          font-size: 0.75rem;
+          font-weight: 600;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          box-shadow: 0 3px 10px rgba(0,0,0,0.18);
+          pointer-events: none;
+        `;
+        pin.appendChild(label);
+      }
+
       if (onSelectPlace) {
         pin.addEventListener("click", () => onSelectPlace(place.id));
       }

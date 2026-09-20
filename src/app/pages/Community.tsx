@@ -5,7 +5,7 @@ import { Input } from "../components/ui/input";
 import { PageTitle } from "../components/PageTitle";
 import { CommunityPostSummary, getCommunityPosts } from "../lib/community";
 import { getAvatarUrl, getProxiedImageUrl } from "../lib/imageProxy";
-import { PlaceImage } from "../components/PlaceImage";
+import { PosterImage } from "../components/PosterImage";
 
 type Status = "loading" | "done" | "error";
 
@@ -17,10 +17,10 @@ function RouteCard({ post, onOpen }: { post: CommunityPostSummary; onOpen: () =>
     <button onClick={onOpen} className="group text-left bg-card rounded-[24px] border border-border shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 overflow-hidden">
       {/* 썸네일 + 배지 오버레이 */}
       <div className="relative aspect-[4/3] overflow-hidden bg-muted">
-        <PlaceImage
+        <PosterImage
           src={post.thumbnail_url}
           alt={post.title}
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+          className="w-full h-full scale-[1.06] object-cover group-hover:scale-110 transition-transform duration-500"
         />
         {/* 이미지 왼쪽 아래: 지역 배지를 위에, 그 아래에 태그를 쌓는다. */}
         {(post.region || post.tags.length > 0) && (
