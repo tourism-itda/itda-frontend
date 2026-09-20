@@ -32,11 +32,14 @@ export default defineConfig({
   },
 
   server: {
-    // itda-backend에는 CORS 설정이 없으므로, 개발 중에는 /api 요청을 백엔드(8080)로 프록시해
+    // itda-backend에는 CORS 설정이 없으므로, 개발 중에는 /api 요청을 백엔드로 프록시해
     // 브라우저에서 same-origin으로 보이게 한다.
+    // 기본 대상은 로컬 백엔드(localhost:8080)지만, 로컬 백엔드 없이 UI만 확인하고 싶을 때는
+    // VITE_PROXY_TARGET로 운영 API를 가리킬 수 있다.
+    //   예) VITE_PROXY_TARGET=https://api.itda-travel.com npm run dev
     proxy: {
       '/api': {
-        target: 'http://localhost:8080',
+        target: process.env.VITE_PROXY_TARGET ?? 'http://localhost:8080',
         changeOrigin: true,
       },
     },
