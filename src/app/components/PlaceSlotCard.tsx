@@ -41,7 +41,7 @@ function formatDistance(m: number | null | undefined): string | null {
 
 function formatDuration(min: number | null | undefined): string | null {
   if (min === null || min === undefined) return null;
-  return `도보 ${min}분`;
+  return `차량 ${min}분`;
 }
 
 interface PlaceSlotCardProps {
