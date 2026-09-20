@@ -699,7 +699,7 @@ export default function CommunityDetail() {
             onClick={() => setSelectedStop(null)}
           />
 
-          <div className="relative bg-card w-full max-w-2xl max-h-[92vh] rounded-t-3xl overflow-hidden shadow-2xl flex flex-col">
+          <div className="relative bg-card w-full max-w-4xl max-h-[92vh] rounded-t-3xl overflow-hidden shadow-2xl flex flex-col">
             {/* 상단 바: 핸들 + 닫기(X). 지도 위에 얹지 않고 지도 위쪽 자기 영역에 둬서 서로 겹치지 않는다.
                 북마크 버튼은 뺐다 — 이 stop 응답엔 place_id가 없어서 실제 /api/bookmarks 연동이
                 불가능하다(백엔드 확인 대기 중). */}
@@ -717,7 +717,7 @@ export default function CommunityDetail() {
             {/* 지도 — stop 데이터에 이미 좌표(latitude/longitude)가 있으니 바로 실제 카카오맵을
                 보여준다. 좌표가 없을 때만(비정상 데이터) 플레이스홀더로 대체한다. */}
             {Number.isFinite(selectedStop.lat) && Number.isFinite(selectedStop.lng) ? (
-              <div className="relative h-64 overflow-hidden shrink-0">
+              <div className="relative h-80 overflow-hidden shrink-0">
                 <MapView
                   places={[
                     {
@@ -737,7 +737,7 @@ export default function CommunityDetail() {
               </div>
             ) : (
               <div
-                className="relative h-64 bg-muted overflow-hidden shrink-0"
+                className="relative h-80 bg-muted overflow-hidden shrink-0"
                 style={{
                   backgroundImage:
                     "linear-gradient(rgba(0,0,0,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(0,0,0,0.03) 1px, transparent 1px)",
