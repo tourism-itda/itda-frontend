@@ -14,9 +14,11 @@ const MAX_CARD_TAGS = 3;
 
 function RouteCard({ post, onOpen }: { post: CommunityPostSummary; onOpen: () => void }) {
   return (
-    <button onClick={onOpen} className="group text-left bg-card rounded-[24px] border border-border shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 overflow-hidden">
+    // <button>은 내용을 세로 가운데 정렬한다. 그리드가 카드를 같은 줄의 가장 큰 카드 높이로 늘리면(제목이 2줄인 카드 옆 등)
+    // 이미지가 위로 붙지 않고 가운데로 밀려 위·아래에 빈 공간이 생기므로, flex-col로 내용을 위에서부터 채운다.
+    <button onClick={onOpen} className="group flex flex-col text-left bg-card rounded-[24px] border border-border shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 overflow-hidden">
       {/* 썸네일 + 배지 오버레이 */}
-      <div className="relative aspect-[4/3] overflow-hidden bg-muted">
+      <div className="relative w-full shrink-0 aspect-[4/3] overflow-hidden bg-muted">
         <PosterImage
           src={post.thumbnail_url}
           alt={post.title}
@@ -59,7 +61,7 @@ function RouteCard({ post, onOpen }: { post: CommunityPostSummary; onOpen: () =>
       </div>
 
       {/* 본문 */}
-      <div className="px-4 pt-4 pb-4">
+      <div className="flex flex-1 flex-col w-full px-4 py-4">
         <p className="font-heading text-[16px] font-black mb-2.5 line-clamp-2 leading-snug">{post.title}</p>
         <div className="flex items-center gap-2 mb-2">
           <img
@@ -69,7 +71,8 @@ function RouteCard({ post, onOpen }: { post: CommunityPostSummary; onOpen: () =>
           />
           <span className="text-sm font-semibold text-foreground truncate">{post.author_nickname ?? "알 수 없음"}</span>
         </div>
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+        {/* 남는 높이는 작성자와 이 줄 사이로 보내, 같은 줄 카드끼리 하단 정보가 나란히 붙고 아래에 빈 공간이 남지 않게 한다. */}
+        <div className="mt-auto flex items-center gap-2 text-sm text-muted-foreground">
           <span>장소 {post.place_count}곳</span>
           <span className="text-muted-foreground/40">·</span>
           <span>리뷰 {post.review_count}개</span>
