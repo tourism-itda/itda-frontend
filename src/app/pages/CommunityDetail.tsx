@@ -700,20 +700,15 @@ export default function CommunityDetail() {
           />
 
           <div className="relative bg-card w-full max-w-2xl max-h-[92vh] rounded-t-3xl overflow-hidden shadow-2xl flex flex-col">
-            {/* 핸들 */}
-            <div className="flex justify-center pt-3 pb-1 shrink-0">
-              <div className="w-10 h-1 rounded-full bg-border" />
-            </div>
-
-            {/* 닫기 */}
-            {/* 북마크 버튼은 뺐다 — 이 stop 응답엔 place_id가 없어서 실제 /api/bookmarks 연동이
+            {/* 상단 바: 핸들 + 닫기(X). 지도 위에 얹지 않고 지도 위쪽 자기 영역에 둬서 서로 겹치지 않는다.
+                북마크 버튼은 뺐다 — 이 stop 응답엔 place_id가 없어서 실제 /api/bookmarks 연동이
                 불가능하다(백엔드 확인 대기 중). */}
-            {/* z-20: 아래 지도(relative)가 DOM 순서상 뒤라서 z-index 없이는 이 버튼을 덮어 가린다. 지도 위에서도 보이게 카드색 배경+그림자. */}
-            <div className="absolute top-4 right-4 z-20 flex items-center gap-2">
+            <div className="relative flex justify-center h-14 pt-3 shrink-0">
+              <div className="w-10 h-1 rounded-full bg-border" />
               <button
                 onClick={() => setSelectedStop(null)}
                 aria-label="닫기"
-                className="w-11 h-11 rounded-full bg-card border border-border shadow-md flex items-center justify-center outline-none hover:bg-muted transition-colors focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                className="absolute top-1.5 right-4 w-11 h-11 rounded-full bg-muted flex items-center justify-center outline-none hover:bg-border transition-colors focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
               >
                 <X className="w-5 h-5 text-foreground" />
               </button>
