@@ -147,11 +147,24 @@ export default function ContentDetail() {
               .filter(Boolean)
               .join(" · ")}
           </p>
-          <h1 className="text-[24px] font-extrabold mb-4">{data.title}</h1>
-          <p className="text-foreground/80 leading-relaxed">
-            {data.summary ?? "콘텐츠 소개가 아직 준비되지 않았어요."}
-          </p>
+          <h1 className="text-[24px] font-extrabold mb-2">{data.title}</h1>
+          {/* TMDB 태그라인 — 값이 있는 작품에만 온다. */}
+          {data.tagline && (
+            <p className="text-primary font-semibold italic mb-3">“{data.tagline}”</p>
+          )}
+          {/* AI가 생성한 소개(summary). 없으면 문단을 생략하고 아래 원작 줄거리로 대신한다. */}
+          {data.summary && (
+            <p className="text-foreground/80 leading-relaxed mt-2">{data.summary}</p>
+          )}
         </div>
+
+        {/* 원작 줄거리 — TMDB 원본 overview. AI가 각색한 소개(summary)와 구분해 원본을 그대로 보여준다. */}
+        {data.overview && (
+          <div className="mb-10">
+            <h2 className="text-[16px] font-extrabold mb-3">원작 줄거리</h2>
+            <p className="text-foreground/80 text-sm leading-[1.9]">{data.overview}</p>
+          </div>
+        )}
 
         {/* 역사 스토리텔링 */}
         {/* story_sections(구조화된 절)이 비어 있어도 story_intro/story_body(원문 프롬프트 그대로의
@@ -283,7 +296,7 @@ export default function ContentDetail() {
       </div>
 
       {/* 하단 고정 CTA */}
-      <div className="fixed bottom-16 lg:bottom-0 left-0 right-0 z-40 px-4 pb-4 pt-3 bg-background border-t border-border space-y-2">
+      <div className="fixed bottom-16 lg:bottom-0 left-0 right-0 z-40 px-4 pb-4 pt-3 bg-background/80 backdrop-blur-md hanji-noise border-t border-border space-y-2">
         <div className="max-w-2xl mx-auto space-y-2">
           {/* 신규 흐름(하루 루트 만들기, No.27과 별개) — 관련 명소를 골라 루트를 짜고 싶을 때 */}
           <Button onClick={() => navigate(`/app/route-builder/${data.content_id}`)} className="w-full h-12 text-[14px] font-black">
