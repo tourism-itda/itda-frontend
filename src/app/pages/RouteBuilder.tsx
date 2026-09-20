@@ -22,6 +22,8 @@ import { ItinerarySavePlace, saveItinerary } from "../lib/itineraryRecommend";
 import { htmlToText } from "../lib/text";
 import { AnchorSourceBadge } from "../components/AnchorSourceBadge";
 import { PlaceImage } from "../components/PlaceImage";
+import { LoginRequiredModal } from "../components/LoginRequiredModal";
+import { useCurrentUser } from "../lib/useCurrentUser";
 import {
   AnchorSource,
   ContentPlaceListItem,
@@ -334,6 +336,14 @@ export default function RouteBuilder() {
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
   const [isCreating, setIsCreating] = useState(false);
 
+  // 명소 선택 화면까지는 비로그인도 볼 수 있지만, 루트 만들기(생성/저장)는 로그인 상태에서만 가능하다.
+  const currentUser = useCurrentUser();
+  const [showLoginModal, setShowLoginModal] = useState(false);
+
+  function goToLogin() {
+    navigate("/login", { state: { from: location.pathname + location.search } });
+  }
+
   const [route, setRoute] = useState<RoutePlanResult | null>(null);
   // "다른 조합 보기"용 — 지금까지 본 루트의 관련 명소 place_id를 누적한다(직전 루트 것만 보내면 A↔B로 왔다갔다 함).
   const [excludedPlaceIds, setExcludedPlaceIds] = useState<number[]>([]);
@@ -380,6 +390,10 @@ export default function RouteBuilder() {
 
   async function handleCreateRoute(spotPlaceIds: number[]) {
     if (contentId === undefined || isCreating) return;
+    if (!currentUser) {
+      setShowLoginModal(true);
+      return;
+    }
     setIsCreating(true);
     try {
       const result = await createRoute({
@@ -390,11 +404,15 @@ export default function RouteBuilder() {
       setExcludedPlaceIds(getSpotPlaceIds(result));
       setStep("preview");
     } catch (err) {
-      toast(
-        err instanceof ApiError
-          ? err.message
-          : "루트를 만들지 못했어요. 잠시 후 다시 시도해주세요."
-      );
+      if (isLoginRequiredError(err)) {
+        setShowLoginModal(true);
+      } else {
+        toast(
+          err instanceof ApiError
+            ? err.message
+            : "루트를 만들지 못했어요. 잠시 후 다시 시도해주세요."
+        );
+      }
     } finally {
       setIsCreating(false);
     }
@@ -899,6 +917,14 @@ export default function RouteBuilder() {
           onClose={() => setCandidateSheet(null)}
         />
       )}
+
+      <LoginRequiredModal
+        open={showLoginModal}
+        title="루트 만들기는 로그인 상태에서 가능합니다"
+        description="로그인하고 나만의 루트를 만들어보세요"
+        onLogin={goToLogin}
+        onClose={() => setShowLoginModal(false)}
+      />
     </div>
   );
 }
